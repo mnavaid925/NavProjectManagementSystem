@@ -1,0 +1,134 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ page_title|default:'Knowledge Articles' }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Knowledge Articles</h1>
+    <ul class="breadcrumb">
+      <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+      <li><a href="{% url 'documents:document_list' %}">Document &amp; Knowledge Management</a></li>
+      <li><span class="active" aria-current="page">Knowledge Articles</span></li>
+    </ul>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'documents:knowledgearticle_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> New KnowledgeArticle</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">All Knowledge Articles <span class="text-muted">({{ total_count }})</span></h2>
+  </div>
+  <div class="card-body">
+    {% comment %} Filters {% endcomment %}
+    <form method="get" class="flex flex-wrap items-end gap-3 mb-4">
+      <div class="form-group mb-0 flex-1" style="min-width:200px">
+        <label class="form-label">Search</label>
+        <input type="text" name="q" value="{{ request.GET.q|default:'' }}" class="form-input" placeholder="Search number, title, body or tags...">
+      </div>
+      <div class="form-group mb-0" style="min-width:160px">
+        <label class="form-label">Category</label>
+        <select name="category" class="form-select">
+          <option value="">All categories</option>
+          {% for val, label in category_choices %}
+          <option value="{{ val }}" {% if request.GET.category == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group mb-0" style="min-width:160px">
+        <label class="form-label">Status</label>
+        <select name="status" class="form-select">
+          <option value="">All statuses</option>
+          {% for val, label in status_choices %}
+          <option value="{{ val }}" {% if request.GET.status == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group mb-0">
+        <button type="submit" class="btn btn-secondary"><i data-lucide="filter"></i> Filter</button>
+        {% if request.GET.q or request.GET.category or request.GET.status %}
+        <a href="{% url 'documents:knowledgearticle_list' %}" class="btn btn-outline btn-sm"><i data-lucide="x"></i> Clear</a>
+        {% endif %}
+      </div>
+    </form>
+
+    {% comment %} Table {% endcomment %}
+    {% if knowledge_articles %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Number</th>
+            <th>Title</th>
+            <th>Category</th>
+            <th>Status</th>
+            <th>Views</th>
+            <th>Author</th>
+            <th style="text-align:right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for knowledgearticle in knowledge_articles %}
+          <tr>
+            <td><a href="{% url 'documents:knowledgearticle_detail' knowledgearticle.pk %}" class="font-semibold text-brand">{{ knowledgearticle.number }}</a></td>
+            <td>{{ knowledgearticle.title }}</td>
+            <td>
+              {% if knowledgearticle.category == 'lesson_learned' %}<span class="badge badge-amber">{{ knowledgearticle.get_category_display }}</span>
+              {% elif knowledgearticle.category == 'how_to' %}<span class="badge badge-blue">{{ knowledgearticle.get_category_display }}</span>
+              {% elif knowledgearticle.category == 'faq' %}<span class="badge badge-purple">{{ knowledgearticle.get_category_display }}</span>
+              {% elif knowledgearticle.category == 'policy' %}<span class="badge badge-red">{{ knowledgearticle.get_category_display }}</span>
+              {% elif knowledgearticle.category == 'playbook' %}<span class="badge badge-green">{{ knowledgearticle.get_category_display }}</span>
+              {% else %}<span class="badge badge-slate">{{ knowledgearticle.get_category_display }}</span>{% endif %}
+            </td>
+            <td>
+              {% if knowledgearticle.status == 'published' %}<span class="badge badge-green">{{ knowledgearticle.get_status_display }}</span>
+              {% elif knowledgearticle.status == 'archived' %}<span class="badge badge-slate">{{ knowledgearticle.get_status_display }}</span>
+              {% elif knowledgearticle.status == 'draft' %}<span class="badge badge-amber">{{ knowledgearticle.get_status_display }}</span>
+              {% else %}<span class="badge badge-slate">{{ knowledgearticle.get_status_display }}</span>{% endif %}
+            </td>
+            <td>{{ knowledgearticle.views_count }}</td>
+            <td>{% if knowledgearticle.author %}{{ knowledgearticle.author.get_full_name|default:knowledgearticle.author.username }}{% else %}—{% endif %}</td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'documents:knowledgearticle_detail' knowledgearticle.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'documents:knowledgearticle_edit' knowledgearticle.pk %}" class="btn-icon" title="Edit"><i data-lucide="edit-2"></i></a>
+                <form method="post" action="{% url 'documents:knowledgearticle_delete' knowledgearticle.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon btn-danger" title="Delete" onclick="return confirm('Delete article {{ knowledgearticle.number|escapejs }}?')"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <ul class="pagination">
+      <li class="{% if not page_obj.has_previous %}disabled{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.category %}category={{ request.GET.category }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&amp;{% endif %}page={% if page_obj.has_previous %}{{ page_obj.previous_page_number }}{% else %}1{% endif %}">Prev</a>
+      </li>
+      {% for n in page_obj.paginator.page_range %}
+      <li class="{% if n == page_obj.number %}active{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.category %}category={{ request.GET.category }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&amp;{% endif %}page={{ n }}">{{ n }}</a>
+      </li>
+      {% endfor %}
+      <li class="{% if not page_obj.has_next %}disabled{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.category %}category={{ request.GET.category }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&amp;{% endif %}page={% if page_obj.has_next %}{{ page_obj.next_page_number }}{% else %}{{ page_obj.paginator.num_pages }}{% endif %}">Next</a>
+      </li>
+    </ul>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon"><i data-lucide="book-open"></i></div>
+      <h3>No knowledge articles found</h3>
+      <p>{% if request.GET.q or request.GET.category or request.GET.status %}No knowledge articles match your filters.{% else %}Create your first knowledge article to get started.{% endif %}</p>
+      <a href="{% url 'documents:knowledgearticle_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> New KnowledgeArticle</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
