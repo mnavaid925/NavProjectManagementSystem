@@ -28,6 +28,14 @@ urlpatterns = [
     path('quality/', include('apps.quality.urls')),
     # Module 7 - Scope & Requirements Management.
     path('scope/', include('apps.scope.urls')),
+    # Module 8 - Task & Work Management.
+    path('work/', include('apps.work.urls')),
+    # Module 9 - Collaboration & Communication.
+    path('collaboration/', include('apps.collaboration.urls')),
+    # Module 10 - Document & Knowledge Management.
+    path('documents/', include('apps.documents.urls')),
+    # Module 11 - Time & Attendance Tracking.
+    path('timesheets/', include('apps.timesheets.urls')),
     # Core: module placeholders + audit log.
     path('', include('apps.core.urls')),
 ]
