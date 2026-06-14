@@ -1,0 +1,189 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ page_title|default:'Custom Branding' }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .dj-form input[type="text"], .dj-form input[type="email"], .dj-form input[type="url"],
+  .dj-form textarea, .dj-form select {
+    width: 100%; padding: .6rem .75rem; font-size: .88rem; color: var(--text);
+    background: var(--surface); border: 1px solid var(--border-strong);
+    border-radius: .6rem; line-height: 1.4;
+  }
+  .dark .dj-form input, .dark .dj-form textarea, .dark .dj-form select { background: var(--surface-2); }
+  .dj-form input:focus, .dj-form textarea:focus, .dj-form select:focus {
+    outline: none; border-color: var(--brand-500); box-shadow: 0 0 0 3px var(--ring);
+  }
+  .dj-form textarea { min-height: 90px; resize: vertical; }
+  .color-field { display: flex; align-items: center; gap: .6rem; }
+  .color-field input[type="color"] {
+    width: 46px; height: 40px; padding: 2px; border: 1px solid var(--border-strong);
+    border-radius: .5rem; background: var(--surface); cursor: pointer; flex: 0 0 auto;
+  }
+  .color-field .color-hex {
+    font-family: ui-monospace, monospace; font-size: .82rem; color: var(--text-muted);
+    border: 1px solid var(--border); border-radius: .45rem; padding: .35rem .6rem; background: var(--surface-2);
+  }
+  .swatch-preview { height: 70px; border-radius: .6rem; display: grid; place-items: center; color: #fff; font-weight: 600; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Custom Branding</h1>
+    <ul class="breadcrumb">
+      <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+      <li><span class="active" aria-current="page">Branding</span></li>
+    </ul>
+  </div>
+</div>
+
+{% if not form %}
+  <div class="alert alert-warning">
+    <i data-lucide="alert-triangle"></i>
+    <div>Log in as a tenant admin to manage branding for your organization.</div>
+  </div>
+{% else %}
+<form method="post" enctype="multipart/form-data" class="dj-form" novalidate>
+  {% csrf_token %}
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+    {# ---------------- Left: settings ---------------- #}
+    <div class="lg:col-span-2 space-y-5">
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger"><i data-lucide="alert-circle"></i><div>{{ form.non_field_errors }}</div></div>
+      {% endif %}
+
+      {# Logo + favicon uploads #}
+      <div class="card">
+        <div class="card-header"><h2 class="card-title">Logo &amp; Favicon</h2></div>
+        <div class="card-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="{{ form.logo.id_for_label }}">{{ form.logo.label }}</label>
+              {% if branding.logo %}<div class="mb-2"><img src="{{ branding.logo.url }}" alt="Current logo" style="max-height:48px"></div>{% endif %}
+              {{ form.logo }}
+              {% for e in form.logo.errors %}<p class="form-error"><i data-lucide="alert-circle"></i>{{ e }}</p>{% endfor %}
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="{{ form.favicon.id_for_label }}">{{ form.favicon.label }}</label>
+              {% if branding.favicon %}<div class="mb-2"><img src="{{ branding.favicon.url }}" alt="Current favicon" style="max-height:32px"></div>{% endif %}
+              {{ form.favicon }}
+              {% for e in form.favicon.errors %}<p class="form-error"><i data-lucide="alert-circle"></i>{{ e }}</p>{% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {# Colors #}
+      <div class="card">
+        <div class="card-header"><h2 class="card-title">Brand Colors</h2></div>
+        <div class="card-body">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="form-group mb-0">
+              <label class="form-label" for="{{ form.primary_color.id_for_label }}">{{ form.primary_color.label }}</label>
+              <div class="color-field">
+                {{ form.primary_color }}
+                <span class="color-hex" data-hex-for="{{ form.primary_color.id_for_label }}">{{ form.primary_color.value }}</span>
+              </div>
+              {% for e in form.primary_color.errors %}<p class="form-error"><i data-lucide="alert-circle"></i>{{ e }}</p>{% endfor %}
+            </div>
+            <div class="form-group mb-0">
+              <label class="form-label" for="{{ form.secondary_color.id_for_label }}">{{ form.secondary_color.label }}</label>
+              <div class="color-field">
+                {{ form.secondary_color }}
+                <span class="color-hex" data-hex-for="{{ form.secondary_color.id_for_label }}">{{ form.secondary_color.value }}</span>
+              </div>
+              {% for e in form.secondary_color.errors %}<p class="form-error"><i data-lucide="alert-circle"></i>{{ e }}</p>{% endfor %}
+            </div>
+            <div class="form-group mb-0">
+              <label class="form-label" for="{{ form.accent_color.id_for_label }}">{{ form.accent_color.label }}</label>
+              <div class="color-field">
+                {{ form.accent_color }}
+                <span class="color-hex" data-hex-for="{{ form.accent_color.id_for_label }}">{{ form.accent_color.value }}</span>
+              </div>
+              {% for e in form.accent_color.errors %}<p class="form-error"><i data-lucide="alert-circle"></i>{{ e }}</p>{% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {# White-label + email #}
+      <div class="card">
+        <div class="card-header"><h2 class="card-title">White-label &amp; Email</h2></div>
+        <div class="card-body">
+          <label class="form-check mb-4">
+            {{ form.enable_white_label }} <span>{{ form.enable_white_label.label }}</span>
+          </label>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="{{ form.email_from_name.id_for_label }}">{{ form.email_from_name.label }}</label>
+              {{ form.email_from_name }}
+              {% for e in form.email_from_name.errors %}<p class="form-error"><i data-lucide="alert-circle"></i>{{ e }}</p>{% endfor %}
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="{{ form.custom_domain.id_for_label }}">{{ form.custom_domain.label }}</label>
+              {{ form.custom_domain }}
+              {% for e in form.custom_domain.errors %}<p class="form-error"><i data-lucide="alert-circle"></i>{{ e }}</p>{% endfor %}
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="{{ form.login_background.id_for_label }}">{{ form.login_background.label }}</label>
+            {{ form.login_background }}
+            {% for e in form.login_background.errors %}<p class="form-error"><i data-lucide="alert-circle"></i>{{ e }}</p>{% endfor %}
+          </div>
+          <div class="form-group mb-0">
+            <label class="form-label" for="{{ form.email_signature.id_for_label }}">{{ form.email_signature.label }}</label>
+            {{ form.email_signature }}
+            {% for e in form.email_signature.errors %}<p class="form-error"><i data-lucide="alert-circle"></i>{{ e }}</p>{% endfor %}
+          </div>
+        </div>
+        <div class="card-footer">
+          <a href="{% url 'tenants:onboarding' %}" class="btn btn-secondary">Cancel</a>
+          <button type="submit" class="btn btn-primary"><i data-lucide="save"></i> Save Branding</button>
+        </div>
+      </div>
+    </div>
+
+    {# ---------------- Right: live preview ---------------- #}
+    <div class="space-y-5">
+      <div class="card" style="position:sticky; top:1.5rem">
+        <div class="card-header"><h2 class="card-title">Live Preview</h2></div>
+        <div class="card-body space-y-3">
+          <div id="swatch-primary" class="swatch-preview" style="background:{{ form.primary_color.value }}">Primary</div>
+          <div id="swatch-secondary" class="swatch-preview" style="background:{{ form.secondary_color.value }}">Secondary</div>
+          <div id="swatch-accent" class="swatch-preview" style="background:{{ form.accent_color.value }}">Accent</div>
+          <div class="hr"></div>
+          <button type="button" id="preview-btn" class="btn w-full" style="background:{{ form.primary_color.value }};color:#fff">
+            Sample Button
+          </button>
+          <p class="form-hint">Colors update live as you pick. Save to apply.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+
+<script>
+(function () {
+  function bind(inputId, swatchId, hexSel) {
+    var input = document.getElementById(inputId);
+    if (!input) return;
+    var swatch = document.getElementById(swatchId);
+    var hex = document.querySelector('[data-hex-for="' + inputId + '"]');
+    input.addEventListener('input', function () {
+      if (swatch) swatch.style.background = input.value;
+      if (hex) hex.textContent = input.value;
+      if (inputId === '{{ form.primary_color.id_for_label }}') {
+        var b = document.getElementById('preview-btn');
+        if (b) b.style.background = input.value;
+      }
+    });
+  }
+  bind('{{ form.primary_color.id_for_label }}', 'swatch-primary');
+  bind('{{ form.secondary_color.id_for_label }}', 'swatch-secondary');
+  bind('{{ form.accent_color.id_for_label }}', 'swatch-accent');
+})();
+</script>
+{% endif %}
+{% endblock %}
