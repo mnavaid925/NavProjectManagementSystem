@@ -62,8 +62,17 @@ def main():
 
     if real_tests and pytest_ok and has_cfg:
         try:
+            # Run the suite under the project's isolated test settings (SQLite in-memory, per
+            # pytest.ini -> config.settings_test) — NOT the MySQL dev settings this hook set on
+            # os.environ for the `check` above. Without this override the pytest subprocess
+            # inherits DJANGO_SETTINGS_MODULE=config.settings and runs against the shared MySQL
+            # `test_nav_pms` DB: slow, MariaDB-10.4-fragile, and prone to collisions/half-migrated
+            # state when another session's suite runs concurrently.
+            test_env = dict(os.environ)
+            test_env["DJANGO_SETTINGS_MODULE"] = "config.settings_test"
             proc = subprocess.run([py, "-m", "pytest", "-q", "--no-header", "-x"],
-                                  cwd=ROOT, capture_output=True, text=True, timeout=240)
+                                  cwd=ROOT, capture_output=True, text=True, timeout=240,
+                                  env=test_env)
             tail = (proc.stdout or "").strip()[-1500:]
             if proc.returncode == 0:
                 report.append("pytest: PASS\n" + tail)
