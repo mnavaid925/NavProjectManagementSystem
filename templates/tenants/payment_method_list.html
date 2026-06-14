@@ -75,11 +75,11 @@
 
     {% if page_obj.paginator.num_pages > 1 %}
     <ul class="pagination">
-      <li class="{% if not page_obj.has_previous %}disabled{% endif %}"><a href="?page={{ page_obj.previous_page_number }}">Prev</a></li>
+      <li class="{% if not page_obj.has_previous %}disabled{% endif %}"><a href="?page={% if page_obj.has_previous %}{{ page_obj.previous_page_number }}{% else %}1{% endif %}">Prev</a></li>
       {% for n in page_obj.paginator.page_range %}
       <li class="{% if n == page_obj.number %}active{% endif %}"><a href="?page={{ n }}">{{ n }}</a></li>
       {% endfor %}
-      <li class="{% if not page_obj.has_next %}disabled{% endif %}"><a href="?page={{ page_obj.next_page_number }}">Next</a></li>
+      <li class="{% if not page_obj.has_next %}disabled{% endif %}"><a href="?page={% if page_obj.has_next %}{{ page_obj.next_page_number }}{% else %}{{ page_obj.paginator.num_pages }}{% endif %}">Next</a></li>
     </ul>
     {% endif %}
 
