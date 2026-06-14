@@ -6,10 +6,10 @@ A **multi-tenant Project Management System** built with **Django 5.1** (backend)
 multi-tenancy, full authentication & user management, and a reference "Project Dashboard".
 
 This release delivers the complete **Foundation** (multi-tenancy, authentication, user/role management, themed
-dashboard) and **Module 0 — Tenant & Subscription Management** end-to-end (all five sub-modules: Onboarding,
-Subscription & Billing, Isolation & Security, Custom Branding, Health Monitoring), plus a lightweight
-**Workspace** (Projects / Tasks / Meetings / Tickets / Invoices) that powers the dashboard with real seeded data.
-The remaining 20 modules from `ProjectManagementSystem.md` appear in the sidebar as navigable
+dashboard) and **Modules 0–3** end-to-end — **Tenant & Subscription Management**, **Project Initiation &
+Charter**, **Project Planning & Scheduling**, and **Resource Management** (all five sub-modules each) — plus a
+lightweight **Workspace** (Projects / Tasks / Meetings / Tickets / Invoices) that powers the dashboard with real
+seeded data. The remaining 17 modules from `ProjectManagementSystem.md` appear in the sidebar as navigable
 **"on the roadmap"** placeholders and are generated on demand by the `/next-module` Claude Code skill.
 
 ---
@@ -80,6 +80,24 @@ Tenant **Onboarding** · **Subscription & Billing** (plans, subscriptions, invoi
 **Isolation & Security** · **Custom Branding** (logo/favicon/colors/white-label) · **Health Monitoring**
 (usage metering + system alerts). Full CRUD on every list page.
 
+### Module 1 — Project Initiation & Charter (complete)
+**Project Request & Intake** · **Business Case & Feasibility** (ROI / payback / go-no_go-hold) · **Project
+Charter Authoring** (sponsor / PM / objectives) · **Stakeholder Identification & Analysis**
+(influence / interest / engagement) · **Project Kickoff & Launch**. Models: `ProjectRequest` (`REQ-#####`),
+`BusinessCase` (`BC-#####`), `ProjectCharter` (`CHTR-#####`), `Stakeholder`, `KickoffTask`.
+
+### Module 2 — Project Planning & Scheduling (complete)
+**Work Breakdown Structure (WBS)** · **Task Sequencing & Dependency Mapping** (FS/SS/FF/SF + lag) · **Duration
+& Effort Estimation** (analogous / parametric / bottom-up / three-point) · **Milestone & Phase-Gate Definition** ·
+**Schedule Baseline & Version Control**. Models: `WorkPackage`, `ScheduleTask`, `TaskDependency`, `Milestone`,
+`ScheduleBaseline`.
+
+### Module 3 — Resource Management (complete)
+**Resource Pool & Skills Inventory** · **Resource Allocation & Leveling** (over-allocation flagging) · **Team
+Assembly & Role Assignment** · **Resource Forecasting & Demand Planning** (demand vs capacity gap) · **Time
+Tracking & Timesheets**. Models: `Resource`, `Skill`, `Allocation`, `TeamAssignment`, `DemandForecast`,
+`TimeEntry` (`TE-#####`).
+
 ---
 
 ## Project Structure
@@ -98,7 +116,10 @@ NavProjectManagementSystem/
 │   │                         # plans/invoices/payment-methods/isolation-security/branding/health/usage
 │   ├── projects/             # Workspace demo (powers the dashboard): Project, Task, Meeting, Ticket,
 │   │                         # ProjectInvoice (PINV-#####), FinancialSnapshot — full CRUD
-│   └── dashboard/            # Aggregation view only (no models): KPIs + Chart.js feeds
+│   ├── dashboard/            # Aggregation view only (no models): KPIs + Chart.js feeds
+│   ├── initiation/           # Module 1: ProjectRequest, BusinessCase, ProjectCharter, Stakeholder, KickoffTask
+│   ├── planning/             # Module 2: WorkPackage(WBS), ScheduleTask, TaskDependency, Milestone, ScheduleBaseline
+│   └── resources/            # Module 3: Resource, Skill, Allocation, TeamAssignment, DemandForecast, TimeEntry
 ├── config/                   # settings.py (reads .env), urls.py, wsgi.py, asgi.py,
 │                             # __init__.py (PyMySQL + MariaDB-10.4 compatibility shim)
 ├── templates/
@@ -110,6 +131,9 @@ NavProjectManagementSystem/
 │   ├── tenants/              # onboarding, subscription, plans, invoices, payment-methods,
 │   │                         # isolation_security, branding, health, usage
 │   ├── projects/             # project/task/meeting/ticket/invoice list+detail+form
+│   ├── initiation/           # request/businesscase/charter/stakeholder/kickoff list+detail+form
+│   ├── planning/             # workpackage/task/dependency/milestone/baseline list+detail+form
+│   ├── resources/            # skill/resource/allocation/assignment/forecast/timeentry list+detail+form
 │   └── core/                 # module_placeholder (roadmap page), audit_log
 ├── static/
 │   ├── css/  theme.css       # Blue/white design system (cards, badges, tables, forms, dark mode, RTL)
@@ -194,6 +218,9 @@ All values are read from `.env` via `python-dotenv`. Defaults assume XAMPP (MySQ
 | `venv\Scripts\python.exe manage.py migrate` | Apply migrations to `nav_pms`. |
 | `venv\Scripts\python.exe manage.py seed_demo` | **Idempotent** demo seeder — plans, tenants, users, roles, subscriptions, invoices, branding, usage, alerts, projects/tasks/meetings/tickets/invoices, 12-month financial snapshots, and audit logs. Prints login credentials on completion. |
 | `venv\Scripts\python.exe manage.py seed_demo --flush` | Wipe and re-seed demo data. |
+| `venv\Scripts\python.exe manage.py seed_initiation` | **Idempotent** Module 1 seeder (requests, business cases, charters, stakeholders, kickoff tasks) for both tenants. Run after `seed_demo`. |
+| `venv\Scripts\python.exe manage.py seed_planning` | **Idempotent** Module 2 seeder (work packages, schedule tasks, dependencies, milestones, baselines). |
+| `venv\Scripts\python.exe manage.py seed_resources` | **Idempotent** Module 3 seeder (skills, resources, allocations, team assignments, demand forecasts, time entries). |
 | `venv\Scripts\python.exe manage.py createsuperuser` | Optional cross-tenant Django admin (`tenant=None`). |
 | `venv\Scripts\python.exe manage.py runserver` | Start the dev server on `127.0.0.1:8000`. |
 
@@ -285,16 +312,16 @@ A lightweight `projects` app provides real, tenant-scoped CRUD that populates th
 
 ## Module Roadmap (0–20)
 
-`ProjectManagementSystem.md` defines 21 modules. Module 0 is **complete**; Modules 1–20 are sidebar
+`ProjectManagementSystem.md` defines 21 modules. Modules 0–3 are **complete**; Modules 4–20 are sidebar
 **placeholders** today and are scaffolded on demand by the `/next-module` skill (one Django app per module, built
 from the `apps/tenants` reference pattern).
 
 | # | Module | Status |
 |---|--------|--------|
 | 0 | Tenant & Subscription Management | ✅ Complete (`apps/tenants`) |
-| 1 | Project Initiation & Charter | 🗺️ Roadmap → `apps/initiation` |
-| 2 | Project Planning & Scheduling | 🗺️ Roadmap → `apps/planning` |
-| 3 | Resource Management | 🗺️ Roadmap → `apps/resources` |
+| 1 | Project Initiation & Charter | ✅ Complete (`apps/initiation`) |
+| 2 | Project Planning & Scheduling | ✅ Complete (`apps/planning`) |
+| 3 | Resource Management | ✅ Complete (`apps/resources`) |
 | 4 | Cost & Budget Management | 🗺️ Roadmap → `apps/budgeting` |
 | 5 | Risk & Issue Management | 🗺️ Roadmap → `apps/risks` |
 | 6 | Quality Management | 🗺️ Roadmap → `apps/quality` |
@@ -327,6 +354,9 @@ Build the next one with: **`/next-module`** (auto-detects the lowest unbuilt mod
 | User & role mgmt | `/` | `/users/`, `/users/invite/`, `/users/<pk>/edit/`, `/roles/`, `/profile/`, `/profile/password/` |
 | Module 0 | `/tenants/` | `/tenants/onboarding/`, `/tenants/subscription/`, `/tenants/invoices/`, `/tenants/branding/`, `/tenants/health/` |
 | Workspace | `/projects/` | `/projects/projects/`, `/projects/tasks/`, `/projects/tickets/`, `/projects/invoices/` |
+| Module 1 | `/initiation/` | `/initiation/requests/`, `/initiation/business-cases/`, `/initiation/charters/`, `/initiation/stakeholders/`, `/initiation/kickoff/` |
+| Module 2 | `/planning/` | `/planning/work-packages/`, `/planning/tasks/`, `/planning/dependencies/`, `/planning/milestones/`, `/planning/baselines/` |
+| Module 3 | `/resources/` | `/resources/resources/`, `/resources/skills/`, `/resources/allocations/`, `/resources/assignments/`, `/resources/forecasts/`, `/resources/time-entries/` |
 | Roadmap placeholders | `/m/<module>/<sub>/` | e.g. `/m/risk-issue-management/risk-register/` |
 | Audit log | `/audit-log/` | tenant-scoped activity trail |
 | Django admin | `/admin/` | superuser only |
@@ -391,7 +421,7 @@ Customizer are pure CSS/JS and require no plugins.
 
 ## Roadmap
 
-Module 0 is complete and the foundation is production-shaped. Modules 1–20 (`ProjectManagementSystem.md`) reuse
+Modules 0–3 are complete and the foundation is production-shaped. Modules 4–20 (`ProjectManagementSystem.md`) reuse
 the same multi-tenant + CRUD + dashboard patterns and are built incrementally via `/next-module`. Planned
 hardening: compiled Tailwind pipeline, an automated test suite (pytest + pytest-django), real email/SMTP, and an
 optional real payment gateway behind the existing simulated billing.
