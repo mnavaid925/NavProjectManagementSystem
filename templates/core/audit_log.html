@@ -1,0 +1,142 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}Audit Trail &amp; Logging{% endblock %}
+
+{% block content %}
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Audit Trail &amp; Logging</h1>
+      <p class="page-subtitle">Immutable activity log &mdash; {{ total_count }} entr{{ total_count|pluralize:"y,ies" }} recorded.</p>
+      <nav aria-label="Breadcrumb">
+        <ol class="breadcrumb">
+          <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+          <li aria-current="page" class="active">Audit Trail</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Activity Log</h2>
+    </div>
+    <div class="card-body">
+      {# ---------------- Filters ---------------- #}
+      <form method="get" class="audit-filters">
+        <div class="audit-search">
+          <i data-lucide="search"></i>
+          <input type="text" name="q" class="form-input" value="{{ request.GET.q }}"
+                 placeholder="Search action, entity, object, or user…">
+        </div>
+        <select name="action" class="form-select audit-action-select">
+          <option value="">All actions</option>
+          {% for act in actions %}
+            <option value="{{ act }}" {% if request.GET.action == act %}selected{% endif %}>{{ act }}</option>
+          {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-primary"><i data-lucide="filter"></i> Filter</button>
+        {% if request.GET.q or request.GET.action %}
+          <a href="{% url 'core:audit_log' %}" class="btn btn-secondary"><i data-lucide="x"></i> Clear</a>
+        {% endif %}
+      </form>
+
+      {# ---------------- Table ---------------- #}
+      {% if logs %}
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>User</th>
+                <th>Action</th>
+                <th>Entity</th>
+                <th>Object</th>
+                <th>IP Address</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for log in logs %}
+                <tr>
+                  <td>
+                    <span class="audit-ts">{{ log.created_at|date:"M j, Y" }}</span>
+                    <span class="audit-ts-time">{{ log.created_at|date:"g:i:s A" }}</span>
+                  </td>
+                  <td>
+                    {% if log.user %}
+                      <span class="audit-user">
+                        <span class="avatar-initial avatar-sm">{{ log.user.username|first|upper }}</span>
+                        <span class="audit-user-name">{{ log.user.get_full_name|default:log.user.username }}</span>
+                      </span>
+                    {% else %}
+                      <span class="text-muted">System</span>
+                    {% endif %}
+                  </td>
+                  <td><span class="badge badge-blue">{{ log.action }}</span></td>
+                  <td>{{ log.entity }}</td>
+                  <td class="audit-object">{{ log.object_repr|default:"—" }}</td>
+                  <td><code class="audit-ip">{{ log.ip_address|default:"—" }}</code></td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        {# ---------------- Pagination ---------------- #}
+        {% if page_obj.paginator.num_pages > 1 %}
+          <nav aria-label="Pagination">
+            <ul class="pagination">
+              {% if page_obj.has_previous %}
+                <li><a href="?{% if request.GET.q %}q={{ request.GET.q|urlencode }}&{% endif %}{% if request.GET.action %}action={{ request.GET.action|urlencode }}&{% endif %}page={{ page_obj.previous_page_number }}" aria-label="Previous"><i data-lucide="chevron-left"></i></a></li>
+              {% else %}
+                <li class="disabled"><span><i data-lucide="chevron-left"></i></span></li>
+              {% endif %}
+
+              {% for num in page_obj.paginator.page_range %}
+                {% if num == page_obj.number %}
+                  <li class="active"><span>{{ num }}</span></li>
+                {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
+                  <li><a href="?{% if request.GET.q %}q={{ request.GET.q|urlencode }}&{% endif %}{% if request.GET.action %}action={{ request.GET.action|urlencode }}&{% endif %}page={{ num }}">{{ num }}</a></li>
+                {% endif %}
+              {% endfor %}
+
+              {% if page_obj.has_next %}
+                <li><a href="?{% if request.GET.q %}q={{ request.GET.q|urlencode }}&{% endif %}{% if request.GET.action %}action={{ request.GET.action|urlencode }}&{% endif %}page={{ page_obj.next_page_number }}" aria-label="Next"><i data-lucide="chevron-right"></i></a></li>
+              {% else %}
+                <li class="disabled"><span><i data-lucide="chevron-right"></i></span></li>
+              {% endif %}
+            </ul>
+          </nav>
+        {% endif %}
+      {% else %}
+        <div class="empty-state">
+          <div class="empty-icon"><i data-lucide="file-search"></i></div>
+          <h3>No audit entries found</h3>
+          {% if request.GET.q or request.GET.action %}
+            <p>No log entries match your current filters. Try clearing them to see all activity.</p>
+            <a href="{% url 'core:audit_log' %}" class="btn btn-secondary"><i data-lucide="x"></i> Clear filters</a>
+          {% else %}
+            <p>Activity across your tenant will be recorded here as users perform actions.</p>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  .audit-filters { display: flex; align-items: center; gap: .65rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+  .audit-search { position: relative; flex: 1 1 280px; min-width: 220px; }
+  .audit-search i { position: absolute; left: .75rem; top: 50%; transform: translateY(-50%); width: 17px; height: 17px; color: var(--text-subtle); pointer-events: none; }
+  .audit-search .form-input { padding-left: 2.4rem; }
+  [dir="rtl"] .audit-search i { left: auto; right: .75rem; }
+  [dir="rtl"] .audit-search .form-input { padding-left: .75rem; padding-right: 2.4rem; }
+  .audit-action-select { width: auto; min-width: 170px; }
+
+  .audit-ts { display: block; font-weight: 500; color: var(--text); white-space: nowrap; }
+  .audit-ts-time { display: block; font-size: .74rem; color: var(--text-subtle); white-space: nowrap; }
+  .audit-user { display: inline-flex; align-items: center; gap: .5rem; }
+  .audit-user-name { white-space: nowrap; }
+  .audit-object { max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .audit-ip { font-size: .78rem; color: var(--text-muted); background: var(--surface-2); padding: .1rem .4rem; border-radius: .3rem; border: 1px solid var(--border); }
+</style>
+{% endblock %}
