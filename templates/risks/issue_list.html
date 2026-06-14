@@ -1,0 +1,150 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ page_title|default:'Issues' }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Issues</h1>
+    <ul class="breadcrumb">
+      <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+      <li><a href="{% url 'risks:issue_list' %}">Risk &amp; Issue Management</a></li>
+      <li><span class="active" aria-current="page">Issues</span></li>
+    </ul>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'risks:issue_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> New Issue</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">All Issues <span class="text-muted">({{ total_count }})</span></h2>
+  </div>
+  <div class="card-body">
+    {% comment %} Filters {% endcomment %}
+    <form method="get" class="flex flex-wrap items-end gap-3 mb-4">
+      <div class="form-group mb-0 flex-1" style="min-width:200px">
+        <label class="form-label">Search</label>
+        <input type="text" name="q" value="{{ request.GET.q|default:'' }}" class="form-input" placeholder="Search title, number or description...">
+      </div>
+      <div class="form-group mb-0" style="min-width:160px">
+        <label class="form-label">Status</label>
+        <select name="status" class="form-select">
+          <option value="">All statuses</option>
+          {% for val, label in status_choices %}
+          <option value="{{ val }}" {% if request.GET.status == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group mb-0" style="min-width:160px">
+        <label class="form-label">Severity</label>
+        <select name="severity" class="form-select">
+          <option value="">All severities</option>
+          {% for val, label in severity_choices %}
+          <option value="{{ val }}" {% if request.GET.severity == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group mb-0" style="min-width:160px">
+        <label class="form-label">Priority</label>
+        <select name="priority" class="form-select">
+          <option value="">All priorities</option>
+          {% for val, label in priority_choices %}
+          <option value="{{ val }}" {% if request.GET.priority == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group mb-0">
+        <button type="submit" class="btn btn-secondary"><i data-lucide="filter"></i> Filter</button>
+        {% if request.GET.q or request.GET.status or request.GET.severity or request.GET.priority %}
+        <a href="{% url 'risks:issue_list' %}" class="btn btn-outline btn-sm"><i data-lucide="x"></i> Clear</a>
+        {% endif %}
+      </div>
+    </form>
+
+    {% comment %} Table {% endcomment %}
+    {% if issues %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Number</th>
+            <th>Title</th>
+            <th>Severity</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>Assigned</th>
+            <th style="text-align:right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for issue in issues %}
+          <tr>
+            <td><a href="{% url 'risks:issue_detail' issue.pk %}" class="font-semibold text-brand">{{ issue.number }}</a></td>
+            <td>{{ issue.title }}</td>
+            <td>
+              {% if issue.severity == 'critical' %}<span class="badge badge-red">{{ issue.get_severity_display }}</span>
+              {% elif issue.severity == 'high' %}<span class="badge badge-amber">{{ issue.get_severity_display }}</span>
+              {% elif issue.severity == 'medium' %}<span class="badge badge-blue">{{ issue.get_severity_display }}</span>
+              {% elif issue.severity == 'low' %}<span class="badge badge-slate">{{ issue.get_severity_display }}</span>
+              {% else %}<span class="badge badge-slate">{{ issue.get_severity_display }}</span>{% endif %}
+            </td>
+            <td>
+              {% if issue.priority == 'urgent' %}<span class="badge badge-red">{{ issue.get_priority_display }}</span>
+              {% elif issue.priority == 'high' %}<span class="badge badge-amber">{{ issue.get_priority_display }}</span>
+              {% elif issue.priority == 'medium' %}<span class="badge badge-blue">{{ issue.get_priority_display }}</span>
+              {% elif issue.priority == 'low' %}<span class="badge badge-slate">{{ issue.get_priority_display }}</span>
+              {% else %}<span class="badge badge-slate">{{ issue.get_priority_display }}</span>{% endif %}
+            </td>
+            <td>
+              {% if issue.status == 'resolved' %}<span class="badge badge-green">{{ issue.get_status_display }}</span>
+              {% elif issue.status == 'closed' %}<span class="badge badge-slate">{{ issue.get_status_display }}</span>
+              {% elif issue.status == 'escalated' %}<span class="badge badge-red">{{ issue.get_status_display }}</span>
+              {% elif issue.status == 'in_progress' %}<span class="badge badge-blue">{{ issue.get_status_display }}</span>
+              {% elif issue.status == 'open' %}<span class="badge badge-amber">{{ issue.get_status_display }}</span>
+              {% else %}<span class="badge badge-slate">{{ issue.get_status_display }}</span>{% endif %}
+            </td>
+            <td>{% if issue.assigned_to %}{{ issue.assigned_to.get_full_name|default:issue.assigned_to.username }}{% else %}—{% endif %}</td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'risks:issue_detail' issue.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'risks:issue_edit' issue.pk %}" class="btn-icon" title="Edit"><i data-lucide="edit-2"></i></a>
+                <form method="post" action="{% url 'risks:issue_delete' issue.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon btn-danger" title="Delete" onclick="return confirm('Delete issue {{ issue.number|escapejs }}?')"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <ul class="pagination">
+      <li class="{% if not page_obj.has_previous %}disabled{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&amp;{% endif %}{% if request.GET.severity %}severity={{ request.GET.severity }}&amp;{% endif %}{% if request.GET.priority %}priority={{ request.GET.priority }}&amp;{% endif %}page={% if page_obj.has_previous %}{{ page_obj.previous_page_number }}{% else %}1{% endif %}">Prev</a>
+      </li>
+      {% for n in page_obj.paginator.page_range %}
+      <li class="{% if n == page_obj.number %}active{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&amp;{% endif %}{% if request.GET.severity %}severity={{ request.GET.severity }}&amp;{% endif %}{% if request.GET.priority %}priority={{ request.GET.priority }}&amp;{% endif %}page={{ n }}">{{ n }}</a>
+      </li>
+      {% endfor %}
+      <li class="{% if not page_obj.has_next %}disabled{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&amp;{% endif %}{% if request.GET.severity %}severity={{ request.GET.severity }}&amp;{% endif %}{% if request.GET.priority %}priority={{ request.GET.priority }}&amp;{% endif %}page={% if page_obj.has_next %}{{ page_obj.next_page_number }}{% else %}{{ page_obj.paginator.num_pages }}{% endif %}">Next</a>
+      </li>
+    </ul>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon"><i data-lucide="alert-triangle"></i></div>
+      <h3>No issues found</h3>
+      <p>{% if request.GET.q or request.GET.status or request.GET.severity or request.GET.priority %}No issues match your filters.{% else %}Create your first issue to get started.{% endif %}</p>
+      <a href="{% url 'risks:issue_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> New Issue</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
