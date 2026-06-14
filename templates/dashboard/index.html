@@ -1,0 +1,344 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+  {# ---------------- Greeting header ---------------- #}
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Welcome back{% if request.user.get_short_name %}, {{ request.user.get_short_name }}{% elif request.user.first_name %}, {{ request.user.first_name }}{% elif request.user.username %}, {{ request.user.username }}{% endif %}</h1>
+      <p class="page-subtitle">Here&rsquo;s what&rsquo;s happening across your projects today.</p>
+      <nav aria-label="Breadcrumb">
+        <ol class="breadcrumb">
+          <li aria-current="page" class="active">Dashboard</li>
+        </ol>
+      </nav>
+    </div>
+    <div class="page-actions">
+      <a href="{% url 'projects:project_create' %}" class="btn btn-primary">
+        <i data-lucide="plus"></i> New Project
+      </a>
+    </div>
+  </div>
+
+  {# ---------------- KPI stat cards ---------------- #}
+  <div class="kpi-grid">
+    <div class="stat-card">
+      <div class="stat-icon"><i data-lucide="briefcase"></i></div>
+      <div class="stat-body">
+        <div class="stat-value">{{ kpis.total_projects }}</div>
+        <div class="stat-label">Total Projects</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background: rgba(22,163,74,.12); color:#16a34a;"><i data-lucide="check-square"></i></div>
+      <div class="stat-body">
+        <div class="stat-value">{{ kpis.active_tasks }}</div>
+        <div class="stat-label">Active Tasks</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background: rgba(220,38,38,.12); color:#dc2626;"><i data-lucide="alert-circle"></i></div>
+      <div class="stat-body">
+        <div class="stat-value">{{ kpis.overdue_invoices }}</div>
+        <div class="stat-label">Overdue Invoices</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background: rgba(126,34,206,.12); color:#7e22ce;"><i data-lucide="users"></i></div>
+      <div class="stat-body">
+        <div class="stat-value">{{ kpis.team_members }}</div>
+        <div class="stat-label">Team Members</div>
+      </div>
+    </div>
+  </div>
+
+  {# ---------------- Charts row ---------------- #}
+  <div class="dash-grid dash-grid-2 dash-mt">
+    {# Projects Overview doughnut #}
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Projects Overview</h2>
+        <a href="{% url 'projects:project_list' %}" class="btn btn-secondary btn-sm">View all</a>
+      </div>
+      <div class="card-body">
+        {% if projects_overview %}
+          <div class="chart-box">
+            <canvas id="chart-projects-overview"></canvas>
+          </div>
+          <ul class="legend-list">
+            {% for label, count in projects_overview.items %}
+              <li class="legend-row">
+                <span class="legend-dot legend-dot-{{ forloop.counter0 }}"></span>
+                <span class="legend-label">{{ label }}</span>
+                <span class="legend-count">{{ count }}</span>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <div class="empty-state">
+            <div class="empty-icon"><i data-lucide="pie-chart"></i></div>
+            <h3>No project data yet</h3>
+            <p>Create your first project to see the status breakdown here.</p>
+            <a href="{% url 'projects:project_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> New Project</a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {# Income vs Expense area chart #}
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Income vs Expense</h2>
+      </div>
+      <div class="card-body">
+        {% if income_expense.labels %}
+          <div class="chart-box chart-box-tall">
+            <canvas id="chart-income-expense"></canvas>
+          </div>
+        {% else %}
+          <div class="empty-state">
+            <div class="empty-icon"><i data-lucide="line-chart"></i></div>
+            <h3>No financial data yet</h3>
+            <p>Monthly income and expense trends will appear here once snapshots are recorded.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {# ---------------- Tasks + Meetings row ---------------- #}
+  <div class="dash-grid dash-grid-2 dash-mt">
+    {# My Tasks #}
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">My Tasks</h2>
+        <a href="{% url 'projects:task_list' %}" class="btn btn-secondary btn-sm">View all</a>
+      </div>
+      <div class="card-body">
+        {% if my_tasks %}
+          <ul class="dash-list">
+            {% for task in my_tasks %}
+              <li class="task-row">
+                <input type="checkbox" class="task-check" aria-label="Toggle {{ task.title }}" {% if task.status == 'done' %}checked{% endif %} disabled>
+                <a href="{% url 'projects:task_detail' task.pk %}" class="task-title">{{ task.title }}</a>
+                <span class="task-badges">
+                  {% if task.status == 'done' %}
+                    <span class="badge badge-green">{{ task.get_status_display }}</span>
+                  {% elif task.status == 'in_progress' %}
+                    <span class="badge badge-blue">{{ task.get_status_display }}</span>
+                  {% elif task.status == 'review' %}
+                    <span class="badge badge-purple">{{ task.get_status_display }}</span>
+                  {% else %}
+                    <span class="badge badge-slate">{{ task.get_status_display }}</span>
+                  {% endif %}
+                  {% if task.priority == 'urgent' %}
+                    <span class="badge badge-red">{{ task.get_priority_display }}</span>
+                  {% elif task.priority == 'high' %}
+                    <span class="badge badge-amber">{{ task.get_priority_display }}</span>
+                  {% elif task.priority == 'medium' %}
+                    <span class="badge badge-blue">{{ task.get_priority_display }}</span>
+                  {% else %}
+                    <span class="badge badge-slate">{{ task.get_priority_display }}</span>
+                  {% endif %}
+                </span>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <div class="empty-state">
+            <div class="empty-icon"><i data-lucide="check-circle"></i></div>
+            <h3>You&rsquo;re all caught up</h3>
+            <p>No open tasks assigned right now. Enjoy the calm.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {# My Meetings #}
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">My Meetings</h2>
+        <a href="{% url 'projects:meeting_list' %}" class="btn btn-secondary btn-sm">View all</a>
+      </div>
+      <div class="card-body">
+        {% if my_meetings %}
+          <ul class="dash-list">
+            {% for meeting in my_meetings %}
+              <li class="meeting-row">
+                <div class="meeting-date">
+                  <span class="meeting-day">{{ meeting.scheduled_for|date:"d" }}</span>
+                  <span class="meeting-mon">{{ meeting.scheduled_for|date:"M" }}</span>
+                </div>
+                <div class="meeting-info">
+                  <a href="{% url 'projects:meeting_detail' meeting.pk %}" class="meeting-title">{{ meeting.title }}</a>
+                  <div class="meeting-meta">
+                    <span class="badge badge-blue">{{ meeting.get_meeting_type_display }}</span>
+                    <span class="meeting-time"><i data-lucide="clock"></i> {{ meeting.scheduled_for|date:"M j, Y · g:i A" }}</span>
+                  </div>
+                </div>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <div class="empty-state">
+            <div class="empty-icon"><i data-lucide="calendar"></i></div>
+            <h3>No upcoming meetings</h3>
+            <p>Scheduled meetings will show up here as they&rsquo;re booked.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {# ---------------- Invoice Overview + Open Tickets row ---------------- #}
+  <div class="dash-grid dash-grid-2 dash-mt">
+    {# Invoice Overview #}
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Invoice Overview</h2>
+        <a href="{% url 'projects:invoice_list' %}" class="btn btn-secondary btn-sm">View all</a>
+      </div>
+      <div class="card-body">
+        {% if invoice_overview.rows %}
+          <ul class="invoice-bars">
+            {% for row in invoice_overview.rows %}
+              <li class="invoice-bar-row">
+                <div class="invoice-bar-head">
+                  <span class="invoice-bar-label">{{ row.label }}</span>
+                  <span class="invoice-bar-amount">{{ row.amount|floatformat:2 }}</span>
+                </div>
+                <div class="progress">
+                  <div class="progress-bar invoice-bar-{{ row.key }}"
+                       style="width: {% widthratio row.amount invoice_overview.max 100 %}%;"></div>
+                </div>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <div class="empty-state">
+            <div class="empty-icon"><i data-lucide="file-text"></i></div>
+            <h3>No invoices yet</h3>
+            <p>Invoice totals grouped by status will appear here.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {# Open Tickets #}
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Open Tickets</h2>
+        <a href="{% url 'projects:ticket_list' %}" class="btn btn-secondary btn-sm">View all</a>
+      </div>
+      <div class="card-body">
+        {% if open_tickets %}
+          <ul class="dash-list">
+            {% for ticket in open_tickets %}
+              <li class="ticket-row">
+                {% if ticket.requester %}
+                  <span class="avatar-initial avatar-sm" title="{{ ticket.requester.get_full_name|default:ticket.requester.username }}">{{ ticket.requester.username|first|upper }}</span>
+                {% else %}
+                  <span class="avatar-initial avatar-sm" title="Unassigned">?</span>
+                {% endif %}
+                <a href="{% url 'projects:ticket_detail' ticket.pk %}" class="ticket-subject">{{ ticket.subject }}</a>
+                {% if ticket.priority == 'urgent' %}
+                  <span class="badge badge-red">{{ ticket.get_priority_display }}</span>
+                {% elif ticket.priority == 'high' %}
+                  <span class="badge badge-amber">{{ ticket.get_priority_display }}</span>
+                {% elif ticket.priority == 'medium' %}
+                  <span class="badge badge-blue">{{ ticket.get_priority_display }}</span>
+                {% else %}
+                  <span class="badge badge-slate">{{ ticket.get_priority_display }}</span>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <div class="empty-state">
+            <div class="empty-icon"><i data-lucide="life-buoy"></i></div>
+            <h3>No open tickets</h3>
+            <p>Support tickets that need attention will be listed here.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {# ---------------- CHART DATA CONTRACT ---------------- #}
+  <script id="data-projects-overview" type="application/json">{{ projects_overview_json|safe }}</script>
+  <script id="data-income-expense" type="application/json">{{ income_expense_json|safe }}</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; }
+  @media (max-width: 1100px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px)  { .kpi-grid { grid-template-columns: 1fr; } }
+
+  .dash-grid { display: grid; gap: 1.25rem; }
+  .dash-grid-2 { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 1024px) { .dash-grid-2 { grid-template-columns: 1fr; } }
+  .dash-mt { margin-top: 1.25rem; }
+
+  .chart-box { position: relative; height: 240px; }
+  .chart-box-tall { height: 300px; }
+
+  .legend-list { list-style: none; margin: 1.1rem 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: .4rem .9rem; }
+  .legend-row { display: flex; align-items: center; gap: .5rem; font-size: .82rem; color: var(--text-muted); }
+  .legend-label { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .legend-count { font-weight: 700; color: var(--text); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 999px; flex: 0 0 10px; background: var(--brand-600); }
+  .legend-dot-0 { background: var(--brand-600); }
+  .legend-dot-1 { background: var(--brand-400); }
+  .legend-dot-2 { background: var(--brand-800); }
+  .legend-dot-3 { background: var(--brand-300); }
+  .legend-dot-4 { background: var(--brand-200); }
+  .legend-dot-5 { background: #64748b; }
+
+  .dash-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+  .dash-list > li { padding: .7rem 0; border-bottom: 1px solid var(--border); }
+  .dash-list > li:first-child { padding-top: 0; }
+  .dash-list > li:last-child { border-bottom: 0; padding-bottom: 0; }
+
+  .task-row { display: flex; align-items: center; gap: .65rem; }
+  .task-check { width: 16px; height: 16px; accent-color: var(--brand-600); flex: 0 0 16px; }
+  .task-title { flex: 1 1 auto; font-weight: 500; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .task-title:hover { color: var(--brand-600); }
+  .task-badges { display: inline-flex; align-items: center; gap: .35rem; flex: 0 0 auto; }
+
+  .meeting-row { display: flex; align-items: center; gap: .85rem; }
+  .meeting-date { width: 48px; height: 48px; flex: 0 0 48px; border-radius: .6rem; background: var(--brand-50); color: var(--brand-700); display: grid; place-items: center; line-height: 1; }
+  .dark .meeting-date { background: rgba(37,99,235,.18); color: #93c5fd; }
+  .meeting-day { font-size: 1.15rem; font-weight: 700; }
+  .meeting-mon { font-size: .62rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+  .meeting-info { min-width: 0; flex: 1 1 auto; }
+  .meeting-title { display: block; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .meeting-title:hover { color: var(--brand-600); }
+  .meeting-meta { display: flex; align-items: center; gap: .6rem; margin-top: .3rem; flex-wrap: wrap; }
+  .meeting-time { display: inline-flex; align-items: center; gap: .3rem; font-size: .76rem; color: var(--text-muted); }
+  .meeting-time i { width: 13px; height: 13px; }
+
+  .invoice-bars { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1rem; }
+  .invoice-bar-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: .4rem; }
+  .invoice-bar-label { font-size: .83rem; font-weight: 500; color: var(--text); }
+  .invoice-bar-amount { font-size: .82rem; font-weight: 700; color: var(--text-muted); }
+  .invoice-bar-overdue        { background: #dc2626; }
+  .invoice-bar-draft          { background: #94a3b8; }
+  .invoice-bar-sent           { background: #f59e0b; }
+  .invoice-bar-partially_paid { background: var(--brand-600); }
+  .invoice-bar-paid           { background: #16a34a; }
+
+  .ticket-row { display: flex; align-items: center; gap: .65rem; }
+  .ticket-subject { flex: 1 1 auto; font-weight: 500; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ticket-subject:hover { color: var(--brand-600); }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Re-init charts after the page (and chart data tags) are in the DOM.
+  window.addEventListener('DOMContentLoaded', function () {
+    if (window.NavPMSCharts) { window.NavPMSCharts.init(); }
+  });
+</script>
+{% endblock %}
