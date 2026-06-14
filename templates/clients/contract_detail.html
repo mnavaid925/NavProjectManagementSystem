@@ -1,0 +1,73 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ contract.number }} — {{ contract.title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ contract.number }} — {{ contract.title }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'clients:contract_list' %}">Client &amp; External Collaboration</a></li>
+        <li class="active" aria-current="page">{{ contract.number }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if contract.status == 'active' %}<span class="badge badge-green">{{ contract.get_status_display }}</span>
+    {% elif contract.status == 'signed' %}<span class="badge badge-blue">{{ contract.get_status_display }}</span>
+    {% elif contract.status == 'sent' %}<span class="badge badge-amber">{{ contract.get_status_display }}</span>
+    {% elif contract.status == 'draft' %}<span class="badge badge-slate">{{ contract.get_status_display }}</span>
+    {% elif contract.status == 'expired' %}<span class="badge badge-amber">{{ contract.get_status_display }}</span>
+    {% elif contract.status == 'terminated' %}<span class="badge badge-red">{{ contract.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ contract.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'clients:contract_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'clients:contract_edit' contract.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'clients:contract_delete' contract.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete contract {{ contract.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Contract Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Number</dt><dd style="margin:0;font-weight:500;">{{ contract.number|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Title</dt><dd style="margin:0;font-weight:500;">{{ contract.title|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Client</dt><dd style="margin:0;font-weight:500;">{{ contract.client_name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Project</dt><dd style="margin:0;font-weight:500;">{{ contract.project.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Type</dt><dd style="margin:0;font-weight:500;">{{ contract.get_contract_type_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">{{ contract.get_status_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Value</dt><dd style="margin:0;font-weight:500;">{{ contract.currency }} {{ contract.value|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Currency</dt><dd style="margin:0;font-weight:500;">{{ contract.currency|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Start Date</dt><dd style="margin:0;font-weight:500;">{{ contract.start_date|date:"M d, Y"|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">End Date</dt><dd style="margin:0;font-weight:500;">{{ contract.end_date|date:"M d, Y"|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Signed Date</dt><dd style="margin:0;font-weight:500;">{{ contract.signed_date|date:"M d, Y"|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ contract.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ contract.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'clients:contract_edit' contract.pk %}"><i data-lucide="edit-2"></i> Edit Contract</a>
+        <form method="post" action="{% url 'clients:contract_delete' contract.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete contract {{ contract.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Contract</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'clients:contract_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
