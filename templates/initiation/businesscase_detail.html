@@ -1,0 +1,77 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ businesscase.number }} — {{ businesscase.title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ businesscase.number }} — {{ businesscase.title }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'initiation:businesscase_list' %}">Project Initiation &amp; Charter</a></li>
+        <li class="active" aria-current="page">{{ businesscase.number }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if businesscase.status == 'approved' %}<span class="badge badge-green">Approved</span>
+    {% elif businesscase.status == 'in_review' %}<span class="badge badge-blue">In Review</span>
+    {% elif businesscase.status == 'rejected' %}<span class="badge badge-red">Rejected</span>
+    {% else %}<span class="badge badge-slate">{{ businesscase.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'initiation:businesscase_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'initiation:businesscase_edit' businesscase.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'initiation:businesscase_delete' businesscase.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete business case {{ businesscase.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Business Case Details</h2>
+        <div style="display:flex;gap:.4rem;">
+          {% if businesscase.recommendation == 'go' %}<span class="badge badge-green">Go</span>
+          {% elif businesscase.recommendation == 'no_go' %}<span class="badge badge-red">No-Go</span>
+          {% elif businesscase.recommendation == 'hold' %}<span class="badge badge-amber">Hold</span>
+          {% else %}<span class="badge badge-slate">{{ businesscase.get_recommendation_display }}</span>{% endif %}
+        </div>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Number</dt><dd style="margin:0;font-weight:500;">{{ businesscase.number|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Title</dt><dd style="margin:0;font-weight:500;">{{ businesscase.title|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Linked Request</dt><dd style="margin:0;font-weight:500;">{{ businesscase.request.title|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Recommendation</dt><dd style="margin:0;font-weight:500;">{{ businesscase.get_recommendation_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">{{ businesscase.get_status_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Expected ROI</dt><dd style="margin:0;font-weight:500;">{{ businesscase.expected_roi }}%</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Estimated Cost</dt><dd style="margin:0;font-weight:500;">{{ businesscase.estimated_cost }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Estimated Benefit</dt><dd style="margin:0;font-weight:500;">{{ businesscase.estimated_benefit }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Net Benefit</dt><dd style="margin:0;font-weight:500;">{{ businesscase.net_benefit }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Payback (months)</dt><dd style="margin:0;font-weight:500;">{{ businesscase.payback_months }}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Summary</dt><dd style="margin:0;font-weight:500;">{{ businesscase.summary|linebreaksbr|default:"—" }}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Problem Statement</dt><dd style="margin:0;font-weight:500;">{{ businesscase.problem_statement|linebreaksbr|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ businesscase.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ businesscase.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'initiation:businesscase_edit' businesscase.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+        <form method="post" action="{% url 'initiation:businesscase_delete' businesscase.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete business case {{ businesscase.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'initiation:businesscase_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
