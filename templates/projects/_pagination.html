@@ -1,0 +1,26 @@
+{% if page_obj.paginator.num_pages > 1 %}
+<div class="card-footer" style="justify-content:space-between;">
+  <span class="text-muted" style="font-size:.8rem;">
+    Showing {{ page_obj.start_index }}&ndash;{{ page_obj.end_index }} of {{ page_obj.paginator.count }}
+  </span>
+  <ul class="pagination" style="margin:0;">
+    {% if page_obj.has_previous %}
+      <li><a href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&{% endif %}{% if request.GET.priority %}priority={{ request.GET.priority }}&{% endif %}{% if request.GET.project %}project={{ request.GET.project }}&{% endif %}{% if request.GET.meeting_type %}meeting_type={{ request.GET.meeting_type }}&{% endif %}{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}page={{ page_obj.previous_page_number }}">&laquo;</a></li>
+    {% else %}
+      <li class="disabled"><span>&laquo;</span></li>
+    {% endif %}
+    {% for num in page_obj.paginator.page_range %}
+      {% if num == page_obj.number %}
+        <li class="active"><span>{{ num }}</span></li>
+      {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+        <li><a href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&{% endif %}{% if request.GET.priority %}priority={{ request.GET.priority }}&{% endif %}{% if request.GET.project %}project={{ request.GET.project }}&{% endif %}{% if request.GET.meeting_type %}meeting_type={{ request.GET.meeting_type }}&{% endif %}{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}page={{ num }}">{{ num }}</a></li>
+      {% endif %}
+    {% endfor %}
+    {% if page_obj.has_next %}
+      <li><a href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&{% endif %}{% if request.GET.priority %}priority={{ request.GET.priority }}&{% endif %}{% if request.GET.project %}project={{ request.GET.project }}&{% endif %}{% if request.GET.meeting_type %}meeting_type={{ request.GET.meeting_type }}&{% endif %}{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}page={{ page_obj.next_page_number }}">&raquo;</a></li>
+    {% else %}
+      <li class="disabled"><span>&raquo;</span></li>
+    {% endif %}
+  </ul>
+</div>
+{% endif %}
