@@ -1,0 +1,112 @@
+{% extends 'auth/_auth_base.html' %}
+
+{% block title %}Create Account{% endblock %}
+
+{% block brand_body %}
+  <h1 class="auth-headline">Spin up your workspace in under a minute.</h1>
+  <p class="auth-blurb">Create your organization, invite your team, and start managing projects, tasks, meetings, tickets and invoices — all from one secure, multi-tenant platform.</p>
+  <ul class="auth-features">
+    <li><span class="auth-feature-ico"><i data-lucide="rocket"></i></span><div>Free 14-day trial — no credit card required.</div></li>
+    <li><span class="auth-feature-ico"><i data-lucide="shield-check"></i></span><div>Your data is isolated per organization by design.</div></li>
+    <li><span class="auth-feature-ico"><i data-lucide="user-plus"></i></span><div>Invite teammates and assign roles in a few clicks.</div></li>
+  </ul>
+{% endblock %}
+
+{% block card %}
+  <div class="auth-card-head">
+    <p class="auth-eyebrow">Get started</p>
+    <h2 class="auth-title">Create your account</h2>
+    <p class="auth-subtitle">Already have an account? <a href="{% url 'accounts:login' %}">Sign in</a></p>
+  </div>
+
+  {% if form.non_field_errors %}
+    <div class="auth-alert auth-alert-danger" role="alert">
+      <i data-lucide="alert-circle"></i>
+      <div>{% for error in form.non_field_errors %}{{ error }}{% endfor %}</div>
+    </div>
+  {% endif %}
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+
+    <div class="auth-form-group">
+      <label class="auth-label" for="{{ form.organization_name.id_for_label }}">Organization name <span class="req">*</span></label>
+      <div class="auth-input-wrap">
+        <i class="field-ico" data-lucide="building-2"></i>
+        <input type="text" name="{{ form.organization_name.html_name }}" id="{{ form.organization_name.id_for_label }}"
+               class="auth-input has-ico{% if form.organization_name.errors %} is-invalid{% endif %}"
+               value="{{ form.organization_name.value|default:'' }}"
+               placeholder="Acme Inc." autocomplete="organization" autofocus required>
+      </div>
+      {% for error in form.organization_name.errors %}
+        <div class="auth-error"><i data-lucide="alert-circle"></i><span>{{ error }}</span></div>
+      {% endfor %}
+    </div>
+
+    <div class="auth-form-group">
+      <label class="auth-label" for="{{ form.full_name.id_for_label }}">Your full name <span class="req">*</span></label>
+      <div class="auth-input-wrap">
+        <i class="field-ico" data-lucide="user"></i>
+        <input type="text" name="{{ form.full_name.html_name }}" id="{{ form.full_name.id_for_label }}"
+               class="auth-input has-ico{% if form.full_name.errors %} is-invalid{% endif %}"
+               value="{{ form.full_name.value|default:'' }}"
+               placeholder="Jane Cooper" autocomplete="name" required>
+      </div>
+      {% for error in form.full_name.errors %}
+        <div class="auth-error"><i data-lucide="alert-circle"></i><span>{{ error }}</span></div>
+      {% endfor %}
+    </div>
+
+    <div class="auth-form-group">
+      <label class="auth-label" for="{{ form.email.id_for_label }}">Work email <span class="req">*</span></label>
+      <div class="auth-input-wrap">
+        <i class="field-ico" data-lucide="mail"></i>
+        <input type="email" name="{{ form.email.html_name }}" id="{{ form.email.id_for_label }}"
+               class="auth-input has-ico{% if form.email.errors %} is-invalid{% endif %}"
+               value="{{ form.email.value|default:'' }}"
+               placeholder="you@company.com" autocomplete="email" required>
+      </div>
+      {% for error in form.email.errors %}
+        <div class="auth-error"><i data-lucide="alert-circle"></i><span>{{ error }}</span></div>
+      {% endfor %}
+    </div>
+
+    <div class="auth-row">
+      <div class="auth-form-group">
+        <label class="auth-label" for="{{ form.password1.id_for_label }}">Password <span class="req">*</span></label>
+        <div class="auth-input-wrap">
+          <input type="password" name="{{ form.password1.html_name }}" id="{{ form.password1.id_for_label }}"
+                 class="auth-input has-toggle{% if form.password1.errors %} is-invalid{% endif %}"
+                 placeholder="Create password" autocomplete="new-password" required>
+          <button type="button" class="pw-toggle" data-pw-toggle="{{ form.password1.id_for_label }}" aria-label="Show password"><i data-lucide="eye"></i></button>
+        </div>
+        {% for error in form.password1.errors %}
+          <div class="auth-error"><i data-lucide="alert-circle"></i><span>{{ error }}</span></div>
+        {% endfor %}
+      </div>
+
+      <div class="auth-form-group">
+        <label class="auth-label" for="{{ form.password2.id_for_label }}">Confirm <span class="req">*</span></label>
+        <div class="auth-input-wrap">
+          <input type="password" name="{{ form.password2.html_name }}" id="{{ form.password2.id_for_label }}"
+                 class="auth-input has-toggle{% if form.password2.errors %} is-invalid{% endif %}"
+                 placeholder="Repeat password" autocomplete="new-password" required>
+          <button type="button" class="pw-toggle" data-pw-toggle="{{ form.password2.id_for_label }}" aria-label="Show password"><i data-lucide="eye"></i></button>
+        </div>
+        {% for error in form.password2.errors %}
+          <div class="auth-error"><i data-lucide="alert-circle"></i><span>{{ error }}</span></div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <p class="auth-hint" style="margin: 0 0 1.25rem;">Use at least 8 characters with a mix of letters and numbers.</p>
+
+    <button type="submit" class="auth-btn">
+      <i data-lucide="sparkles"></i> Create account
+    </button>
+  </form>
+
+  <p class="auth-foot">
+    By creating an account you agree to our terms of service and privacy policy.
+  </p>
+{% endblock %}
