@@ -1,0 +1,63 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ task.title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ task.title }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'projects:task_list' %}">Tasks</a></li>
+        <li class="active" aria-current="page">{{ task.title }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    <a class="btn btn-secondary" href="{% url 'projects:task_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'projects:task_edit' task.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'projects:task_delete' task.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete this task?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Details</h2>
+      <div style="display:flex;gap:.4rem;">
+        {% if task.status == 'done' %}<span class="badge badge-green">{{ task.get_status_display }}</span>
+        {% elif task.status == 'in_progress' %}<span class="badge badge-blue">{{ task.get_status_display }}</span>
+        {% elif task.status == 'review' %}<span class="badge badge-purple">{{ task.get_status_display }}</span>
+        {% else %}<span class="badge badge-slate">{{ task.get_status_display }}</span>{% endif %}
+        {% if task.priority == 'urgent' %}<span class="badge badge-red">{{ task.get_priority_display }}</span>
+        {% elif task.priority == 'high' %}<span class="badge badge-amber">{{ task.get_priority_display }}</span>
+        {% elif task.priority == 'medium' %}<span class="badge badge-blue">{{ task.get_priority_display }}</span>
+        {% else %}<span class="badge badge-slate">{{ task.get_priority_display }}</span>{% endif %}
+      </div>
+    </div>
+    <div class="card-body">
+      {% if task.description %}
+        <p style="color:var(--text-muted);margin:0 0 1rem;">{{ task.description|linebreaksbr }}</p>
+      {% else %}
+        <p class="text-muted" style="margin:0 0 1rem;">No description provided.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><h2 class="card-title">Meta</h2></div>
+    <div class="card-body">
+      <dl style="margin:0;display:grid;gap:.85rem;">
+        <div><dt class="text-muted" style="font-size:.75rem;">Project</dt><dd style="margin:0;font-weight:500;"><a href="{% url 'projects:project_detail' task.project.pk %}" class="text-brand">{{ task.project.name }}</a></dd></div>
+        <div><dt class="text-muted" style="font-size:.75rem;">Assignee</dt><dd style="margin:0;font-weight:500;">{{ task.assignee.get_full_name|default:task.assignee.username|default:"Unassigned" }}</dd></div>
+        <div><dt class="text-muted" style="font-size:.75rem;">Due Date</dt><dd style="margin:0;font-weight:500;">{{ task.due_date|date:"M d, Y"|default:"—" }}</dd></div>
+        <div><dt class="text-muted" style="font-size:.75rem;">Completed</dt><dd style="margin:0;font-weight:500;">{% if task.is_done %}{{ task.completed_at|date:"M d, Y"|default:"Yes" }}{% else %}Not completed{% endif %}</dd></div>
+        <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ task.created_at|date:"M d, Y" }}</dd></div>
+      </dl>
+    </div>
+  </div>
+</div>
+{% endblock %}
