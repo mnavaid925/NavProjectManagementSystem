@@ -1,0 +1,47 @@
+<style>
+  /* Apply design-system form styling to raw Django widgets */
+  .django-form input[type="text"],
+  .django-form input[type="number"],
+  .django-form input[type="email"],
+  .django-form input[type="date"],
+  .django-form input[type="datetime-local"],
+  .django-form input[type="url"],
+  .django-form textarea,
+  .django-form select {
+    width: 100%;
+    padding: .6rem .75rem;
+    font-size: .88rem;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: .6rem;
+    line-height: 1.4;
+    font-family: inherit;
+    transition: border-color .12s ease, box-shadow .12s ease;
+  }
+  .dark .django-form input[type="text"],
+  .dark .django-form input[type="number"],
+  .dark .django-form input[type="email"],
+  .dark .django-form input[type="date"],
+  .dark .django-form input[type="datetime-local"],
+  .dark .django-form input[type="url"],
+  .dark .django-form textarea,
+  .dark .django-form select {
+    background: var(--surface-2);
+  }
+  .django-form input:focus,
+  .django-form textarea:focus,
+  .django-form select:focus {
+    outline: none;
+    border-color: var(--brand-500);
+    box-shadow: 0 0 0 3px var(--ring);
+  }
+  .django-form textarea { min-height: 96px; resize: vertical; }
+  .django-form select[multiple] { min-height: 140px; }
+  .django-form .form-check input { width: 16px; height: 16px; accent-color: var(--brand-600); }
+  /* Two-column form layout on wider screens */
+  @media (min-width: 720px) {
+    .django-form { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 1.25rem; }
+    .django-form .form-group.col-span-2 { grid-column: span 2; }
+  }
+</style>
