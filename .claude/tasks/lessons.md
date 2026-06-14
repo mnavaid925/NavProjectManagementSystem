@@ -21,6 +21,16 @@ Django 5.1 requires MariaDB ≥ 10.5; XAMPP ships 10.4.x. Either upgrade MariaDB
 a documented features shim in `config/__init__.py` (we used the shim; it disables `INSERT … RETURNING` for
 MariaDB < 10.5 and relaxes the version floor).
 
+## L6 — Stale/orphaned dev servers mask code fixes (verify via a single fresh server)
+A template fix can be correct on disk + clean in `render_to_string` and the test client, yet a browser still
+shows the OLD output — because a **leftover server is serving a pre-fix snapshot**. On Windows, Django
+`runserver` uses `SO_REUSEADDR`, so **multiple orphaned processes can all LISTEN on the same port** (e.g. a
+`preview_start` server started before the fix + `runserver` children orphaned when their wrapper task was
+TaskStop'd). `Get-NetTCPConnection`/`Win32_Process` filtered by name can miss them. **Rule:** when a fix "won't
+show", `netstat -ano | findstr :PORT`, kill EVERY LISTENING pid in a loop until the port is empty, `preview_stop`
+any preview servers (check `preview_list`), then start ONE fresh server and re-verify over real HTTP. Then the
+user must hard-refresh (Ctrl+Shift+R). The in-process test client is the authoritative render check.
+
 ## L5 — User workflow preference: fan out aggressively
 The user explicitly asked to "use more Agents to complete the task as soon as possible." For large builds,
 prefer a parallel multi-agent Workflow (e.g. foundation+shell in parallel, then a burst of page agents)
