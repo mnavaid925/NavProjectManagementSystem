@@ -1,0 +1,131 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}Resources{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Resources</h1>
+    <ul class="breadcrumb">
+      <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+      <li><a href="{% url 'resources:resource_list' %}">Resource Management</a></li>
+      <li><span class="active" aria-current="page">Resources</span></li>
+    </ul>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'resources:skill_list' %}" class="btn btn-secondary"><i data-lucide="award"></i> Manage Skills</a>
+    <a href="{% url 'resources:resource_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> New Resource</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">All Resources <span class="text-muted">({{ total_count }})</span></h2>
+  </div>
+  <div class="card-body">
+    {% comment %} Filters {% endcomment %}
+    <form method="get" class="flex flex-wrap items-end gap-3 mb-4">
+      <div class="form-group mb-0 flex-1" style="min-width:200px">
+        <label class="form-label">Search</label>
+        <input type="text" name="q" value="{{ request.GET.q|default:'' }}" class="form-input" placeholder="Search name, email, job title or department...">
+      </div>
+      <div class="form-group mb-0" style="min-width:160px">
+        <label class="form-label">Type</label>
+        <select name="resource_type" class="form-select">
+          <option value="">All types</option>
+          {% for val, label in resource_type_choices %}
+          <option value="{{ val }}" {% if request.GET.resource_type == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group mb-0" style="min-width:160px">
+        <label class="form-label">Status</label>
+        <select name="status" class="form-select">
+          <option value="">All statuses</option>
+          {% for val, label in status_options %}
+          <option value="{{ val }}" {% if request.GET.status == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group mb-0">
+        <button type="submit" class="btn btn-secondary"><i data-lucide="filter"></i> Filter</button>
+        {% if request.GET.q or request.GET.resource_type or request.GET.status %}
+        <a href="{% url 'resources:resource_list' %}" class="btn btn-outline btn-sm"><i data-lucide="x"></i> Clear</a>
+        {% endif %}
+      </div>
+    </form>
+
+    {% comment %} Table {% endcomment %}
+    {% if resources %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Job Title</th>
+            <th>Department</th>
+            <th style="text-align:right">Capacity (h/wk)</th>
+            <th>Active</th>
+            <th style="text-align:right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for resource in resources %}
+          <tr>
+            <td><a href="{% url 'resources:resource_detail' resource.pk %}" class="font-semibold text-brand">{{ resource.name }}</a></td>
+            <td>
+              {% if resource.resource_type == 'employee' %}<span class="badge badge-blue">{{ resource.get_resource_type_display }}</span>
+              {% elif resource.resource_type == 'contractor' %}<span class="badge badge-purple">{{ resource.get_resource_type_display }}</span>
+              {% elif resource.resource_type == 'equipment' %}<span class="badge badge-slate">{{ resource.get_resource_type_display }}</span>
+              {% else %}<span class="badge badge-slate">{{ resource.get_resource_type_display }}</span>{% endif %}
+            </td>
+            <td>{{ resource.job_title|default:"—" }}</td>
+            <td>{{ resource.department|default:"—" }}</td>
+            <td style="text-align:right">{{ resource.capacity_hours_per_week }}</td>
+            <td>
+              {% if resource.is_active %}<span class="badge badge-green">Active</span>
+              {% else %}<span class="badge badge-slate">Inactive</span>{% endif %}
+            </td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'resources:resource_detail' resource.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'resources:resource_edit' resource.pk %}" class="btn-icon" title="Edit"><i data-lucide="edit-2"></i></a>
+                <form method="post" action="{% url 'resources:resource_delete' resource.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon btn-danger" title="Delete" onclick="return confirm('Delete resource {{ resource.name|escapejs }}?')"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <ul class="pagination">
+      <li class="{% if not page_obj.has_previous %}disabled{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.resource_type %}resource_type={{ request.GET.resource_type }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&amp;{% endif %}page={% if page_obj.has_previous %}{{ page_obj.previous_page_number }}{% else %}1{% endif %}">Prev</a>
+      </li>
+      {% for n in page_obj.paginator.page_range %}
+      <li class="{% if n == page_obj.number %}active{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.resource_type %}resource_type={{ request.GET.resource_type }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&amp;{% endif %}page={{ n }}">{{ n }}</a>
+      </li>
+      {% endfor %}
+      <li class="{% if not page_obj.has_next %}disabled{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.resource_type %}resource_type={{ request.GET.resource_type }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&amp;{% endif %}page={% if page_obj.has_next %}{{ page_obj.next_page_number }}{% else %}{{ page_obj.paginator.num_pages }}{% endif %}">Next</a>
+      </li>
+    </ul>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon"><i data-lucide="users"></i></div>
+      <h3>No resources found</h3>
+      <p>{% if request.GET.q or request.GET.resource_type or request.GET.status %}No resources match your filters.{% else %}Create your first resource to get started.{% endif %}</p>
+      <a href="{% url 'resources:resource_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> New Resource</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
