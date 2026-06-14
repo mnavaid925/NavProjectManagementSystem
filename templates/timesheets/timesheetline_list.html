@@ -74,12 +74,10 @@
             <td>{{ timesheetline.work_date|date:"M d, Y" }}</td>
             <td>{{ timesheetline.hours }}</td>
             <td>
-              {% if timesheetline.activity == 'development' %}<span class="badge badge-slate">{{ timesheetline.get_activity_display }}</span>
-              {% elif timesheetline.activity == 'meeting' %}<span class="badge badge-slate">{{ timesheetline.get_activity_display }}</span>
-              {% elif timesheetline.activity == 'review' %}<span class="badge badge-slate">{{ timesheetline.get_activity_display }}</span>
-              {% elif timesheetline.activity == 'admin' %}<span class="badge badge-slate">{{ timesheetline.get_activity_display }}</span>
-              {% elif timesheetline.activity == 'support' %}<span class="badge badge-slate">{{ timesheetline.get_activity_display }}</span>
-              {% elif timesheetline.activity == 'research' %}<span class="badge badge-slate">{{ timesheetline.get_activity_display }}</span>
+              {% if timesheetline.activity == 'development' %}<span class="badge badge-blue">{{ timesheetline.get_activity_display }}</span>
+              {% elif timesheetline.activity == 'meeting' %}<span class="badge badge-purple">{{ timesheetline.get_activity_display }}</span>
+              {% elif timesheetline.activity == 'review' %}<span class="badge badge-amber">{{ timesheetline.get_activity_display }}</span>
+              {% elif timesheetline.activity == 'support' %}<span class="badge badge-green">{{ timesheetline.get_activity_display }}</span>
               {% else %}<span class="badge badge-slate">{{ timesheetline.get_activity_display }}</span>{% endif %}
             </td>
             <td>
