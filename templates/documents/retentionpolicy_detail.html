@@ -1,0 +1,78 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ retentionpolicy.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ retentionpolicy.name }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'documents:document_list' %}">Document &amp; Knowledge Management</a></li>
+        <li><a href="{% url 'documents:retentionpolicy_list' %}">Retention Policies</a></li>
+        <li class="active" aria-current="page">{{ retentionpolicy.name }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if retentionpolicy.is_active %}<span class="badge badge-green">Active</span>
+    {% else %}<span class="badge badge-slate">Inactive</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'documents:retentionpolicy_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'documents:retentionpolicy_edit' retentionpolicy.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'documents:retentionpolicy_delete' retentionpolicy.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete retention policy {{ retentionpolicy.name|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Retention Policy Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Name</dt><dd style="margin:0;font-weight:500;">{{ retentionpolicy.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Applies To</dt><dd style="margin:0;font-weight:500;">
+            <span class="badge badge-slate">{{ retentionpolicy.get_applies_to_display }}</span>
+          </dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Retention (months)</dt><dd style="margin:0;font-weight:500;">{{ retentionpolicy.retention_period_months }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Action After</dt><dd style="margin:0;font-weight:500;">
+            {% if retentionpolicy.action_after == 'delete' %}<span class="badge badge-red">{{ retentionpolicy.get_action_after_display }}</span>
+            {% elif retentionpolicy.action_after == 'archive' %}<span class="badge badge-blue">{{ retentionpolicy.get_action_after_display }}</span>
+            {% elif retentionpolicy.action_after == 'review' %}<span class="badge badge-amber">{{ retentionpolicy.get_action_after_display }}</span>
+            {% else %}<span class="badge badge-slate">{{ retentionpolicy.get_action_after_display }}</span>{% endif %}
+          </dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Legal Hold</dt><dd style="margin:0;font-weight:500;">
+            {% if retentionpolicy.legal_hold %}<span class="badge badge-red">Hold</span>
+            {% else %}<span class="badge badge-slate">—</span>{% endif %}
+          </dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Active</dt><dd style="margin:0;font-weight:500;">
+            {% if retentionpolicy.is_active %}<span class="badge badge-green">Active</span>
+            {% else %}<span class="badge badge-slate">Inactive</span>{% endif %}
+          </dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Description</dt><dd style="margin:0;font-weight:500;">{{ retentionpolicy.description|linebreaksbr|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ retentionpolicy.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ retentionpolicy.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'documents:retentionpolicy_edit' retentionpolicy.pk %}"><i data-lucide="edit-2"></i> Edit Retention Policy</a>
+        <form method="post" action="{% url 'documents:retentionpolicy_delete' retentionpolicy.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete retention policy {{ retentionpolicy.name|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Retention Policy</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'documents:retentionpolicy_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
