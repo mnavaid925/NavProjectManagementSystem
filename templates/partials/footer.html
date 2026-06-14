@@ -1,0 +1,9 @@
+{# ============================ Footer ============================ #}
+<footer class="app-footer">
+  <span>&copy; {% now "Y" %} {% if current_tenant %}{{ current_tenant.name }}{% else %}NavPMS{% endif %}. All rights reserved.</span>
+  <span>
+    Powered by <a href="{% url 'dashboard:index' %}">NavPMS</a>
+    <span style="color:var(--text-subtle);">&middot;</span>
+    <span class="text-muted">Project Management System</span>
+  </span>
+</footer>
