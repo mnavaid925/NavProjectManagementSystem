@@ -1,0 +1,71 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ backlogitem.number }} — {{ backlogitem.title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ backlogitem.number }} — {{ backlogitem.title }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'agile:backlogitem_list' %}">Agile &amp; Scrum Management</a></li>
+        <li class="active" aria-current="page">{{ backlogitem.number }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if backlogitem.status == 'done' %}<span class="badge badge-green">{{ backlogitem.get_status_display }}</span>
+    {% elif backlogitem.status == 'in_review' %}<span class="badge badge-blue">{{ backlogitem.get_status_display }}</span>
+    {% elif backlogitem.status == 'in_progress' %}<span class="badge badge-amber">{{ backlogitem.get_status_display }}</span>
+    {% elif backlogitem.status == 'todo' %}<span class="badge badge-blue">{{ backlogitem.get_status_display }}</span>
+    {% elif backlogitem.status == 'backlog' %}<span class="badge badge-slate">{{ backlogitem.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ backlogitem.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'agile:backlogitem_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'agile:backlogitem_edit' backlogitem.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'agile:backlogitem_delete' backlogitem.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete backlog item {{ backlogitem.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Backlog Item Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Number</dt><dd style="margin:0;font-weight:500;">{{ backlogitem.number|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Title</dt><dd style="margin:0;font-weight:500;">{{ backlogitem.title|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Type</dt><dd style="margin:0;font-weight:500;">{{ backlogitem.get_item_type_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">{{ backlogitem.get_status_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Priority</dt><dd style="margin:0;font-weight:500;">{{ backlogitem.get_priority_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Story Points</dt><dd style="margin:0;font-weight:500;">{{ backlogitem.story_points|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Epic</dt><dd style="margin:0;font-weight:500;">{{ backlogitem.epic|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Sprint</dt><dd style="margin:0;font-weight:500;">{{ backlogitem.sprint|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Assignee</dt><dd style="margin:0;font-weight:500;">{% if backlogitem.assignee %}{{ backlogitem.assignee.get_full_name|default:backlogitem.assignee.username }}{% else %}—{% endif %}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Description</dt><dd style="margin:0;font-weight:500;">{{ backlogitem.description|linebreaksbr|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ backlogitem.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ backlogitem.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'agile:backlogitem_edit' backlogitem.pk %}"><i data-lucide="edit-2"></i> Edit Backlog Item</a>
+        <form method="post" action="{% url 'agile:backlogitem_delete' backlogitem.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete backlog item {{ backlogitem.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Backlog Item</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'agile:backlogitem_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
