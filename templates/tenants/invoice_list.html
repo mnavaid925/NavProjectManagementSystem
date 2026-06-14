@@ -98,7 +98,7 @@
     {% if page_obj.paginator.num_pages > 1 %}
     <ul class="pagination">
       <li class="{% if not page_obj.has_previous %}disabled{% endif %}">
-        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">Prev</a>
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&amp;{% endif %}page={% if page_obj.has_previous %}{{ page_obj.previous_page_number }}{% else %}1{% endif %}">Prev</a>
       </li>
       {% for n in page_obj.paginator.page_range %}
       <li class="{% if n == page_obj.number %}active{% endif %}">
@@ -106,7 +106,7 @@
       </li>
       {% endfor %}
       <li class="{% if not page_obj.has_next %}disabled{% endif %}">
-        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&amp;{% endif %}page={{ page_obj.next_page_number }}">Next</a>
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&amp;{% endif %}page={% if page_obj.has_next %}{{ page_obj.next_page_number }}{% else %}{{ page_obj.paginator.num_pages }}{% endif %}">Next</a>
       </li>
     </ul>
     {% endif %}
