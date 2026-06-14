@@ -1,0 +1,137 @@
+{% load static %}
+{# ============================ Theme Customizer ============================ #}
+<div class="customizer-backdrop" data-customizer-close></div>
+
+<aside class="customizer" id="customizer" aria-label="Theme customizer">
+  <div class="customizer-header">
+    <div>
+      <h3>Customize</h3>
+      <p>Personalize your dashboard layout</p>
+    </div>
+    <button type="button" class="topbar-btn" data-customizer-close aria-label="Close">
+      <i data-lucide="x"></i>
+    </button>
+  </div>
+
+  {% comment %}
+    The form mirrors accounts.PreferenceForm fields exactly:
+    theme, layout, sidebar_size, sidebar_color, topbar, width, position, direction, preloader.
+    layout.js updates the hidden inputs as the user clicks options, applies the change
+    live to the html element, persists to localStorage, and best-effort POSTs this form via HTMX.
+  {% endcomment %}
+  <form id="customizer-form"
+        class="customizer-body"
+        {% if user.is_authenticated %}
+        hx-post="{% url 'accounts:preferences_update' %}"
+        hx-trigger="navpms:prefchange"
+        hx-headers='{"X-Requested-With": "XMLHttpRequest"}'
+        hx-swap="none"
+        {% endif %}>
+    {% csrf_token %}
+
+    {# Hidden inputs carry the real values submitted to the server #}
+    <input type="hidden" name="theme"         data-pref-input="theme"         value="{{ ui_prefs.theme|default:'light' }}">
+    <input type="hidden" name="layout"        data-pref-input="layout"        value="{{ ui_prefs.layout|default:'vertical' }}">
+    <input type="hidden" name="sidebar_size"  data-pref-input="sidebar-size"  value="{{ ui_prefs.sidebar_size|default:'default' }}">
+    <input type="hidden" name="sidebar_color" data-pref-input="sidebar-color" value="{{ ui_prefs.sidebar_color|default:'light' }}">
+    <input type="hidden" name="topbar"        data-pref-input="topbar"        value="{{ ui_prefs.topbar|default:'light' }}">
+    <input type="hidden" name="width"         data-pref-input="width"         value="{{ ui_prefs.width|default:'fluid' }}">
+    <input type="hidden" name="position"      data-pref-input="position"      value="{{ ui_prefs.position|default:'fixed' }}">
+    <input type="hidden" name="direction"     data-pref-input="direction"     value="{{ ui_prefs.direction|default:'ltr' }}">
+    <input type="hidden" name="preloader"     data-pref-input="preloader"     value="{% if ui_prefs.preloader %}on{% else %}off{% endif %}">
+
+    {# ---- Color scheme (theme) ---- #}
+    <div class="customizer-group">
+      <label class="group-title">Color Scheme</label>
+      <div class="opt-row cols-2" data-pref-group="theme">
+        <button type="button" class="opt-btn" data-pref="theme" data-value="light"><i data-lucide="sun"></i> Light</button>
+        <button type="button" class="opt-btn" data-pref="theme" data-value="dark"><i data-lucide="moon"></i> Dark</button>
+      </div>
+    </div>
+
+    {# ---- Layout ---- #}
+    <div class="customizer-group">
+      <label class="group-title">Layout</label>
+      <div class="opt-row cols-3" data-pref-group="layout">
+        <button type="button" class="opt-btn" data-pref="layout" data-value="vertical">Vertical</button>
+        <button type="button" class="opt-btn" data-pref="layout" data-value="horizontal">Horizontal</button>
+        <button type="button" class="opt-btn" data-pref="layout" data-value="detached">Detached</button>
+      </div>
+    </div>
+
+    {# ---- Width ---- #}
+    <div class="customizer-group">
+      <label class="group-title">Layout Width</label>
+      <div class="opt-row cols-2" data-pref-group="width">
+        <button type="button" class="opt-btn" data-pref="width" data-value="fluid">Fluid</button>
+        <button type="button" class="opt-btn" data-pref="width" data-value="boxed">Boxed</button>
+      </div>
+    </div>
+
+    {# ---- Position ---- #}
+    <div class="customizer-group">
+      <label class="group-title">Layout Position</label>
+      <div class="opt-row cols-2" data-pref-group="position">
+        <button type="button" class="opt-btn" data-pref="position" data-value="fixed">Fixed</button>
+        <button type="button" class="opt-btn" data-pref="position" data-value="scrollable">Scrollable</button>
+      </div>
+    </div>
+
+    {# ---- Topbar color ---- #}
+    <div class="customizer-group">
+      <label class="group-title">Topbar Color</label>
+      <div class="opt-row cols-2" data-pref-group="topbar">
+        <button type="button" class="opt-btn" data-pref="topbar" data-value="light">Light</button>
+        <button type="button" class="opt-btn" data-pref="topbar" data-value="dark">Dark</button>
+      </div>
+    </div>
+
+    {# ---- Sidebar size ---- #}
+    <div class="customizer-group">
+      <label class="group-title">Sidebar Size</label>
+      <div class="opt-row cols-2" data-pref-group="sidebar-size">
+        <button type="button" class="opt-btn" data-pref="sidebar-size" data-value="default">Default</button>
+        <button type="button" class="opt-btn" data-pref="sidebar-size" data-value="compact">Compact</button>
+        <button type="button" class="opt-btn" data-pref="sidebar-size" data-value="small-icon">Small Icon</button>
+        <button type="button" class="opt-btn" data-pref="sidebar-size" data-value="icon-hover">Icon Hover</button>
+      </div>
+    </div>
+
+    {# ---- Sidebar color ---- #}
+    <div class="customizer-group">
+      <label class="group-title">Sidebar Color</label>
+      <div class="opt-row cols-3" data-pref-group="sidebar-color">
+        <button type="button" class="opt-btn" data-pref="sidebar-color" data-value="light">Light</button>
+        <button type="button" class="opt-btn" data-pref="sidebar-color" data-value="brand">Colored</button>
+        <button type="button" class="opt-btn" data-pref="sidebar-color" data-value="dark">Dark</button>
+      </div>
+    </div>
+
+    {# ---- Direction ---- #}
+    <div class="customizer-group">
+      <label class="group-title">Direction</label>
+      <div class="opt-row cols-2" data-pref-group="direction">
+        <button type="button" class="opt-btn" data-pref="direction" data-value="ltr">LTR</button>
+        <button type="button" class="opt-btn" data-pref="direction" data-value="rtl">RTL</button>
+      </div>
+    </div>
+
+    {# ---- Preloader ---- #}
+    <div class="customizer-group">
+      <label class="group-title">Preloader</label>
+      <div class="opt-row cols-2" data-pref-group="preloader">
+        <button type="button" class="opt-btn" data-pref="preloader" data-value="on">Enable</button>
+        <button type="button" class="opt-btn" data-pref="preloader" data-value="off">Disable</button>
+      </div>
+    </div>
+  </form>
+
+  <div class="customizer-footer">
+    <button type="button" class="btn btn-secondary" style="flex:1;" data-customizer-reset>
+      <i data-lucide="rotate-ccw"></i> Reset
+    </button>
+    <button type="button" class="btn btn-primary" style="flex:1;" data-customizer-close>
+      <i data-lucide="check"></i> Done
+    </button>
+  </div>
+</aside>
