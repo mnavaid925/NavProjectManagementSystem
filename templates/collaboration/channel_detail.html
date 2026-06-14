@@ -1,0 +1,70 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ channel.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ channel.name }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'collaboration:channel_list' %}">Collaboration &amp; Communication</a></li>
+        <li class="active" aria-current="page">{{ channel.name }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if channel.channel_type == 'announcement' %}<span class="badge badge-amber">{{ channel.get_channel_type_display }}</span>
+    {% elif channel.channel_type == 'private' %}<span class="badge badge-purple">{{ channel.get_channel_type_display }}</span>
+    {% elif channel.channel_type == 'direct' %}<span class="badge badge-blue">{{ channel.get_channel_type_display }}</span>
+    {% elif channel.channel_type == 'public' %}<span class="badge badge-slate">{{ channel.get_channel_type_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ channel.get_channel_type_display }}</span>{% endif %}
+    {% if channel.is_archived %}<span class="badge badge-slate">Archived</span>
+    {% else %}<span class="badge badge-green">Active</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'collaboration:channel_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'collaboration:channel_edit' channel.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'collaboration:channel_delete' channel.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete channel {{ channel.name|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Channel Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Name</dt><dd style="margin:0;font-weight:500;">{{ channel.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Project</dt><dd style="margin:0;font-weight:500;">{{ channel.project.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Type</dt><dd style="margin:0;font-weight:500;">{{ channel.get_channel_type_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Members</dt><dd style="margin:0;font-weight:500;">{{ channel.member_count }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Archived</dt><dd style="margin:0;font-weight:500;">{% if channel.is_archived %}Yes{% else %}No{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Topic</dt><dd style="margin:0;font-weight:500;">{{ channel.topic|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created By</dt><dd style="margin:0;font-weight:500;">{% if channel.created_by %}{{ channel.created_by.get_full_name|default:channel.created_by.username }}{% else %}—{% endif %}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Description</dt><dd style="margin:0;font-weight:500;">{{ channel.description|linebreaksbr|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ channel.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ channel.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'collaboration:channel_edit' channel.pk %}"><i data-lucide="edit-2"></i> Edit Channel</a>
+        <form method="post" action="{% url 'collaboration:channel_delete' channel.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete channel {{ channel.name|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Channel</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'collaboration:channel_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
