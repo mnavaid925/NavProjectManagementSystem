@@ -1,0 +1,40 @@
+{# ============================ Flash messages ============================ #}
+{% if messages %}
+  <div class="messages-stack" aria-live="polite">
+    {% for message in messages %}
+      {% if 'success' in message.tags %}
+        {% with variant='success' icon='check-circle' %}
+        <div class="alert alert-{{ variant }}" role="alert">
+          <i data-lucide="{{ icon }}"></i>
+          <div>{{ message }}</div>
+          <button type="button" class="alert-close" data-alert-close aria-label="Dismiss"><i data-lucide="x" style="width:16px;height:16px;"></i></button>
+        </div>
+        {% endwith %}
+      {% elif 'danger' in message.tags or 'error' in message.tags %}
+        {% with variant='danger' icon='alert-circle' %}
+        <div class="alert alert-{{ variant }}" role="alert">
+          <i data-lucide="{{ icon }}"></i>
+          <div>{{ message }}</div>
+          <button type="button" class="alert-close" data-alert-close aria-label="Dismiss"><i data-lucide="x" style="width:16px;height:16px;"></i></button>
+        </div>
+        {% endwith %}
+      {% elif 'warning' in message.tags %}
+        {% with variant='warning' icon='alert-triangle' %}
+        <div class="alert alert-{{ variant }}" role="alert">
+          <i data-lucide="{{ icon }}"></i>
+          <div>{{ message }}</div>
+          <button type="button" class="alert-close" data-alert-close aria-label="Dismiss"><i data-lucide="x" style="width:16px;height:16px;"></i></button>
+        </div>
+        {% endwith %}
+      {% else %}
+        {% with variant='info' icon='info' %}
+        <div class="alert alert-{{ variant }}" role="alert">
+          <i data-lucide="{{ icon }}"></i>
+          <div>{{ message }}</div>
+          <button type="button" class="alert-close" data-alert-close aria-label="Dismiss"><i data-lucide="x" style="width:16px;height:16px;"></i></button>
+        </div>
+        {% endwith %}
+      {% endif %}
+    {% endfor %}
+  </div>
+{% endif %}
