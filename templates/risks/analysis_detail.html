@@ -1,0 +1,69 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ analysis.risk }} — {{ analysis.get_analysis_type_display }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ analysis.risk }} — {{ analysis.get_analysis_type_display }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'risks:risk_list' %}">Risk &amp; Issue Management</a></li>
+        <li><a href="{% url 'risks:analysis_list' %}">Risk Analyses</a></li>
+        <li class="active" aria-current="page">Analysis</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if analysis.risk_level == 'critical' %}<span class="badge badge-red">{{ analysis.get_risk_level_display }}</span>
+    {% elif analysis.risk_level == 'high' %}<span class="badge badge-amber">{{ analysis.get_risk_level_display }}</span>
+    {% elif analysis.risk_level == 'medium' %}<span class="badge badge-slate">{{ analysis.get_risk_level_display }}</span>
+    {% elif analysis.risk_level == 'low' %}<span class="badge badge-slate">{{ analysis.get_risk_level_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ analysis.get_risk_level_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'risks:analysis_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'risks:analysis_edit' analysis.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'risks:analysis_delete' analysis.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete this analysis?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Analysis Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Risk</dt><dd style="margin:0;font-weight:500;">{% if analysis.risk %}<a href="{% url 'risks:risk_detail' analysis.risk.pk %}" class="text-brand">{{ analysis.risk }}</a>{% else %}—{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Type</dt><dd style="margin:0;font-weight:500;">{{ analysis.get_analysis_type_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Probability %</dt><dd style="margin:0;font-weight:500;">{{ analysis.probability_pct }}%</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Impact Cost</dt><dd style="margin:0;font-weight:500;">{{ analysis.impact_cost }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">EMV</dt><dd style="margin:0;font-weight:500;">{{ analysis.emv }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Risk Level</dt><dd style="margin:0;font-weight:500;">{{ analysis.get_risk_level_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Analyzed By</dt><dd style="margin:0;font-weight:500;">{% if analysis.analyzed_by %}{{ analysis.analyzed_by.get_full_name|default:analysis.analyzed_by.username }}{% else %}—{% endif %}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Notes</dt><dd style="margin:0;font-weight:500;">{{ analysis.notes|linebreaksbr|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ analysis.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ analysis.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'risks:analysis_edit' analysis.pk %}"><i data-lucide="edit-2"></i> Edit Analysis</a>
+        <form method="post" action="{% url 'risks:analysis_delete' analysis.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete this analysis?')"><i data-lucide="trash-2"></i> Delete Analysis</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'risks:analysis_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
