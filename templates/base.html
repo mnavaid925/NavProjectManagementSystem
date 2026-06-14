@@ -1,0 +1,118 @@
+{% load static %}
+<!DOCTYPE html>
+<html
+  lang="en"
+  dir="{{ ui_prefs.direction|default:'ltr' }}"
+  class="{% if ui_prefs.theme == 'dark' %}dark{% endif %}"
+  data-layout="{{ ui_prefs.layout|default:'vertical' }}"
+  data-width="{{ ui_prefs.width|default:'fluid' }}"
+  data-position="{{ ui_prefs.position|default:'fixed' }}"
+  data-topbar="{{ ui_prefs.topbar|default:'light' }}"
+  data-sidebar-size="{{ ui_prefs.sidebar_size|default:'default' }}"
+  data-sidebar-color="{{ ui_prefs.sidebar_color|default:'light' }}"
+  data-preloader="{% if ui_prefs.preloader %}enabled{% else %}disabled{% endif %}"
+>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <title>{% block title %}Dashboard{% endblock %} &middot; {% if current_tenant %}{{ current_tenant.name }}{% else %}NavPMS{% endif %}</title>
+
+  <!-- Inter font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind Play CDN + config (darkMode class, brand scale, Inter) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50:  '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe', 300: '#93c5fd',
+              400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8',
+              800: '#1e40af', 900: '#1e3a8a', 950: '#172554',
+            },
+          },
+          fontFamily: {
+            sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'Arial', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+
+  <!-- HTMX -->
+  <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+  <!-- Chart.js 4 -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <!-- Lucide icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <!-- Project theme + scripts -->
+  <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+  <script src="{% static 'js/layout.js' %}" defer></script>
+  <script src="{% static 'js/charts.js' %}" defer></script>
+
+  <!-- Send X-CSRFToken on every HTMX request from the meta tag -->
+  <script>
+    document.body && null;
+    document.addEventListener('htmx:configRequest', function (evt) {
+      var meta = document.querySelector('meta[name="csrf-token"]');
+      if (meta) { evt.detail.headers['X-CSRFToken'] = meta.getAttribute('content'); }
+    });
+  </script>
+
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+  {# ---------------- Preloader ---------------- #}
+  <div id="app-preloader" aria-hidden="true">
+    <div class="preloader-spinner"></div>
+  </div>
+
+  <div class="app-shell">
+
+    {# ---------------- Topbar ---------------- #}
+    {% include 'partials/topbar.html' %}
+
+    <div class="app-body">
+
+      {# ---------------- Sidebar ---------------- #}
+      {% include 'partials/sidebar.html' %}
+      <div class="sidebar-backdrop" data-sidebar-close></div>
+
+      {# ---------------- Main ---------------- #}
+      <div class="app-main">
+        <main class="app-content">
+          <div class="app-container">
+            {% include 'partials/messages.html' %}
+            {% block content %}{% endblock %}
+          </div>
+        </main>
+        {% include 'partials/footer.html' %}
+      </div>
+
+    </div>
+  </div>
+
+  {# ---------------- Customizer offcanvas ---------------- #}
+  {% include 'partials/customizer.html' %}
+
+  {# ---------------- Init scripts ---------------- #}
+  <script>
+    window.addEventListener('DOMContentLoaded', function () {
+      if (window.lucide) { lucide.createIcons(); }
+    });
+    document.body.addEventListener('htmx:afterSwap', function () {
+      if (window.lucide) { lucide.createIcons(); }
+    });
+  </script>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>
