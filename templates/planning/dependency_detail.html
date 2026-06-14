@@ -1,0 +1,77 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}Dependency {{ dependency.pk }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ dependency.predecessor.name|default:"—" }} &rarr; {{ dependency.successor.name|default:"—" }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'planning:dependency_list' %}">Project Planning &amp; Scheduling</a></li>
+        <li class="active" aria-current="page">Dependency</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    <a class="btn btn-secondary" href="{% url 'planning:dependency_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'planning:dependency_edit' dependency.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'planning:dependency_delete' dependency.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete this dependency?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Dependency Details</h2>
+        <div style="display:flex;gap:.4rem;">
+          {% if dependency.dependency_type == 'FS' %}<span class="badge badge-blue">{{ dependency.get_dependency_type_display }}</span>
+          {% elif dependency.dependency_type == 'SS' %}<span class="badge badge-slate">{{ dependency.get_dependency_type_display }}</span>
+          {% elif dependency.dependency_type == 'FF' %}<span class="badge badge-purple">{{ dependency.get_dependency_type_display }}</span>
+          {% elif dependency.dependency_type == 'SF' %}<span class="badge badge-amber">{{ dependency.get_dependency_type_display }}</span>
+          {% else %}<span class="badge badge-slate">{{ dependency.get_dependency_type_display }}</span>{% endif %}
+        </div>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div>
+            <dt class="text-muted" style="font-size:.75rem;">Predecessor</dt>
+            <dd style="margin:0;font-weight:500;">
+              {% if dependency.predecessor %}<a href="{% url 'planning:task_detail' dependency.predecessor.pk %}" class="text-brand">{{ dependency.predecessor.name }}</a>{% else %}—{% endif %}
+            </dd>
+          </div>
+          <div>
+            <dt class="text-muted" style="font-size:.75rem;">Successor</dt>
+            <dd style="margin:0;font-weight:500;">
+              {% if dependency.successor %}<a href="{% url 'planning:task_detail' dependency.successor.pk %}" class="text-brand">{{ dependency.successor.name }}</a>{% else %}—{% endif %}
+            </dd>
+          </div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Type</dt><dd style="margin:0;font-weight:500;">{{ dependency.get_dependency_type_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Lag (days)</dt><dd style="margin:0;font-weight:500;">{{ dependency.lag_days }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ dependency.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ dependency.updated_at|date:"M d, Y" }}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Notes</dt><dd style="margin:0;font-weight:500;">{{ dependency.notes|default:"—" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'planning:dependency_edit' dependency.pk %}"><i data-lucide="edit-2"></i> Edit Dependency</a>
+        <form method="post" action="{% url 'planning:dependency_delete' dependency.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete this dependency?')"><i data-lucide="trash-2"></i> Delete</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'planning:dependency_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
