@@ -1,0 +1,69 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ invoice.number }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ invoice.number }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'projects:invoice_list' %}">Invoices</a></li>
+        <li class="active" aria-current="page">{{ invoice.number }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    <a class="btn btn-secondary" href="{% url 'projects:invoice_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'projects:invoice_edit' invoice.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'projects:invoice_delete' invoice.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete this invoice?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Invoice {{ invoice.number }}</h2>
+      {% if invoice.status == 'paid' %}<span class="badge badge-green">{{ invoice.get_status_display }}</span>
+      {% elif invoice.status == 'partially_paid' %}<span class="badge badge-blue">{{ invoice.get_status_display }}</span>
+      {% elif invoice.status == 'sent' %}<span class="badge badge-amber">{{ invoice.get_status_display }}</span>
+      {% elif invoice.status == 'overdue' %}<span class="badge badge-red">{{ invoice.get_status_display }}</span>
+      {% else %}<span class="badge badge-slate">{{ invoice.get_status_display }}</span>{% endif %}
+    </div>
+    <div class="card-body">
+      <div class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin-bottom:1.25rem;">
+        <div><dt class="text-muted" style="font-size:.75rem;">Client</dt><dd style="margin:0;font-weight:500;">{{ invoice.client_name|default:"—" }}</dd></div>
+        <div><dt class="text-muted" style="font-size:.75rem;">Project</dt><dd style="margin:0;font-weight:500;">{% if invoice.project %}<a href="{% url 'projects:project_detail' invoice.project.pk %}" class="text-brand">{{ invoice.project.name }}</a>{% else %}—{% endif %}</dd></div>
+        <div><dt class="text-muted" style="font-size:.75rem;">Issue Date</dt><dd style="margin:0;font-weight:500;">{{ invoice.issue_date|date:"M d, Y" }}</dd></div>
+        <div><dt class="text-muted" style="font-size:.75rem;">Due Date</dt><dd style="margin:0;font-weight:500;">{{ invoice.due_date|date:"M d, Y" }}</dd></div>
+      </div>
+      <div class="table-wrap">
+        <table class="table">
+          <tbody>
+            <tr><td class="text-muted">Amount</td><td style="text-align:right;font-weight:500;">{{ invoice.amount }}</td></tr>
+            <tr><td class="text-muted">Tax</td><td style="text-align:right;font-weight:500;">{{ invoice.tax }}</td></tr>
+            <tr><td style="font-weight:700;">Total</td><td style="text-align:right;font-weight:700;font-size:1.05rem;">{{ invoice.total }}</td></tr>
+            <tr><td class="text-muted">Paid</td><td style="text-align:right;font-weight:500;">{{ invoice.paid_amount }}</td></tr>
+            <tr><td style="font-weight:600;color:var(--brand-600);">Balance Due</td><td style="text-align:right;font-weight:700;color:var(--brand-600);">{{ invoice.balance_due }}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><h2 class="card-title">Summary</h2></div>
+    <div class="card-body">
+      <dl style="margin:0;display:grid;gap:.85rem;">
+        <div style="display:flex;justify-content:space-between;"><dt class="text-muted">Total</dt><dd style="margin:0;font-weight:600;">{{ invoice.total }}</dd></div>
+        <div style="display:flex;justify-content:space-between;"><dt class="text-muted">Paid</dt><dd style="margin:0;font-weight:600;">{{ invoice.paid_amount }}</dd></div>
+        <hr class="hr" style="margin:.25rem 0;">
+        <div style="display:flex;justify-content:space-between;"><dt class="text-muted">Balance Due</dt><dd style="margin:0;font-weight:700;color:var(--brand-600);">{{ invoice.balance_due }}</dd></div>
+      </dl>
+    </div>
+  </div>
+</div>
+{% endblock %}
