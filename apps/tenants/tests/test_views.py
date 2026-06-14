@@ -4,6 +4,7 @@ from decimal import Decimal
 
 import pytest
 from django.urls import reverse
+from django.utils import timezone
 
 from apps.tenants.models import (
     BrandingSettings,
@@ -341,7 +342,9 @@ class TestInvoiceMarkPaidView:
         assert r.status_code == 302
         acme_invoice.refresh_from_db()
         assert acme_invoice.status == Invoice.STATUS_PAID
-        assert acme_invoice.paid_at == datetime.date.today()
+        # The view writes timezone.now().date() (UTC); compare on the same basis so
+        # this does not drift by a day during the UTC offset window.
+        assert acme_invoice.paid_at == timezone.now().date()
 
     def test_get_does_not_mark_paid(self, acme_client, acme_invoice):
         url = reverse('tenants:invoice_mark_paid', args=[acme_invoice.pk])
