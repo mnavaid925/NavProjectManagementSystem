@@ -69,3 +69,18 @@ the FK hides this. **Rule:** guard user-FK display with `{% if fk %}{{ fk.get_fu
 `qs.filter(project_id=request.GET.get('project'))` raises `ValueError → 500` on non-numeric input
 (`?project=abc`). Dropdowns only emit int pks, so it never shows in normal use, but a hand-edited URL hits it.
 **Rule:** guard with `if value.isdigit():` (string-choice filters are immune; only int/FK params need this).
+
+## L12 — Wire-up must come AFTER the app files exist (check-after-edit hook)
+A `PostToolUse:Edit` hook runs `manage.py check` after every edit. Editing `config/urls.py`/`settings.py` to
+reference a new app whose files a background workflow hasn't written yet → `No module named 'apps.<x>.urls'`
+and the hook BLOCKS. **Rule:** when a build Workflow is creating the app files, do the settings/urls/navigation
+wire-up as the post-build single-writer step (after the workflow completes), not concurrently. (On Modules 1–3
+there was no such hook so early wire-up worked; on 4–7 it didn't.) Baking the lessons into the spec up front
+(L7–L11 in `temp/specs/_conventions.md`) made the 4–7 build pass all 6 verification classes on the first pass.
+
+## L13 — Template agents reference utility CSS classes that don't exist
+Agents wrote `<span class="text-danger">`/`text-red` to flag negative/over-threshold values, but theme.css only
+defines `.text-muted`/`.text-brand` — so the values rendered with no emphasis (cosmetic, no error). **Rule:**
+define the common utilities (`.text-danger`, `.text-red`) once in theme.css's "Utility helpers" section (mirrors
+`.text-muted`), with a `.dark` variant — DRY, and fixes every occurrence at once. Better: list the available
+utility classes in the spec so agents don't invent class names.
