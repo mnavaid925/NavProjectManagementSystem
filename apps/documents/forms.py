@@ -94,9 +94,10 @@ class DocumentVersionForm(forms.ModelForm):
 class KnowledgeArticleForm(forms.ModelForm):
     class Meta:
         model = KnowledgeArticle
+        # views_count is a programmatic read counter — excluded so users can't set it via POST.
         fields = [
             'title', 'project', 'category', 'body', 'tags',
-            'author', 'status', 'views_count',
+            'author', 'status',
         ]
         widgets = {
             'body': forms.Textarea(attrs={'rows': 3}),
