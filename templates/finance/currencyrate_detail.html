@@ -1,0 +1,64 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ currencyrate.base_currency }}&rarr;{{ currencyrate.target_currency }} @ {{ currencyrate.rate }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ currencyrate.base_currency }} &rarr; {{ currencyrate.target_currency }} @ {{ currencyrate.rate }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'finance:currencyrate_list' %}">Financial &amp; Billing Management</a></li>
+        <li class="active" aria-current="page">{{ currencyrate.base_currency }}&rarr;{{ currencyrate.target_currency }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if currencyrate.status == 'active' %}<span class="badge badge-green">{{ currencyrate.get_status_display }}</span>
+    {% elif currencyrate.status == 'retired' %}<span class="badge badge-slate">{{ currencyrate.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ currencyrate.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'finance:currencyrate_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'finance:currencyrate_edit' currencyrate.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'finance:currencyrate_delete' currencyrate.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete currency rate {{ currencyrate.base_currency|escapejs }}->{{ currencyrate.target_currency|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Currency Rate Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Base Currency</dt><dd style="margin:0;font-weight:500;">{{ currencyrate.base_currency|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Target Currency</dt><dd style="margin:0;font-weight:500;">{{ currencyrate.target_currency|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Rate</dt><dd style="margin:0;font-weight:500;">{{ currencyrate.rate|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Effective Date</dt><dd style="margin:0;font-weight:500;">{{ currencyrate.effective_date|date:"M d, Y"|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Source</dt><dd style="margin:0;font-weight:500;">{{ currencyrate.source|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">{{ currencyrate.get_status_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ currencyrate.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ currencyrate.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'finance:currencyrate_edit' currencyrate.pk %}"><i data-lucide="edit-2"></i> Edit Currency Rate</a>
+        <form method="post" action="{% url 'finance:currencyrate_delete' currencyrate.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete currency rate {{ currencyrate.base_currency|escapejs }}->{{ currencyrate.target_currency|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Currency Rate</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'finance:currencyrate_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
