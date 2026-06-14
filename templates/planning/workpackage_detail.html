@@ -1,0 +1,72 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ work_package.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ work_package.name }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'planning:workpackage_list' %}">Project Planning &amp; Scheduling</a></li>
+        <li class="active" aria-current="page">{{ work_package.name }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    <a class="btn btn-secondary" href="{% url 'planning:workpackage_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'planning:workpackage_edit' work_package.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'planning:workpackage_delete' work_package.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete this work package?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Work Package Details</h2>
+        <div style="display:flex;gap:.4rem;">
+          {% if work_package.status == 'completed' %}<span class="badge badge-green">{{ work_package.get_status_display }}</span>
+          {% elif work_package.status == 'in_progress' %}<span class="badge badge-blue">{{ work_package.get_status_display }}</span>
+          {% elif work_package.status == 'not_started' %}<span class="badge badge-slate">{{ work_package.get_status_display }}</span>
+          {% else %}<span class="badge badge-slate">{{ work_package.get_status_display }}</span>{% endif %}
+        </div>
+      </div>
+      <div class="card-body">
+        {% if work_package.description %}
+          <p style="color:var(--text-muted);margin:0 0 1rem;">{{ work_package.description|linebreaksbr }}</p>
+        {% endif %}
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Code</dt><dd style="margin:0;font-weight:500;">{{ work_package.code|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Name</dt><dd style="margin:0;font-weight:500;">{{ work_package.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Project</dt><dd style="margin:0;font-weight:500;">{{ work_package.project.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Parent</dt><dd style="margin:0;font-weight:500;">{{ work_package.parent.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Level</dt><dd style="margin:0;font-weight:500;">{{ work_package.level }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Estimated Effort (h)</dt><dd style="margin:0;font-weight:500;">{{ work_package.estimated_effort_hours }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Owner</dt><dd style="margin:0;font-weight:500;">{% if work_package.owner %}{{ work_package.owner.get_full_name|default:work_package.owner.username }}{% else %}—{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">{{ work_package.get_status_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ work_package.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ work_package.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'planning:workpackage_edit' work_package.pk %}"><i data-lucide="edit-2"></i> Edit Work Package</a>
+        <form method="post" action="{% url 'planning:workpackage_delete' work_package.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete this work package?')"><i data-lucide="trash-2"></i> Delete</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'planning:workpackage_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
