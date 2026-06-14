@@ -1,0 +1,143 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ page_title|default:'Programs' }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Programs</h1>
+    <ul class="breadcrumb">
+      <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+      <li><a href="{% url 'portfolio:program_list' %}">Portfolio &amp; Program Management</a></li>
+      <li><span class="active" aria-current="page">Programs</span></li>
+    </ul>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'portfolio:program_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> New Program</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">All Programs <span class="text-muted">({{ total_count }})</span></h2>
+  </div>
+  <div class="card-body">
+    {% comment %} Filters {% endcomment %}
+    <form method="get" class="flex flex-wrap items-end gap-3 mb-4">
+      <div class="form-group mb-0 flex-1" style="min-width:200px">
+        <label class="form-label">Search</label>
+        <input type="text" name="q" value="{{ request.GET.q|default:'' }}" class="form-input" placeholder="Search number, name or description...">
+      </div>
+      <div class="form-group mb-0" style="min-width:160px">
+        <label class="form-label">Status</label>
+        <select name="status" class="form-select">
+          <option value="">All statuses</option>
+          {% for val, label in status_choices %}
+          <option value="{{ val }}" {% if request.GET.status == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group mb-0" style="min-width:160px">
+        <label class="form-label">Health</label>
+        <select name="health" class="form-select">
+          <option value="">All health</option>
+          {% for val, label in health_choices %}
+          <option value="{{ val }}" {% if request.GET.health == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group mb-0" style="min-width:180px">
+        <label class="form-label">Portfolio</label>
+        <select name="portfolio" class="form-select">
+          <option value="">All portfolios</option>
+          {% for pf in portfolios %}
+          <option value="{{ pf.pk }}" {% if request.GET.portfolio == pf.pk|stringformat:"d" %}selected{% endif %}>{{ pf.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group mb-0">
+        <button type="submit" class="btn btn-secondary"><i data-lucide="filter"></i> Filter</button>
+        {% if request.GET.q or request.GET.status or request.GET.health or request.GET.portfolio %}
+        <a href="{% url 'portfolio:program_list' %}" class="btn btn-outline btn-sm"><i data-lucide="x"></i> Clear</a>
+        {% endif %}
+      </div>
+    </form>
+
+    {% comment %} Table {% endcomment %}
+    {% if programs %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Number</th>
+            <th>Name</th>
+            <th>Portfolio</th>
+            <th>Status</th>
+            <th>Health</th>
+            <th>Manager</th>
+            <th style="text-align:right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for program in programs %}
+          <tr>
+            <td><a href="{% url 'portfolio:program_detail' program.pk %}" class="font-semibold text-brand">{{ program.number }}</a></td>
+            <td>{{ program.name }}</td>
+            <td>{{ program.portfolio.name|default:"—" }}</td>
+            <td>
+              {% if program.status == 'active' %}<span class="badge badge-green">{{ program.get_status_display }}</span>
+              {% elif program.status == 'completed' %}<span class="badge badge-blue">{{ program.get_status_display }}</span>
+              {% elif program.status == 'planning' %}<span class="badge badge-slate">{{ program.get_status_display }}</span>
+              {% elif program.status == 'on_hold' %}<span class="badge badge-amber">{{ program.get_status_display }}</span>
+              {% elif program.status == 'cancelled' %}<span class="badge badge-red">{{ program.get_status_display }}</span>
+              {% else %}<span class="badge badge-slate">{{ program.get_status_display }}</span>{% endif %}
+            </td>
+            <td>
+              {% if program.health == 'green' %}<span class="badge badge-green">{{ program.get_health_display }}</span>
+              {% elif program.health == 'amber' %}<span class="badge badge-amber">{{ program.get_health_display }}</span>
+              {% elif program.health == 'red' %}<span class="badge badge-red">{{ program.get_health_display }}</span>
+              {% else %}<span class="badge badge-slate">{{ program.get_health_display }}</span>{% endif %}
+            </td>
+            <td>{% if program.program_manager %}{{ program.program_manager.get_full_name|default:program.program_manager.username }}{% else %}—{% endif %}</td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'portfolio:program_detail' program.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'portfolio:program_edit' program.pk %}" class="btn-icon" title="Edit"><i data-lucide="edit-2"></i></a>
+                <form method="post" action="{% url 'portfolio:program_delete' program.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon btn-danger" title="Delete" onclick="return confirm('Delete program {{ program.number|escapejs }}?')"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <ul class="pagination">
+      <li class="{% if not page_obj.has_previous %}disabled{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&amp;{% endif %}{% if request.GET.health %}health={{ request.GET.health }}&amp;{% endif %}{% if request.GET.portfolio %}portfolio={{ request.GET.portfolio }}&amp;{% endif %}page={% if page_obj.has_previous %}{{ page_obj.previous_page_number }}{% else %}1{% endif %}">Prev</a>
+      </li>
+      {% for n in page_obj.paginator.page_range %}
+      <li class="{% if n == page_obj.number %}active{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&amp;{% endif %}{% if request.GET.health %}health={{ request.GET.health }}&amp;{% endif %}{% if request.GET.portfolio %}portfolio={{ request.GET.portfolio }}&amp;{% endif %}page={{ n }}">{{ n }}</a>
+      </li>
+      {% endfor %}
+      <li class="{% if not page_obj.has_next %}disabled{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&amp;{% endif %}{% if request.GET.health %}health={{ request.GET.health }}&amp;{% endif %}{% if request.GET.portfolio %}portfolio={{ request.GET.portfolio }}&amp;{% endif %}page={% if page_obj.has_next %}{{ page_obj.next_page_number }}{% else %}{{ page_obj.paginator.num_pages }}{% endif %}">Next</a>
+      </li>
+    </ul>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon"><i data-lucide="layers"></i></div>
+      <h3>No programs found</h3>
+      <p>{% if request.GET.q or request.GET.status or request.GET.health or request.GET.portfolio %}No programs match your filters.{% else %}Create your first program to get started.{% endif %}</p>
+      <a href="{% url 'portfolio:program_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> New Program</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
