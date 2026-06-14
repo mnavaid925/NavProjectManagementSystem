@@ -1,0 +1,128 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}Roles &amp; Permissions{% endblock %}
+{% block content %}
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Roles &amp; Permissions</h1>
+      <nav aria-label="Breadcrumb">
+        <ol class="breadcrumb">
+          <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+          <li><a href="{% url 'accounts:user_list' %}">Users</a></li>
+          <li class="active" aria-current="page">Roles</li>
+        </ol>
+      </nav>
+    </div>
+    <div class="page-actions">
+      <a class="btn btn-primary" href="{% url 'accounts:role_create' %}"><i data-lucide="plus"></i> New Role</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Roles</h2>
+      <span class="text-muted" style="font-size:.82rem;">{{ total_count }} role{{ total_count|pluralize }}</span>
+    </div>
+    <div class="card-body">
+      <form method="get" style="display:flex;gap:.5rem;align-items:end;margin-bottom:1.25rem;flex-wrap:wrap;">
+        <div class="form-group" style="margin-bottom:0;flex:1 1 260px;">
+          <label class="form-label" for="q">Search</label>
+          <input type="text" id="q" name="q" class="form-input" placeholder="Role name or description&hellip;"
+                 value="{{ request.GET.q }}">
+        </div>
+        <button type="submit" class="btn btn-primary"><i data-lucide="search"></i> Filter</button>
+        {% if request.GET.q %}
+          <a href="{% url 'accounts:role_list' %}" class="btn btn-secondary" title="Clear filters"><i data-lucide="x"></i></a>
+        {% endif %}
+      </form>
+
+      {% if roles %}
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Role</th>
+                <th>Description</th>
+                <th>Permissions</th>
+                <th>Members</th>
+                <th style="text-align:right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for role in roles %}
+                <tr>
+                  <td>
+                    <div style="display:flex;align-items:center;gap:.5rem;">
+                      <i data-lucide="shield" style="width:16px;height:16px;color:var(--brand-600);"></i>
+                      <span style="font-weight:600;">{{ role.name }}</span>
+                      {% if role.is_system %}<span class="badge badge-slate">System</span>{% endif %}
+                    </div>
+                  </td>
+                  <td class="text-muted">{{ role.description|default:"&mdash;"|truncatechars:60 }}</td>
+                  <td><span class="badge badge-blue">{{ role.permissions|length }} permission{{ role.permissions|length|pluralize }}</span></td>
+                  <td>{{ role.members.count }}</td>
+                  <td>
+                    <div class="table-actions">
+                      <a class="btn-icon" href="{% url 'accounts:role_edit' role.pk %}" title="Edit"><i data-lucide="edit-2"></i></a>
+                      {% if not role.is_system %}
+                        <form method="post" action="{% url 'accounts:role_delete' role.pk %}">
+                          {% csrf_token %}
+                          <button type="submit" class="btn-icon btn-danger" title="Delete"
+                                  onclick="return confirm('Delete the role &quot;{{ role.name|escapejs }}&quot;?')">
+                            <i data-lucide="trash-2"></i>
+                          </button>
+                        </form>
+                      {% else %}
+                        <span class="btn-icon disabled" title="System roles cannot be deleted" style="opacity:.4;cursor:not-allowed;"><i data-lucide="lock"></i></span>
+                      {% endif %}
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        {% if page_obj.paginator.num_pages > 1 %}
+          <nav aria-label="Pagination">
+            <ul class="pagination">
+              {% if page_obj.has_previous %}
+                <li><a href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q|urlencode }}{% endif %}"><i data-lucide="chevron-left" style="width:16px;height:16px;"></i></a></li>
+              {% else %}
+                <li class="disabled"><span><i data-lucide="chevron-left" style="width:16px;height:16px;"></i></span></li>
+              {% endif %}
+              {% for num in page_obj.paginator.page_range %}
+                {% if num == page_obj.number %}
+                  <li class="active"><span>{{ num }}</span></li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                  <li><a href="?page={{ num }}{% if request.GET.q %}&q={{ request.GET.q|urlencode }}{% endif %}">{{ num }}</a></li>
+                {% endif %}
+              {% endfor %}
+              {% if page_obj.has_next %}
+                <li><a href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q|urlencode }}{% endif %}"><i data-lucide="chevron-right" style="width:16px;height:16px;"></i></a></li>
+              {% else %}
+                <li class="disabled"><span><i data-lucide="chevron-right" style="width:16px;height:16px;"></i></span></li>
+              {% endif %}
+            </ul>
+          </nav>
+        {% endif %}
+      {% else %}
+        <div class="empty-state">
+          <div class="empty-icon"><i data-lucide="shield"></i></div>
+          <h3>No roles found</h3>
+          <p>
+            {% if request.GET.q %}
+              No roles match your search. Try a different term.
+            {% else %}
+              Create a role to define what your team members can access.
+            {% endif %}
+          </p>
+          {% if request.GET.q %}
+            <a href="{% url 'accounts:role_list' %}" class="btn btn-secondary"><i data-lucide="x"></i> Clear search</a>
+          {% else %}
+            <a href="{% url 'accounts:role_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> New Role</a>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}
