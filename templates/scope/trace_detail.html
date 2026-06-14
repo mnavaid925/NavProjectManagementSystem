@@ -1,0 +1,63 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}Trace — {{ trace.linked_artifact }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ trace.requirement }} &rarr; {{ trace.linked_artifact }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'scope:trace_list' %}">Requirement Traces</a></li>
+        <li class="active" aria-current="page">{{ trace.linked_artifact|default:"Trace" }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if trace.verified %}<span class="badge badge-green">Verified</span>
+    {% else %}<span class="badge badge-slate">Unverified</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'scope:trace_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'scope:trace_edit' trace.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'scope:trace_delete' trace.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete this trace?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Trace Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Requirement</dt><dd style="margin:0;font-weight:500;">{{ trace.requirement|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Linked Artifact</dt><dd style="margin:0;font-weight:500;">{{ trace.linked_artifact|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Trace Type</dt><dd style="margin:0;font-weight:500;">{{ trace.get_trace_type_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Artifact Type</dt><dd style="margin:0;font-weight:500;">{{ trace.get_artifact_type_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Verified</dt><dd style="margin:0;font-weight:500;">{% if trace.verified %}Verified{% else %}Unverified{% endif %}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Notes</dt><dd style="margin:0;font-weight:500;">{{ trace.notes|linebreaksbr|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ trace.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ trace.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'scope:trace_edit' trace.pk %}"><i data-lucide="edit-2"></i> Edit Trace</a>
+        <form method="post" action="{% url 'scope:trace_delete' trace.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete this trace?')"><i data-lucide="trash-2"></i> Delete Trace</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'scope:trace_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
