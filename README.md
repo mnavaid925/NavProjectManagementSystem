@@ -6,12 +6,13 @@ A **multi-tenant Project Management System** built with **Django 5.1** (backend)
 multi-tenancy, full authentication & user management, and a reference "Project Dashboard".
 
 This release delivers the complete **Foundation** (multi-tenancy, authentication, user/role management, themed
-dashboard) and **Modules 0–11** end-to-end — Tenant & Subscription, Project Initiation & Charter, Project
+dashboard) and **Modules 0–15** end-to-end — Tenant & Subscription, Project Initiation & Charter, Project
 Planning & Scheduling, Resource, Cost & Budget, Risk & Issue, Quality, Scope & Requirements, Task & Work,
-Collaboration & Communication, Document & Knowledge, and Time & Attendance Tracking (all five sub-modules each)
-— plus a lightweight **Workspace** (Projects / Tasks / Meetings / Tickets / Invoices) that powers the dashboard
-with real seeded data. The remaining 9 modules from `ProjectManagementSystem.md` appear in the sidebar as
-navigable **"on the roadmap"** placeholders and are generated on demand by the `/next-module` Claude Code skill.
+Collaboration & Communication, Document & Knowledge, Time & Attendance, Portfolio & Program, Agile & Scrum,
+Client & External Collaboration, and Financial & Billing Management (all five sub-modules each) — plus a
+lightweight **Workspace** (Projects / Tasks / Meetings / Tickets / Invoices) that powers the dashboard with real
+seeded data. The remaining 5 modules from `ProjectManagementSystem.md` appear in the sidebar as navigable
+**"on the roadmap"** placeholders and are generated on demand by the `/next-module` Claude Code skill.
 
 ---
 
@@ -143,6 +144,30 @@ Hours** · **Overtime & Leave Integration** (leave types + days) · **Time Repor
 billable %). Models: `Timesheet` (`TS-#####`), `TimesheetLine`, `TimesheetApproval`, `LeaveRecord` (`LV-#####`),
 `UtilizationSnapshot`.
 
+### Module 12 — Portfolio & Program Management (complete)
+**Portfolio Dashboard & Heat Maps** (health · strategic priority · budget) · **Program Dependency Mapping**
+(FS/SS/FF/SF cross-program links) · **Strategic Alignment & Scoring** (alignment score 0–100) · **Capacity &
+Pipeline Planning** (demand vs capacity gap) · **Portfolio Reporting & Governance**. Models: `Portfolio`
+(`PF-#####`), `Program` (`PRG-#####`), `ProgramDependency`, `StrategicGoal` (`SG-#####`), `CapacityPlan` (`CP-#####`).
+
+### Module 13 — Agile & Scrum Management (complete)
+**Sprint Planning & Backlog Grooming** (story points) · **Sprint Execution & Daily Standups** (capacity /
+committed / completed points) · **Release & Version Planning** · **Epic & Feature Management** (business value) ·
+**Retrospectives & Team Health** (team-health score). Models: `Epic` (`EPIC-#####`), `Sprint` (`SPR-#####`),
+`BacklogItem` (`BLI-#####`), `Release` (`REL-#####`), `Retrospective` (`RETRO-#####`).
+
+### Module 14 — Client & External Collaboration (complete)
+**Client Portal & Visibility** (access levels) · **Client Feedback & Approvals** (rating · type) · **Contract &
+SOW Management** (fixed-fee / T&M / retainer / milestone) · **External Vendor Coordination** (vendor scorecards) ·
+**Billing & Invoicing to Clients**. Models: `ClientAccess` (`CA-#####`), `ClientFeedback` (`CF-#####`),
+`SOWContract` (`SOW-#####`), `ExternalVendor` (`VEN-#####`), `ClientInvoice` (`CINV-#####`).
+
+### Module 15 — Financial & Billing Management (complete)
+**Project Accounting & Cost Centers** (budget vs actual · variance) · **Invoice Generation & Delivery** (amount +
+tax) · **Payment Tracking & Reconciliation** · **Budget vs. Actual Analysis** (variance by period) ·
+**Multi-Currency & Tax Handling** (FX rates). Models: `CostCenter` (`CC-#####`), `FinanceInvoice` (`FINV-#####`),
+`Payment` (`PAY-#####`), `BudgetActual` (`BA-#####`), `CurrencyRate`.
+
 ---
 
 ## Project Structure
@@ -172,7 +197,11 @@ NavProjectManagementSystem/
 │   ├── work/                 # Module 8: WorkItem, PriorityScore, BoardColumn, BoardCard, WorkDependency
 │   ├── collaboration/        # Module 9: Channel, SharedDocument, Meeting, Notification, ActivityEntry
 │   ├── documents/            # Module 10: Document, DocumentTemplate, DocumentVersion, KnowledgeArticle, RetentionPolicy
-│   └── timesheets/           # Module 11: Timesheet, TimesheetLine, TimesheetApproval, LeaveRecord, UtilizationSnapshot
+│   ├── timesheets/           # Module 11: Timesheet, TimesheetLine, TimesheetApproval, LeaveRecord, UtilizationSnapshot
+│   ├── portfolio/            # Module 12: Portfolio, Program, ProgramDependency, StrategicGoal, CapacityPlan
+│   ├── agile/                # Module 13: Epic, Sprint, BacklogItem, Release, Retrospective
+│   ├── clients/              # Module 14: ClientAccess, ClientFeedback, SOWContract, ExternalVendor, ClientInvoice
+│   └── finance/              # Module 15: CostCenter, FinanceInvoice, Payment, BudgetActual, CurrencyRate
 ├── config/                   # settings.py (reads .env), urls.py, wsgi.py, asgi.py,
 │                             # __init__.py (PyMySQL + MariaDB-10.4 compatibility shim)
 ├── templates/
@@ -195,6 +224,10 @@ NavProjectManagementSystem/
 │   ├── collaboration/        # channel/shareddocument/meeting/notification/activity list+detail+form
 │   ├── documents/            # document/documenttemplate/documentversion/knowledgearticle/retentionpolicy list+detail+form
 │   ├── timesheets/           # timesheet/timesheetline/timesheetapproval/leaverecord/utilizationsnapshot list+detail+form
+│   ├── portfolio/            # portfolio/program/dependency/goal/capacity list+detail+form
+│   ├── agile/                # epic/sprint/backlogitem/release/retrospective list+detail+form
+│   ├── clients/              # access/feedback/contract/vendor/invoice list+detail+form
+│   ├── finance/              # costcenter/invoice/payment/budgetactual/currencyrate list+detail+form
 │   └── core/                 # module_placeholder (roadmap page), audit_log
 ├── static/
 │   ├── css/  theme.css       # Blue/white design system (cards, badges, tables, forms, dark mode, RTL)
@@ -290,6 +323,10 @@ All values are read from `.env` via `python-dotenv`. Defaults assume XAMPP (MySQ
 | `python manage.py seed_collaboration` | **Idempotent** Module 9 seeder (channels, shared documents, meetings, notifications, activity entries). |
 | `python manage.py seed_documents` | **Idempotent** Module 10 seeder (documents, document templates, versions, knowledge articles, retention policies). |
 | `python manage.py seed_timesheets` | **Idempotent** Module 11 seeder (timesheets, lines, approvals, leave records, utilization snapshots). |
+| `python manage.py seed_portfolio` | **Idempotent** Module 12 seeder (portfolios, programs, dependencies, strategic goals, capacity plans). |
+| `python manage.py seed_agile` | **Idempotent** Module 13 seeder (epics, sprints, backlog items, releases, retrospectives). |
+| `python manage.py seed_clients` | **Idempotent** Module 14 seeder (client access, feedback, SOW contracts, vendors, client invoices). |
+| `python manage.py seed_finance` | **Idempotent** Module 15 seeder (cost centers, invoices, payments, budget-vs-actuals, currency rates). |
 | `python manage.py createsuperuser` | Optional cross-tenant Django admin (`tenant=None`). |
 | `python manage.py runserver` | Start the dev server on `127.0.0.1:8000`. |
 
@@ -381,7 +418,7 @@ A lightweight `projects` app provides real, tenant-scoped CRUD that populates th
 
 ## Module Roadmap (0–20)
 
-`ProjectManagementSystem.md` defines 21 modules. Modules 0–11 are **complete**; Modules 12–20 are sidebar
+`ProjectManagementSystem.md` defines 21 modules. Modules 0–15 are **complete**; Modules 16–20 are sidebar
 **placeholders** today and are scaffolded on demand by the `/next-module` skill (one Django app per module, built
 from the `apps/tenants` reference pattern).
 
@@ -399,10 +436,10 @@ from the `apps/tenants` reference pattern).
 | 9 | Collaboration & Communication | ✅ Complete (`apps/collaboration`) |
 | 10 | Document & Knowledge Management | ✅ Complete (`apps/documents`) |
 | 11 | Time & Attendance Tracking | ✅ Complete (`apps/timesheets`) |
-| 12 | Portfolio & Program Management | 🗺️ Roadmap → `apps/portfolio` |
-| 13 | Agile & Scrum Management | 🗺️ Roadmap → `apps/agile` |
-| 14 | Client & External Collaboration | 🗺️ Roadmap → `apps/clients` |
-| 15 | Financial & Billing Management | 🗺️ Roadmap → `apps/finance` |
+| 12 | Portfolio & Program Management | ✅ Complete (`apps/portfolio`) |
+| 13 | Agile & Scrum Management | ✅ Complete (`apps/agile`) |
+| 14 | Client & External Collaboration | ✅ Complete (`apps/clients`) |
+| 15 | Financial & Billing Management | ✅ Complete (`apps/finance`) |
 | 16 | Reporting & Business Intelligence | 🗺️ Roadmap → `apps/reporting` |
 | 17 | Workflow & Automation | 🗺️ Roadmap → `apps/automation` |
 | 18 | Integration & API Hub | 🗺️ Roadmap → `apps/integrations` |
@@ -434,7 +471,11 @@ Build the next one with: **`/next-module`** (auto-detects the lowest unbuilt mod
 | Module 9 | `/collaboration/` | `/collaboration/channels/`, `/collaboration/shared-documents/`, `/collaboration/meetings/`, `/collaboration/notifications/`, `/collaboration/activities/` |
 | Module 10 | `/documents/` | `/documents/documents/`, `/documents/templates/`, `/documents/versions/`, `/documents/knowledge/`, `/documents/retention-policies/` |
 | Module 11 | `/timesheets/` | `/timesheets/timesheets/`, `/timesheets/timesheet-lines/`, `/timesheets/approvals/`, `/timesheets/leave/`, `/timesheets/utilization/` |
-| Roadmap placeholders | `/m/<module>/<sub>/` | e.g. `/m/portfolio-program-management/portfolio-dashboard/` |
+| Module 12 | `/portfolio/` | `/portfolio/portfolios/`, `/portfolio/programs/`, `/portfolio/dependencies/`, `/portfolio/goals/`, `/portfolio/capacity/` |
+| Module 13 | `/agile/` | `/agile/epics/`, `/agile/sprints/`, `/agile/backlog-items/`, `/agile/releases/`, `/agile/retrospectives/` |
+| Module 14 | `/clients/` | `/clients/access/`, `/clients/feedback/`, `/clients/contracts/`, `/clients/vendors/`, `/clients/invoices/` |
+| Module 15 | `/finance/` | `/finance/cost-centers/`, `/finance/invoices/`, `/finance/payments/`, `/finance/budget-actuals/`, `/finance/currency-rates/` |
+| Roadmap placeholders | `/m/<module>/<sub>/` | e.g. `/m/reporting-business-intelligence/standard-project-reports/` |
 | Audit log | `/audit-log/` | tenant-scoped activity trail |
 | Django admin | `/admin/` | superuser only |
 
@@ -498,7 +539,7 @@ Customizer are pure CSS/JS and require no plugins.
 
 ## Roadmap
 
-Modules 0–11 are complete and the foundation is production-shaped. Modules 12–20 (`ProjectManagementSystem.md`) reuse
+Modules 0–15 are complete and the foundation is production-shaped. Modules 16–20 (`ProjectManagementSystem.md`) reuse
 the same multi-tenant + CRUD + dashboard patterns and are built incrementally via `/next-module`. Planned
 hardening: compiled Tailwind pipeline, an automated test suite (pytest + pytest-django), real email/SMTP, and an
 optional real payment gateway behind the existing simulated billing.
