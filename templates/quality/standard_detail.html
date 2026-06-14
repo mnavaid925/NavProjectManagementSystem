@@ -1,0 +1,68 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ standard.code }} {{ standard.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ standard.code }} {{ standard.name }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'quality:standard_list' %}">Quality Management</a></li>
+        <li class="active" aria-current="page">{{ standard.name }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if standard.status == 'active' %}<span class="badge badge-green">{{ standard.get_status_display }}</span>
+    {% elif standard.status == 'retired' %}<span class="badge badge-slate">{{ standard.get_status_display }}</span>
+    {% elif standard.status == 'draft' %}<span class="badge badge-amber">{{ standard.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ standard.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'quality:standard_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'quality:standard_edit' standard.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'quality:standard_delete' standard.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete standard {{ standard.name|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Standard Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Code</dt><dd style="margin:0;font-weight:500;">{{ standard.code|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Name</dt><dd style="margin:0;font-weight:500;">{{ standard.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Project</dt><dd style="margin:0;font-weight:500;">{{ standard.project.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Category</dt><dd style="margin:0;font-weight:500;">{{ standard.get_category_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Version</dt><dd style="margin:0;font-weight:500;">{{ standard.version|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">{{ standard.get_status_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Owner</dt><dd style="margin:0;font-weight:500;">{% if standard.owner %}{{ standard.owner.get_full_name|default:standard.owner.username }}{% else %}—{% endif %}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Description</dt><dd style="margin:0;font-weight:500;">{{ standard.description|linebreaksbr|default:"—" }}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Acceptance Criteria</dt><dd style="margin:0;font-weight:500;">{{ standard.acceptance_criteria|linebreaksbr|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ standard.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ standard.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'quality:standard_edit' standard.pk %}"><i data-lucide="edit-2"></i> Edit Standard</a>
+        <form method="post" action="{% url 'quality:standard_delete' standard.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete standard {{ standard.name|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Standard</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'quality:standard_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
