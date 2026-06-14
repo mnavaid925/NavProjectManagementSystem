@@ -1,0 +1,71 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ issue.number }} — {{ issue.title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ issue.number }} — {{ issue.title }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'risks:issue_list' %}">Risk &amp; Issue Management</a></li>
+        <li class="active" aria-current="page">{{ issue.number }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if issue.status == 'resolved' %}<span class="badge badge-green">{{ issue.get_status_display }}</span>
+    {% elif issue.status == 'closed' %}<span class="badge badge-slate">{{ issue.get_status_display }}</span>
+    {% elif issue.status == 'escalated' %}<span class="badge badge-red">{{ issue.get_status_display }}</span>
+    {% elif issue.status == 'in_progress' %}<span class="badge badge-blue">{{ issue.get_status_display }}</span>
+    {% elif issue.status == 'open' %}<span class="badge badge-amber">{{ issue.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ issue.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'risks:issue_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'risks:issue_edit' issue.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'risks:issue_delete' issue.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete issue {{ issue.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Issue Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Number</dt><dd style="margin:0;font-weight:500;">{{ issue.number|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Title</dt><dd style="margin:0;font-weight:500;">{{ issue.title|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Project</dt><dd style="margin:0;font-weight:500;">{{ issue.project.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Severity</dt><dd style="margin:0;font-weight:500;">{{ issue.get_severity_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Priority</dt><dd style="margin:0;font-weight:500;">{{ issue.get_priority_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">{{ issue.get_status_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Assigned To</dt><dd style="margin:0;font-weight:500;">{% if issue.assigned_to %}{{ issue.assigned_to.get_full_name|default:issue.assigned_to.username }}{% else %}—{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Raised Date</dt><dd style="margin:0;font-weight:500;">{{ issue.raised_date|date:"M d, Y"|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Resolved Date</dt><dd style="margin:0;font-weight:500;">{{ issue.resolved_date|date:"M d, Y"|default:"—" }}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Description</dt><dd style="margin:0;font-weight:500;">{{ issue.description|linebreaksbr|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ issue.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ issue.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'risks:issue_edit' issue.pk %}"><i data-lucide="edit-2"></i> Edit Issue</a>
+        <form method="post" action="{% url 'risks:issue_delete' issue.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete issue {{ issue.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Issue</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'risks:issue_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
