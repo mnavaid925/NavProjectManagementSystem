@@ -1,0 +1,68 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ access.number }} — {{ access.client_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ access.number }} — {{ access.client_name }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'clients:access_list' %}">Client &amp; External Collaboration</a></li>
+        <li class="active" aria-current="page">{{ access.number }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if access.status == 'active' %}<span class="badge badge-green">{{ access.get_status_display }}</span>
+    {% elif access.status == 'suspended' %}<span class="badge badge-amber">{{ access.get_status_display }}</span>
+    {% elif access.status == 'revoked' %}<span class="badge badge-red">{{ access.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ access.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'clients:access_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'clients:access_edit' access.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'clients:access_delete' access.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete access {{ access.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Access Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Number</dt><dd style="margin:0;font-weight:500;">{{ access.number|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Client Name</dt><dd style="margin:0;font-weight:500;">{{ access.client_name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Project</dt><dd style="margin:0;font-weight:500;">{{ access.project.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Access Level</dt><dd style="margin:0;font-weight:500;">{{ access.get_access_level_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">{{ access.get_status_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Portal Enabled</dt><dd style="margin:0;font-weight:500;">{% if access.portal_enabled %}Yes{% else %}No{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Contact Name</dt><dd style="margin:0;font-weight:500;">{{ access.contact_name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Contact Email</dt><dd style="margin:0;font-weight:500;">{{ access.contact_email|default:"—" }}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Notes</dt><dd style="margin:0;font-weight:500;">{{ access.notes|linebreaksbr|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ access.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ access.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'clients:access_edit' access.pk %}"><i data-lucide="edit-2"></i> Edit Access</a>
+        <form method="post" action="{% url 'clients:access_delete' access.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete access {{ access.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Access</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'clients:access_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
