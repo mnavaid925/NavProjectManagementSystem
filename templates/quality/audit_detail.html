@@ -1,0 +1,70 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ audit.number }} — {{ audit.title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ audit.number }} — {{ audit.title }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'quality:audit_list' %}">Quality Management</a></li>
+        <li class="active" aria-current="page">{{ audit.number }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if audit.status == 'completed' %}<span class="badge badge-green">{{ audit.get_status_display }}</span>
+    {% elif audit.status == 'in_progress' %}<span class="badge badge-blue">{{ audit.get_status_display }}</span>
+    {% elif audit.status == 'planned' %}<span class="badge badge-slate">{{ audit.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ audit.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'quality:audit_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'quality:audit_edit' audit.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'quality:audit_delete' audit.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete audit {{ audit.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Audit Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Number</dt><dd style="margin:0;font-weight:500;">{{ audit.number|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Title</dt><dd style="margin:0;font-weight:500;">{{ audit.title|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Project</dt><dd style="margin:0;font-weight:500;">{{ audit.project.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Standard</dt><dd style="margin:0;font-weight:500;">{{ audit.standard|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Audit Date</dt><dd style="margin:0;font-weight:500;">{{ audit.audit_date|date:"M d, Y"|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Auditor</dt><dd style="margin:0;font-weight:500;">{% if audit.auditor %}{{ audit.auditor.get_full_name|default:audit.auditor.username }}{% else %}—{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Type</dt><dd style="margin:0;font-weight:500;">{{ audit.get_audit_type_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Findings</dt><dd style="margin:0;font-weight:500;">{{ audit.findings_count }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Result</dt><dd style="margin:0;font-weight:500;">{{ audit.get_result_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">{{ audit.get_status_display }}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Notes</dt><dd style="margin:0;font-weight:500;">{{ audit.notes|linebreaksbr|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ audit.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ audit.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'quality:audit_edit' audit.pk %}"><i data-lucide="edit-2"></i> Edit Audit</a>
+        <form method="post" action="{% url 'quality:audit_delete' audit.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete audit {{ audit.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Audit</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'quality:audit_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
