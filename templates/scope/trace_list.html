@@ -1,0 +1,128 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ page_title|default:'Requirement Traces' }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Requirement Traces</h1>
+    <ul class="breadcrumb">
+      <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+      <li><a href="{% url 'scope:requirement_list' %}">Scope &amp; Requirements Management</a></li>
+      <li><span class="active" aria-current="page">Requirement Traces</span></li>
+    </ul>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'scope:trace_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> New Trace</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">All Traces <span class="text-muted">({{ total_count }})</span></h2>
+  </div>
+  <div class="card-body">
+    {% comment %} Filters {% endcomment %}
+    <form method="get" class="flex flex-wrap items-end gap-3 mb-4">
+      <div class="form-group mb-0 flex-1" style="min-width:200px">
+        <label class="form-label">Search</label>
+        <input type="text" name="q" value="{{ request.GET.q|default:'' }}" class="form-input" placeholder="Search artifact, notes or requirement...">
+      </div>
+      <div class="form-group mb-0" style="min-width:160px">
+        <label class="form-label">Trace Type</label>
+        <select name="trace_type" class="form-select">
+          <option value="">All trace types</option>
+          {% for val, label in trace_type_choices %}
+          <option value="{{ val }}" {% if request.GET.trace_type == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group mb-0" style="min-width:160px">
+        <label class="form-label">Artifact Type</label>
+        <select name="artifact_type" class="form-select">
+          <option value="">All artifact types</option>
+          {% for val, label in artifact_choices %}
+          <option value="{{ val }}" {% if request.GET.artifact_type == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group mb-0">
+        <button type="submit" class="btn btn-secondary"><i data-lucide="filter"></i> Filter</button>
+        {% if request.GET.q or request.GET.trace_type or request.GET.artifact_type %}
+        <a href="{% url 'scope:trace_list' %}" class="btn btn-outline btn-sm"><i data-lucide="x"></i> Clear</a>
+        {% endif %}
+      </div>
+    </form>
+
+    {% comment %} Table {% endcomment %}
+    {% if traces %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Requirement</th>
+            <th>Linked Artifact</th>
+            <th>Trace Type</th>
+            <th>Artifact Type</th>
+            <th>Verified</th>
+            <th style="text-align:right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for trace in traces %}
+          <tr>
+            <td><a href="{% url 'scope:trace_detail' trace.pk %}" class="font-semibold text-brand">{{ trace.requirement }}</a></td>
+            <td>{{ trace.linked_artifact|default:"—" }}</td>
+            <td>
+              {% if trace.trace_type == 'bidirectional' %}<span class="badge badge-purple">{{ trace.get_trace_type_display }}</span>
+              {% elif trace.trace_type == 'forward' %}<span class="badge badge-blue">{{ trace.get_trace_type_display }}</span>
+              {% elif trace.trace_type == 'backward' %}<span class="badge badge-slate">{{ trace.get_trace_type_display }}</span>
+              {% else %}<span class="badge badge-slate">{{ trace.get_trace_type_display }}</span>{% endif %}
+            </td>
+            <td><span class="badge badge-slate">{{ trace.get_artifact_type_display }}</span></td>
+            <td>
+              {% if trace.verified %}<span class="badge badge-green">Verified</span>
+              {% else %}<span class="badge badge-slate">Unverified</span>{% endif %}
+            </td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'scope:trace_detail' trace.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'scope:trace_edit' trace.pk %}" class="btn-icon" title="Edit"><i data-lucide="edit-2"></i></a>
+                <form method="post" action="{% url 'scope:trace_delete' trace.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon btn-danger" title="Delete" onclick="return confirm('Delete this trace?')"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <ul class="pagination">
+      <li class="{% if not page_obj.has_previous %}disabled{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.trace_type %}trace_type={{ request.GET.trace_type }}&amp;{% endif %}{% if request.GET.artifact_type %}artifact_type={{ request.GET.artifact_type }}&amp;{% endif %}page={% if page_obj.has_previous %}{{ page_obj.previous_page_number }}{% else %}1{% endif %}">Prev</a>
+      </li>
+      {% for n in page_obj.paginator.page_range %}
+      <li class="{% if n == page_obj.number %}active{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.trace_type %}trace_type={{ request.GET.trace_type }}&amp;{% endif %}{% if request.GET.artifact_type %}artifact_type={{ request.GET.artifact_type }}&amp;{% endif %}page={{ n }}">{{ n }}</a>
+      </li>
+      {% endfor %}
+      <li class="{% if not page_obj.has_next %}disabled{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.trace_type %}trace_type={{ request.GET.trace_type }}&amp;{% endif %}{% if request.GET.artifact_type %}artifact_type={{ request.GET.artifact_type }}&amp;{% endif %}page={% if page_obj.has_next %}{{ page_obj.next_page_number }}{% else %}{{ page_obj.paginator.num_pages }}{% endif %}">Next</a>
+      </li>
+    </ul>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon"><i data-lucide="git-branch"></i></div>
+      <h3>No traces found</h3>
+      <p>{% if request.GET.q or request.GET.trace_type or request.GET.artifact_type %}No traces match your filters.{% else %}Create your first requirement trace to get started.{% endif %}</p>
+      <a href="{% url 'scope:trace_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> New Trace</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
