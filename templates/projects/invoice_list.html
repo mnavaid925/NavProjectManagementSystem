@@ -1,0 +1,97 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}Project Invoices{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Project Invoices</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li class="active" aria-current="page">Invoices</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    <a class="btn btn-primary" href="{% url 'projects:invoice_create' %}"><i data-lucide="plus"></i> New Invoice</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <form method="get" class="form-row" style="grid-template-columns:1fr auto auto;align-items:end;gap:.75rem;">
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label" for="q">Search</label>
+        <input type="text" id="q" name="q" class="form-input" placeholder="Number or client&hellip;" value="{{ request.GET.q }}">
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label" for="status">Status</label>
+        <select id="status" name="status" class="form-select">
+          <option value="">All Statuses</option>
+          {% for value, label in status_choices %}
+            <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:0;display:flex;gap:.5rem;">
+        <button type="submit" class="btn btn-secondary"><i data-lucide="filter"></i> Filter</button>
+        <a class="btn btn-outline" href="{% url 'projects:invoice_list' %}"><i data-lucide="x"></i></a>
+      </div>
+    </form>
+  </div>
+
+  {% if invoices %}
+  <div class="table-wrap" style="border:0;border-top:1px solid var(--border);border-radius:0;">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Number</th>
+          <th>Client</th>
+          <th>Project</th>
+          <th>Total</th>
+          <th>Status</th>
+          <th>Due Date</th>
+          <th style="text-align:right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for invoice in invoices %}
+        <tr>
+          <td><a href="{% url 'projects:invoice_detail' invoice.pk %}" style="font-weight:600;color:var(--text);">{{ invoice.number }}</a></td>
+          <td>{{ invoice.client_name|default:"—" }}</td>
+          <td>{{ invoice.project.name|default:"—" }}</td>
+          <td>{{ invoice.total }}</td>
+          <td>
+            {% if invoice.status == 'paid' %}<span class="badge badge-green">{{ invoice.get_status_display }}</span>
+            {% elif invoice.status == 'partially_paid' %}<span class="badge badge-blue">{{ invoice.get_status_display }}</span>
+            {% elif invoice.status == 'sent' %}<span class="badge badge-amber">{{ invoice.get_status_display }}</span>
+            {% elif invoice.status == 'overdue' %}<span class="badge badge-red">{{ invoice.get_status_display }}</span>
+            {% else %}<span class="badge badge-slate">{{ invoice.get_status_display }}</span>{% endif %}
+          </td>
+          <td>{{ invoice.due_date|date:"M d, Y" }}</td>
+          <td>
+            <div class="table-actions">
+              <a class="btn-icon" href="{% url 'projects:invoice_detail' invoice.pk %}" title="View"><i data-lucide="eye"></i></a>
+              <a class="btn-icon" href="{% url 'projects:invoice_edit' invoice.pk %}" title="Edit"><i data-lucide="edit-2"></i></a>
+              <form method="post" action="{% url 'projects:invoice_delete' invoice.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn-icon btn-danger" title="Delete" onclick="return confirm('Delete this invoice?')"><i data-lucide="trash-2"></i></button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include 'projects/_pagination.html' %}
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon"><i data-lucide="file-text"></i></div>
+    <h3>No invoices found</h3>
+    <p>{% if request.GET.q or request.GET.status %}No invoices match your filters. Try adjusting them.{% else %}Create your first invoice to get started.{% endif %}</p>
+    <a class="btn btn-primary" href="{% url 'projects:invoice_create' %}"><i data-lucide="plus"></i> New Invoice</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
