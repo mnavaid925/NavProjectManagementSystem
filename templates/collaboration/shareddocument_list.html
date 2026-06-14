@@ -1,0 +1,137 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ page_title|default:'Shared Documents' }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Shared Documents</h1>
+    <ul class="breadcrumb">
+      <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+      <li><a href="{% url 'collaboration:channel_list' %}">Collaboration &amp; Communication</a></li>
+      <li><span class="active" aria-current="page">Shared Documents</span></li>
+    </ul>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'collaboration:shareddocument_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> New SharedDocument</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">All Shared Documents <span class="text-muted">({{ total_count }})</span></h2>
+  </div>
+  <div class="card-body">
+    {% comment %} Filters {% endcomment %}
+    <form method="get" class="flex flex-wrap items-end gap-3 mb-4">
+      <div class="form-group mb-0 flex-1" style="min-width:200px">
+        <label class="form-label">Search</label>
+        <input type="text" name="q" value="{{ request.GET.q|default:'' }}" class="form-input" placeholder="Search title or description...">
+      </div>
+      <div class="form-group mb-0" style="min-width:160px">
+        <label class="form-label">Type</label>
+        <select name="doc_type" class="form-select">
+          <option value="">All types</option>
+          {% for val, label in doc_type_choices %}
+          <option value="{{ val }}" {% if request.GET.doc_type == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group mb-0" style="min-width:160px">
+        <label class="form-label">Visibility</label>
+        <select name="visibility" class="form-select">
+          <option value="">All visibility</option>
+          {% for val, label in visibility_choices %}
+          <option value="{{ val }}" {% if request.GET.visibility == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group mb-0">
+        <button type="submit" class="btn btn-secondary"><i data-lucide="filter"></i> Filter</button>
+        {% if request.GET.q or request.GET.doc_type or request.GET.visibility %}
+        <a href="{% url 'collaboration:shareddocument_list' %}" class="btn btn-outline btn-sm"><i data-lucide="x"></i> Clear</a>
+        {% endif %}
+      </div>
+    </form>
+
+    {% comment %} Table {% endcomment %}
+    {% if shared_documents %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Type</th>
+            <th>Visibility</th>
+            <th>Version</th>
+            <th>Locked?</th>
+            <th>Shared By</th>
+            <th style="text-align:right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for shareddocument in shared_documents %}
+          <tr>
+            <td><a href="{% url 'collaboration:shareddocument_detail' shareddocument.pk %}" class="font-semibold text-brand">{{ shareddocument.title }}</a></td>
+            <td>
+              {% if shareddocument.doc_type == 'sheet' %}<span class="badge badge-green">{{ shareddocument.get_doc_type_display }}</span>
+              {% elif shareddocument.doc_type == 'slide' %}<span class="badge badge-amber">{{ shareddocument.get_doc_type_display }}</span>
+              {% elif shareddocument.doc_type == 'pdf' %}<span class="badge badge-red">{{ shareddocument.get_doc_type_display }}</span>
+              {% elif shareddocument.doc_type == 'doc' %}<span class="badge badge-blue">{{ shareddocument.get_doc_type_display }}</span>
+              {% elif shareddocument.doc_type == 'other' %}<span class="badge badge-slate">{{ shareddocument.get_doc_type_display }}</span>
+              {% else %}<span class="badge badge-slate">{{ shareddocument.get_doc_type_display }}</span>{% endif %}
+            </td>
+            <td>
+              {% if shareddocument.visibility == 'public' %}<span class="badge badge-green">{{ shareddocument.get_visibility_display }}</span>
+              {% elif shareddocument.visibility == 'team' %}<span class="badge badge-blue">{{ shareddocument.get_visibility_display }}</span>
+              {% elif shareddocument.visibility == 'private' %}<span class="badge badge-slate">{{ shareddocument.get_visibility_display }}</span>
+              {% else %}<span class="badge badge-slate">{{ shareddocument.get_visibility_display }}</span>{% endif %}
+            </td>
+            <td>{{ shareddocument.version|default:"—" }}</td>
+            <td>
+              {% if shareddocument.is_locked %}<span class="badge badge-amber">Locked</span>
+              {% else %}<span class="badge badge-slate">Open</span>{% endif %}
+            </td>
+            <td>{% if shareddocument.shared_by %}{{ shareddocument.shared_by.get_full_name|default:shareddocument.shared_by.username }}{% else %}—{% endif %}</td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'collaboration:shareddocument_detail' shareddocument.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'collaboration:shareddocument_edit' shareddocument.pk %}" class="btn-icon" title="Edit"><i data-lucide="edit-2"></i></a>
+                <form method="post" action="{% url 'collaboration:shareddocument_delete' shareddocument.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon btn-danger" title="Delete" onclick="return confirm('Delete document {{ shareddocument.title|escapejs }}?')"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <ul class="pagination">
+      <li class="{% if not page_obj.has_previous %}disabled{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.doc_type %}doc_type={{ request.GET.doc_type }}&amp;{% endif %}{% if request.GET.visibility %}visibility={{ request.GET.visibility }}&amp;{% endif %}page={% if page_obj.has_previous %}{{ page_obj.previous_page_number }}{% else %}1{% endif %}">Prev</a>
+      </li>
+      {% for n in page_obj.paginator.page_range %}
+      <li class="{% if n == page_obj.number %}active{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.doc_type %}doc_type={{ request.GET.doc_type }}&amp;{% endif %}{% if request.GET.visibility %}visibility={{ request.GET.visibility }}&amp;{% endif %}page={{ n }}">{{ n }}</a>
+      </li>
+      {% endfor %}
+      <li class="{% if not page_obj.has_next %}disabled{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.doc_type %}doc_type={{ request.GET.doc_type }}&amp;{% endif %}{% if request.GET.visibility %}visibility={{ request.GET.visibility }}&amp;{% endif %}page={% if page_obj.has_next %}{{ page_obj.next_page_number }}{% else %}{{ page_obj.paginator.num_pages }}{% endif %}">Next</a>
+      </li>
+    </ul>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon"><i data-lucide="file-text"></i></div>
+      <h3>No shared documents found</h3>
+      <p>{% if request.GET.q or request.GET.doc_type or request.GET.visibility %}No shared documents match your filters.{% else %}Create your first shared document to get started.{% endif %}</p>
+      <a href="{% url 'collaboration:shareddocument_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> New SharedDocument</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
