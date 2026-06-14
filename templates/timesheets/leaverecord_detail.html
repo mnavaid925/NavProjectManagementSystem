@@ -1,0 +1,70 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ leaverecord.number }} — Leave Record{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ leaverecord.number }} — Leave Record</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'timesheets:timesheet_list' %}">Time &amp; Attendance Tracking</a></li>
+        <li><a href="{% url 'timesheets:leaverecord_list' %}">Leave Records</a></li>
+        <li class="active" aria-current="page">{{ leaverecord.number }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if leaverecord.status == 'approved' %}<span class="badge badge-green">{{ leaverecord.get_status_display }}</span>
+    {% elif leaverecord.status == 'requested' %}<span class="badge badge-amber">{{ leaverecord.get_status_display }}</span>
+    {% elif leaverecord.status == 'rejected' %}<span class="badge badge-red">{{ leaverecord.get_status_display }}</span>
+    {% elif leaverecord.status == 'cancelled' %}<span class="badge badge-slate">{{ leaverecord.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ leaverecord.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'timesheets:leaverecord_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'timesheets:leaverecord_edit' leaverecord.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'timesheets:leaverecord_delete' leaverecord.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete leave record {{ leaverecord.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Leave Record Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Number</dt><dd style="margin:0;font-weight:500;">{{ leaverecord.number|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Owner</dt><dd style="margin:0;font-weight:500;">{% if leaverecord.owner %}{{ leaverecord.owner.get_full_name|default:leaverecord.owner.username }}{% else %}—{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Leave Type</dt><dd style="margin:0;font-weight:500;">{{ leaverecord.get_leave_type_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">{{ leaverecord.get_status_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Start Date</dt><dd style="margin:0;font-weight:500;">{{ leaverecord.start_date|date:"M d, Y"|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">End Date</dt><dd style="margin:0;font-weight:500;">{{ leaverecord.end_date|date:"M d, Y"|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Days</dt><dd style="margin:0;font-weight:500;">{{ leaverecord.days }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Approved By</dt><dd style="margin:0;font-weight:500;">{% if leaverecord.approved_by %}{{ leaverecord.approved_by.get_full_name|default:leaverecord.approved_by.username }}{% else %}—{% endif %}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Reason</dt><dd style="margin:0;font-weight:500;">{{ leaverecord.reason|linebreaksbr|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ leaverecord.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ leaverecord.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'timesheets:leaverecord_edit' leaverecord.pk %}"><i data-lucide="edit-2"></i> Edit Leave Record</a>
+        <form method="post" action="{% url 'timesheets:leaverecord_delete' leaverecord.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete leave record {{ leaverecord.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Leave Record</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'timesheets:leaverecord_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
