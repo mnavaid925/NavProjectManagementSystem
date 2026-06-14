@@ -1,0 +1,66 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ boardcard.title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ boardcard.title }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'work:workitem_list' %}">Task &amp; Work Management</a></li>
+        <li class="active" aria-current="page">{{ boardcard.title }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if boardcard.is_blocked %}<span class="badge badge-red">Blocked</span>
+    {% else %}<span class="badge badge-slate">Not Blocked</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'work:boardcard_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'work:boardcard_edit' boardcard.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'work:boardcard_delete' boardcard.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete this board card?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Board Card Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Title</dt><dd style="margin:0;font-weight:500;">{{ boardcard.title|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Work Item</dt><dd style="margin:0;font-weight:500;">{{ boardcard.work_item|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Column</dt><dd style="margin:0;font-weight:500;">{{ boardcard.column|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Position</dt><dd style="margin:0;font-weight:500;">{{ boardcard.position }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Planned Start</dt><dd style="margin:0;font-weight:500;">{{ boardcard.planned_start|date:"M d, Y"|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Planned End</dt><dd style="margin:0;font-weight:500;">{{ boardcard.planned_end|date:"M d, Y"|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Progress</dt><dd style="margin:0;font-weight:500;">{{ boardcard.progress }}%</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Blocked?</dt><dd style="margin:0;font-weight:500;">{% if boardcard.is_blocked %}<span class="badge badge-red">Blocked</span>{% else %}<span class="badge badge-slate">—</span>{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Color</dt><dd style="margin:0;font-weight:500;">{{ boardcard.color|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ boardcard.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ boardcard.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'work:boardcard_edit' boardcard.pk %}"><i data-lucide="edit-2"></i> Edit Board Card</a>
+        <form method="post" action="{% url 'work:boardcard_delete' boardcard.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete this board card?')"><i data-lucide="trash-2"></i> Delete Board Card</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'work:boardcard_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
