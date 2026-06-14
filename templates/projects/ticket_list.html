@@ -1,0 +1,110 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}Tickets{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Tickets</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li class="active" aria-current="page">Tickets</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    <a class="btn btn-primary" href="{% url 'projects:ticket_create' %}"><i data-lucide="plus"></i> New Ticket</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <form method="get" class="form-row" style="grid-template-columns:1fr auto auto auto;align-items:end;gap:.75rem;">
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label" for="q">Search</label>
+        <input type="text" id="q" name="q" class="form-input" placeholder="Subject or description&hellip;" value="{{ request.GET.q }}">
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label" for="status">Status</label>
+        <select id="status" name="status" class="form-select">
+          <option value="">All Statuses</option>
+          {% for value, label in status_choices %}
+            <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label" for="category">Category</label>
+        <select id="category" name="category" class="form-select">
+          <option value="">All Categories</option>
+          {% for value, label in category_choices %}
+            <option value="{{ value }}" {% if request.GET.category == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:0;display:flex;gap:.5rem;">
+        <button type="submit" class="btn btn-secondary"><i data-lucide="filter"></i> Filter</button>
+        <a class="btn btn-outline" href="{% url 'projects:ticket_list' %}"><i data-lucide="x"></i></a>
+      </div>
+    </form>
+  </div>
+
+  {% if tickets %}
+  <div class="table-wrap" style="border:0;border-top:1px solid var(--border);border-radius:0;">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Subject</th>
+          <th>Project</th>
+          <th>Category</th>
+          <th>Priority</th>
+          <th>Status</th>
+          <th>Assignee</th>
+          <th style="text-align:right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ticket in tickets %}
+        <tr>
+          <td><a href="{% url 'projects:ticket_detail' ticket.pk %}" style="font-weight:600;color:var(--text);">{{ ticket.subject }}</a></td>
+          <td>{{ ticket.project.name|default:"—" }}</td>
+          <td>{{ ticket.get_category_display }}</td>
+          <td>
+            {% if ticket.priority == 'urgent' %}<span class="badge badge-red">{{ ticket.get_priority_display }}</span>
+            {% elif ticket.priority == 'high' %}<span class="badge badge-amber">{{ ticket.get_priority_display }}</span>
+            {% elif ticket.priority == 'medium' %}<span class="badge badge-blue">{{ ticket.get_priority_display }}</span>
+            {% else %}<span class="badge badge-slate">{{ ticket.get_priority_display }}</span>{% endif %}
+          </td>
+          <td>
+            {% if ticket.status == 'resolved' %}<span class="badge badge-green">{{ ticket.get_status_display }}</span>
+            {% elif ticket.status == 'in_progress' %}<span class="badge badge-blue">{{ ticket.get_status_display }}</span>
+            {% elif ticket.status == 'closed' %}<span class="badge badge-slate">{{ ticket.get_status_display }}</span>
+            {% else %}<span class="badge badge-amber">{{ ticket.get_status_display }}</span>{% endif %}
+          </td>
+          <td>{{ ticket.assignee.get_full_name|default:ticket.assignee.username|default:"—" }}</td>
+          <td>
+            <div class="table-actions">
+              <a class="btn-icon" href="{% url 'projects:ticket_detail' ticket.pk %}" title="View"><i data-lucide="eye"></i></a>
+              <a class="btn-icon" href="{% url 'projects:ticket_edit' ticket.pk %}" title="Edit"><i data-lucide="edit-2"></i></a>
+              <form method="post" action="{% url 'projects:ticket_delete' ticket.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn-icon btn-danger" title="Delete" onclick="return confirm('Delete this ticket?')"><i data-lucide="trash-2"></i></button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include 'projects/_pagination.html' %}
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon"><i data-lucide="ticket"></i></div>
+    <h3>No tickets found</h3>
+    <p>{% if request.GET.q or request.GET.status or request.GET.category %}No tickets match your filters. Try adjusting them.{% else %}Create your first ticket to get started.{% endif %}</p>
+    <a class="btn btn-primary" href="{% url 'projects:ticket_create' %}"><i data-lucide="plus"></i> New Ticket</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
