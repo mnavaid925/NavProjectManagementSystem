@@ -20,6 +20,14 @@ urlpatterns = [
     path('planning/', include('apps.planning.urls')),
     # Module 3 - Resource Management.
     path('resources/', include('apps.resources.urls')),
+    # Module 4 - Cost & Budget Management.
+    path('budgeting/', include('apps.budgeting.urls')),
+    # Module 5 - Risk & Issue Management.
+    path('risks/', include('apps.risks.urls')),
+    # Module 6 - Quality Management.
+    path('quality/', include('apps.quality.urls')),
+    # Module 7 - Scope & Requirements Management.
+    path('scope/', include('apps.scope.urls')),
     # Core: module placeholders + audit log.
     path('', include('apps.core.urls')),
 ]
