@@ -121,3 +121,16 @@ An interrupted pytest run left `test_nav_pms` existing but without its `django_m
 **Rule:** when pytest errors on the test DB itself (not an assertion), drop it and let pytest recreate clean:
 `& "C:\xampp\mysql\bin\mysql.exe" -u root -h 127.0.0.1 -P 3306 -e "DROP DATABASE IF EXISTS test_nav_pms;"`
 (root / no password on this XAMPP). Unrelated to app code — it's an environment reset.
+
+## L18 — Close every module build with the specialist review agents, not just self-checks
+On Modules 8-11 I verified with my own smoke test + pytest + IDOR but did NOT run the project's specialist review
+agents — the user had to ask "did you run the agents?". A parallel 5-agent review (code-reviewer, security-reviewer,
+performance-reviewer, frontend-reviewer, qa-smoke-tester) + adversarial verification of each finding then caught real
+issues a GET-200 + content sweep CANNOT, by design: chained N+1s (a parent `__str__` resolving a 2nd FK not in
+`select_related` — e.g. `Timesheet.__str__` hits `owner`, so a child list firing it per row needs
+`select_related('timesheet__owner')`), a counter field (`views_count`) left writable in a ModelForm, redundant
+all-one-color badge branches, and missing `<label for=>`/`id=`. None of those 500 or leak. **Rule:** the module-build
+quality bar INCLUDES a closing multi-agent adversarial review as the LAST phase, run by default — not on request.
+Separate the wheat from the chaff: fix defects specific to the new module; for findings that are faithful copies of
+the app-wide reference pattern (non-atomic auto-numbering, global-unique numbers, missing `db_index`, filter-label
+`for=`), flag an app-wide pass instead of forking one module out of step with the other ~12.
