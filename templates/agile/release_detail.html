@@ -1,0 +1,68 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ release.number }} — {{ release.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ release.number }} — {{ release.name }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'agile:release_list' %}">Agile &amp; Scrum Management</a></li>
+        <li class="active" aria-current="page">{{ release.number }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if release.status == 'planned' %}<span class="badge badge-slate">{{ release.get_status_display }}</span>
+    {% elif release.status == 'in_progress' %}<span class="badge badge-blue">{{ release.get_status_display }}</span>
+    {% elif release.status == 'released' %}<span class="badge badge-green">{{ release.get_status_display }}</span>
+    {% elif release.status == 'cancelled' %}<span class="badge badge-red">{{ release.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ release.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'agile:release_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'agile:release_edit' release.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'agile:release_delete' release.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete release {{ release.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Release Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Number</dt><dd style="margin:0;font-weight:500;">{{ release.number|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Name</dt><dd style="margin:0;font-weight:500;">{{ release.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Version</dt><dd style="margin:0;font-weight:500;">{{ release.version|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Project</dt><dd style="margin:0;font-weight:500;">{{ release.project.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">{{ release.get_status_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Release Date</dt><dd style="margin:0;font-weight:500;">{{ release.release_date|date:"M d, Y"|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Release Manager</dt><dd style="margin:0;font-weight:500;">{% if release.release_manager %}{{ release.release_manager.get_full_name|default:release.release_manager.username }}{% else %}—{% endif %}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Description</dt><dd style="margin:0;font-weight:500;">{{ release.description|linebreaksbr|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ release.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ release.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'agile:release_edit' release.pk %}"><i data-lucide="edit-2"></i> Edit Release</a>
+        <form method="post" action="{% url 'agile:release_delete' release.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete release {{ release.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Release</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'agile:release_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
