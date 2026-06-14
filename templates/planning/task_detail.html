@@ -1,0 +1,81 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ task.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ task.name }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'planning:task_list' %}">Schedule Tasks</a></li>
+        <li class="active" aria-current="page">{{ task.name }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if task.status == 'completed' %}<span class="badge badge-green">{{ task.get_status_display }}</span>
+    {% elif task.status == 'in_progress' %}<span class="badge badge-blue">{{ task.get_status_display }}</span>
+    {% elif task.status == 'blocked' %}<span class="badge badge-red">{{ task.get_status_display }}</span>
+    {% elif task.status == 'not_started' %}<span class="badge badge-slate">{{ task.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ task.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'planning:task_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'planning:task_edit' task.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'planning:task_delete' task.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete this task?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Task Details</h2>
+        {% if task.is_critical %}<span class="badge badge-red">Critical</span>{% endif %}
+      </div>
+      <div class="card-body">
+        <div style="margin-bottom:1rem;">
+          <div style="display:flex;justify-content:space-between;font-size:.78rem;color:var(--text-muted);margin-bottom:.35rem;">
+            <span>Progress</span><span>{{ task.percent_complete }}%</span>
+          </div>
+          <div class="progress"><div class="progress-bar" style="width:{{ task.percent_complete }}%;"></div></div>
+        </div>
+        {% if task.description %}
+          <p style="color:var(--text-muted);margin:0 0 1rem;">{{ task.description|linebreaksbr }}</p>
+        {% endif %}
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Project</dt><dd style="margin:0;font-weight:500;">{{ task.project.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Work Package</dt><dd style="margin:0;font-weight:500;">{{ task.work_package.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Assignee</dt><dd style="margin:0;font-weight:500;">{% if task.assignee %}{{ task.assignee.get_full_name|default:task.assignee.username }}{% else %}—{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Estimate Method</dt><dd style="margin:0;font-weight:500;">{{ task.get_estimate_method_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Start Date</dt><dd style="margin:0;font-weight:500;">{{ task.start_date|date:"M d, Y"|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">End Date</dt><dd style="margin:0;font-weight:500;">{{ task.end_date|date:"M d, Y"|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Duration (days)</dt><dd style="margin:0;font-weight:500;">{{ task.duration_days }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Effort (hours)</dt><dd style="margin:0;font-weight:500;">{{ task.effort_hours }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Percent Complete</dt><dd style="margin:0;font-weight:500;">{{ task.percent_complete }}%</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">{{ task.get_status_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Critical Path</dt><dd style="margin:0;font-weight:500;">{% if task.is_critical %}Yes{% else %}No{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ task.created_at|date:"M d, Y"|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ task.updated_at|date:"M d, Y"|default:"—" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'planning:task_edit' task.pk %}"><i data-lucide="edit-2"></i> Edit Task</a>
+        <form method="post" action="{% url 'planning:task_delete' task.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete this task?')"><i data-lucide="trash-2"></i> Delete Task</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'planning:task_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
