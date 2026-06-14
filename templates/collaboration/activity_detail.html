@@ -1,0 +1,68 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}Activity #{{ activity.pk }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{% if activity.actor %}{{ activity.actor.get_full_name|default:activity.actor.username }}{% else %}System{% endif %} {{ activity.verb }} {{ activity.entity }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'collaboration:channel_list' %}">Collaboration &amp; Communication</a></li>
+        <li class="active" aria-current="page">Activity #{{ activity.pk }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if activity.activity_type == 'create' %}<span class="badge badge-green">{{ activity.get_activity_type_display }}</span>
+    {% elif activity.activity_type == 'update' %}<span class="badge badge-blue">{{ activity.get_activity_type_display }}</span>
+    {% elif activity.activity_type == 'delete' %}<span class="badge badge-red">{{ activity.get_activity_type_display }}</span>
+    {% elif activity.activity_type == 'comment' %}<span class="badge badge-purple">{{ activity.get_activity_type_display }}</span>
+    {% elif activity.activity_type == 'status' %}<span class="badge badge-amber">{{ activity.get_activity_type_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ activity.get_activity_type_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'collaboration:activity_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'collaboration:activity_edit' activity.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'collaboration:activity_delete' activity.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete this activity entry?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Activity Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Actor</dt><dd style="margin:0;font-weight:500;">{% if activity.actor %}{{ activity.actor.get_full_name|default:activity.actor.username }}{% else %}System{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Verb</dt><dd style="margin:0;font-weight:500;">{{ activity.verb|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Type</dt><dd style="margin:0;font-weight:500;">{{ activity.get_activity_type_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Entity</dt><dd style="margin:0;font-weight:500;">{{ activity.entity|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Project</dt><dd style="margin:0;font-weight:500;">{{ activity.project.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">When</dt><dd style="margin:0;font-weight:500;">{{ activity.occurred_at|date:"M d, Y H:i" }}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Description</dt><dd style="margin:0;font-weight:500;">{{ activity.description|linebreaksbr|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ activity.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ activity.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'collaboration:activity_edit' activity.pk %}"><i data-lucide="edit-2"></i> Edit Activity</a>
+        <form method="post" action="{% url 'collaboration:activity_delete' activity.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete this activity entry?')"><i data-lucide="trash-2"></i> Delete Activity</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'collaboration:activity_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
