@@ -119,6 +119,30 @@ Models: `Risk` (`RSK-#####`), `RiskAnalysis`, `RiskResponse`, `Issue` (`ISS-####
 **Change Request Management** · **Scope Verification & Control** (scope-creep flag). Models: `Requirement`
 (`RQ-#####`), `RequirementTrace`, `ScopeStatement` (`SCP-#####`), `ChangeRequest` (`CR-#####`), `ScopeVerification` (`SV-#####`).
 
+### Module 8 — Task & Work Management (complete)
+**Task Creation & Assignment** (task/bug/story/spike/chore + assignee/reporter) · **Priority & Urgency Scoring**
+(WSJF/RICE/MoSCoW/Eisenhower) · **Kanban & Scrum Boards** (WIP limits) · **Gantt Charts & Timeline Views**
+(planned start/end + progress) · **Task Dependencies & Blocking** (FS/SS/FF/SF + blocks/relates). Models:
+`WorkItem` (`WRK-#####`), `PriorityScore`, `BoardColumn`, `BoardCard`, `WorkDependency`.
+
+### Module 9 — Collaboration & Communication (complete)
+**Team Messaging & Channels** (public/private/direct/announcement) · **Document Sharing & Co-Editing** (version +
+lock state) · **Meeting Management** (agenda/minutes) · **Notifications & Alerts** (type/priority, read state) ·
+**Activity Streams & Feeds** (actor + verb + entity). Models: `Channel`, `SharedDocument`, `Meeting` (`MTG-#####`),
+`Notification`, `ActivityEntry`.
+
+### Module 10 — Document & Knowledge Management (complete)
+**Document Repository & Folders** (category · folder · confidential flag) · **Document Templates & Standards**
+(Word/Excel/PPT/Markdown/PDF) · **Version Control & Check-in/Out** (check-out tracking) · **Knowledge Base &
+Lessons Learned** · **Document Retention & Archiving** (retention period · legal hold). Models: `Document`
+(`DOC-#####`), `DocumentTemplate`, `DocumentVersion`, `KnowledgeArticle` (`KB-#####`), `RetentionPolicy`.
+
+### Module 11 — Time & Attendance Tracking (complete)
+**Timesheet Entry & Submission** · **Approval Workflows** (multi-level decisions) · **Billable vs. Non-Billable
+Hours** · **Overtime & Leave Integration** (leave types + days) · **Time Reporting & Utilization** (capacity vs
+billable %). Models: `Timesheet` (`TS-#####`), `TimesheetLine`, `TimesheetApproval`, `LeaveRecord` (`LV-#####`),
+`UtilizationSnapshot`.
+
 ---
 
 ## Project Structure
@@ -144,7 +168,11 @@ NavProjectManagementSystem/
 │   ├── budgeting/            # Module 4: Budget, ControlAccount, Expense, CostForecast, BudgetChange
 │   ├── risks/                # Module 5: Risk, RiskAnalysis, RiskResponse, Issue, RiskReview
 │   ├── quality/              # Module 6: QualityStandard, QualityAudit, Inspection, ImprovementAction, DeliverableSignoff
-│   └── scope/                # Module 7: Requirement, RequirementTrace, ScopeStatement, ChangeRequest, ScopeVerification
+│   ├── scope/                # Module 7: Requirement, RequirementTrace, ScopeStatement, ChangeRequest, ScopeVerification
+│   ├── work/                 # Module 8: WorkItem, PriorityScore, BoardColumn, BoardCard, WorkDependency
+│   ├── collaboration/        # Module 9: Channel, SharedDocument, Meeting, Notification, ActivityEntry
+│   ├── documents/            # Module 10: Document, DocumentTemplate, DocumentVersion, KnowledgeArticle, RetentionPolicy
+│   └── timesheets/           # Module 11: Timesheet, TimesheetLine, TimesheetApproval, LeaveRecord, UtilizationSnapshot
 ├── config/                   # settings.py (reads .env), urls.py, wsgi.py, asgi.py,
 │                             # __init__.py (PyMySQL + MariaDB-10.4 compatibility shim)
 ├── templates/
@@ -163,6 +191,10 @@ NavProjectManagementSystem/
 │   ├── risks/                # risk/analysis/response/issue/review list+detail+form
 │   ├── quality/              # standard/audit/inspection/improvement/signoff list+detail+form
 │   ├── scope/                # requirement/trace/statement/changerequest/verification list+detail+form
+│   ├── work/                 # workitem/priorityscore/boardcolumn/boardcard/workdependency list+detail+form
+│   ├── collaboration/        # channel/shareddocument/meeting/notification/activity list+detail+form
+│   ├── documents/            # document/documenttemplate/documentversion/knowledgearticle/retentionpolicy list+detail+form
+│   ├── timesheets/           # timesheet/timesheetline/timesheetapproval/leaverecord/utilizationsnapshot list+detail+form
 │   └── core/                 # module_placeholder (roadmap page), audit_log
 ├── static/
 │   ├── css/  theme.css       # Blue/white design system (cards, badges, tables, forms, dark mode, RTL)
@@ -349,7 +381,7 @@ A lightweight `projects` app provides real, tenant-scoped CRUD that populates th
 
 ## Module Roadmap (0–20)
 
-`ProjectManagementSystem.md` defines 21 modules. Modules 0–7 are **complete**; Modules 8–20 are sidebar
+`ProjectManagementSystem.md` defines 21 modules. Modules 0–11 are **complete**; Modules 12–20 are sidebar
 **placeholders** today and are scaffolded on demand by the `/next-module` skill (one Django app per module, built
 from the `apps/tenants` reference pattern).
 
@@ -377,8 +409,8 @@ from the `apps/tenants` reference pattern).
 | 19 | Master Data & Configuration | 🗺️ Roadmap → `apps/masterdata` |
 | 20 | System Administration & Security | 🗺️ Roadmap → `apps/administration` |
 
-Build the next one with: **`/next-module`** (auto-detects the lowest unbuilt module) or **`/next-module 8`** /
-**`/next-module "Task & Work Management"`**.
+Build the next one with: **`/next-module`** (auto-detects the lowest unbuilt module) or **`/next-module 16`** /
+**`/next-module "Reporting & Business Intelligence"`**.
 
 ---
 
@@ -466,7 +498,7 @@ Customizer are pure CSS/JS and require no plugins.
 
 ## Roadmap
 
-Modules 0–7 are complete and the foundation is production-shaped. Modules 8–20 (`ProjectManagementSystem.md`) reuse
+Modules 0–11 are complete and the foundation is production-shaped. Modules 12–20 (`ProjectManagementSystem.md`) reuse
 the same multi-tenant + CRUD + dashboard patterns and are built incrementally via `/next-module`. Planned
 hardening: compiled Tailwind pipeline, an automated test suite (pytest + pytest-django), real email/SMTP, and an
 optional real payment gateway behind the existing simulated billing.
