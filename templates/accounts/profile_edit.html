@@ -1,0 +1,100 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}Edit Profile{% endblock %}
+{% block content %}
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Edit Profile</h1>
+      <nav aria-label="Breadcrumb">
+        <ol class="breadcrumb">
+          <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+          <li><a href="{% url 'accounts:profile' %}">Profile</a></li>
+          <li class="active" aria-current="page">Edit</li>
+        </ol>
+      </nav>
+    </div>
+    <div class="page-actions">
+      <a class="btn btn-secondary" href="{% url 'accounts:profile' %}"><i data-lucide="arrow-left"></i> Cancel</a>
+    </div>
+  </div>
+
+  <form method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+    <div class="card" style="max-width:760px;">
+      <div class="card-header">
+        <h2 class="card-title">Profile Information</h2>
+      </div>
+      <div class="card-body">
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger" role="alert">
+            <i data-lucide="alert-circle"></i>
+            <div>{% for error in form.non_field_errors %}{{ error }}{% endfor %}</div>
+          </div>
+        {% endif %}
+
+        {# --- Avatar --- #}
+        <div class="form-group" style="display:flex;align-items:center;gap:1rem;">
+          {% if form.instance.avatar %}
+            <img class="avatar avatar-lg" src="{{ form.instance.avatar.url }}" alt="Current avatar">
+          {% else %}
+            <span class="avatar-initial avatar-lg">{{ form.instance.initials }}</span>
+          {% endif %}
+          <div style="flex:1 1 auto;">
+            <label class="form-label" for="{{ form.avatar.id_for_label }}">Avatar</label>
+            <input type="file" name="{{ form.avatar.html_name }}" id="{{ form.avatar.id_for_label }}"
+                   class="form-input" accept="image/*">
+            {% for error in form.avatar.errors %}<div class="form-error"><i data-lucide="alert-circle"></i>{{ error }}</div>{% endfor %}
+            <div class="form-hint">PNG, JPG or GIF. Square images look best.</div>
+          </div>
+        </div>
+
+        <hr class="hr">
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="{{ form.first_name.id_for_label }}">First Name</label>
+            <input type="text" name="{{ form.first_name.html_name }}" id="{{ form.first_name.id_for_label }}"
+                   class="form-input{% if form.first_name.errors %} is-invalid{% endif %}"
+                   value="{{ form.first_name.value|default:'' }}">
+            {% for error in form.first_name.errors %}<div class="form-error"><i data-lucide="alert-circle"></i>{{ error }}</div>{% endfor %}
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="{{ form.last_name.id_for_label }}">Last Name</label>
+            <input type="text" name="{{ form.last_name.html_name }}" id="{{ form.last_name.id_for_label }}"
+                   class="form-input{% if form.last_name.errors %} is-invalid{% endif %}"
+                   value="{{ form.last_name.value|default:'' }}">
+            {% for error in form.last_name.errors %}<div class="form-error"><i data-lucide="alert-circle"></i>{{ error }}</div>{% endfor %}
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="{{ form.email.id_for_label }}">Email <span class="req">*</span></label>
+            <input type="email" name="{{ form.email.html_name }}" id="{{ form.email.id_for_label }}"
+                   class="form-input{% if form.email.errors %} is-invalid{% endif %}"
+                   value="{{ form.email.value|default:'' }}" required>
+            {% for error in form.email.errors %}<div class="form-error"><i data-lucide="alert-circle"></i>{{ error }}</div>{% endfor %}
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="{{ form.phone.id_for_label }}">Phone</label>
+            <input type="text" name="{{ form.phone.html_name }}" id="{{ form.phone.id_for_label }}"
+                   class="form-input{% if form.phone.errors %} is-invalid{% endif %}"
+                   value="{{ form.phone.value|default:'' }}">
+            {% for error in form.phone.errors %}<div class="form-error"><i data-lucide="alert-circle"></i>{{ error }}</div>{% endfor %}
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label" for="{{ form.job_title.id_for_label }}">Job Title</label>
+          <input type="text" name="{{ form.job_title.html_name }}" id="{{ form.job_title.id_for_label }}"
+                 class="form-input{% if form.job_title.errors %} is-invalid{% endif %}"
+                 value="{{ form.job_title.value|default:'' }}">
+          {% for error in form.job_title.errors %}<div class="form-error"><i data-lucide="alert-circle"></i>{{ error }}</div>{% endfor %}
+        </div>
+      </div>
+      <div class="card-footer">
+        <a class="btn btn-secondary" href="{% url 'accounts:profile' %}">Cancel</a>
+        <button type="submit" class="btn btn-primary"><i data-lucide="save"></i> Save Profile</button>
+      </div>
+    </div>
+  </form>
+{% endblock %}
