@@ -1,0 +1,72 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ invoice.number }} — {{ invoice.client_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ invoice.number }} — {{ invoice.client_name }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'clients:invoice_list' %}">Client &amp; External Collaboration</a></li>
+        <li class="active" aria-current="page">{{ invoice.number }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if invoice.status == 'paid' %}<span class="badge badge-green">{{ invoice.get_status_display }}</span>
+    {% elif invoice.status == 'sent' %}<span class="badge badge-blue">{{ invoice.get_status_display }}</span>
+    {% elif invoice.status == 'partially_paid' %}<span class="badge badge-amber">{{ invoice.get_status_display }}</span>
+    {% elif invoice.status == 'overdue' %}<span class="badge badge-red">{{ invoice.get_status_display }}</span>
+    {% elif invoice.status == 'draft' %}<span class="badge badge-slate">{{ invoice.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ invoice.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'clients:invoice_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'clients:invoice_edit' invoice.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'clients:invoice_delete' invoice.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete invoice {{ invoice.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Invoice Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Number</dt><dd style="margin:0;font-weight:500;">{{ invoice.number|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Client</dt><dd style="margin:0;font-weight:500;">{{ invoice.client_name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Project</dt><dd style="margin:0;font-weight:500;">{{ invoice.project.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Contract</dt><dd style="margin:0;font-weight:500;">{% if invoice.contract %}{{ invoice.contract }}{% else %}—{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Amount</dt><dd style="margin:0;font-weight:500;">{{ invoice.currency }} {{ invoice.amount }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Currency</dt><dd style="margin:0;font-weight:500;">{{ invoice.currency|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Billing Type</dt><dd style="margin:0;font-weight:500;">{{ invoice.get_billing_type_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">{{ invoice.get_status_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Issue Date</dt><dd style="margin:0;font-weight:500;">{{ invoice.issue_date|date:"M d, Y"|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Due Date</dt><dd style="margin:0;font-weight:500;">{{ invoice.due_date|date:"M d, Y"|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Paid Date</dt><dd style="margin:0;font-weight:500;">{{ invoice.paid_date|date:"M d, Y"|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ invoice.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ invoice.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'clients:invoice_edit' invoice.pk %}"><i data-lucide="edit-2"></i> Edit Invoice</a>
+        <form method="post" action="{% url 'clients:invoice_delete' invoice.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete invoice {{ invoice.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Invoice</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'clients:invoice_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
