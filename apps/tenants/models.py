@@ -117,7 +117,7 @@ class Invoice(models.Model):
         if not self.number:
             self.number = self._generate_number()
         if not self.total:
-            self.total = (self.amount or Decimal('0')) + (self.tax or Decimal('0'))
+            self.total = Decimal(self.amount or '0') + Decimal(self.tax or '0')
         super().save(*args, **kwargs)
 
     @staticmethod
