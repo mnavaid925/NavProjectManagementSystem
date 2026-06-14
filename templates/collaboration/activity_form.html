@@ -1,0 +1,61 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ page_title|default:'Activity Entry' }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .dj-form input[type="text"], .dj-form input[type="number"], .dj-form input[type="email"],
+  .dj-form input[type="date"], .dj-form input[type="url"], .dj-form textarea, .dj-form select,
+  .dj-form input[type="datetime-local"] {
+    width: 100%; padding: .6rem .75rem; font-size: .88rem; color: var(--text);
+    background: var(--surface); border: 1px solid var(--border-strong);
+    border-radius: .6rem; line-height: 1.4;
+  }
+  .dark .dj-form input, .dark .dj-form textarea, .dark .dj-form select { background: var(--surface-2); }
+  .dj-form input:focus, .dj-form textarea:focus, .dj-form select:focus {
+    outline: none; border-color: var(--brand-500); box-shadow: 0 0 0 3px var(--ring);
+  }
+  .dj-form textarea { min-height: 90px; resize: vertical; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ page_title }}</h1>
+    <ul class="breadcrumb">
+      <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+      <li><a href="{% url 'collaboration:activity_list' %}">Activity Feed</a></li>
+      <li><span class="active" aria-current="page">{% if activity %}Edit{% else %}Create{% endif %}</span></li>
+    </ul>
+  </div>
+</div>
+
+<form method="post" class="dj-form" novalidate>
+  {% csrf_token %}
+  <div class="card">
+    <div class="card-header"><h2 class="card-title">Activity Details</h2></div>
+    <div class="card-body">
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger"><i data-lucide="alert-circle"></i><div>{{ form.non_field_errors }}</div></div>
+      {% endif %}
+
+      <div class="form-row">
+        {% for field in form %}
+          <div class="form-group{% if field.name == 'description' %} dj-full{% endif %}" {% if field.name == 'description' %}style="grid-column:1/-1"{% endif %}>
+            <label class="form-label" for="{{ field.id_for_label }}">
+              {{ field.label }}{% if field.field.required %} <span class="req">*</span>{% endif %}
+            </label>
+            {{ field }}
+            {% if field.help_text %}<p class="form-hint">{{ field.help_text }}</p>{% endif %}
+            {% for e in field.errors %}<p class="form-error"><i data-lucide="alert-circle"></i>{{ e }}</p>{% endfor %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="card-footer">
+      <a href="{% url 'collaboration:activity_list' %}" class="btn btn-secondary">Cancel</a>
+      <button type="submit" class="btn btn-primary"><i data-lucide="save"></i> {% if activity %}Save Changes{% else %}Create Activity{% endif %}</button>
+    </div>
+  </div>
+</form>
+{% endblock %}
