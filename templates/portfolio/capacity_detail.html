@@ -1,0 +1,67 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ capacity.number }} — {{ capacity.period }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ capacity.number }} — {{ capacity.period }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'portfolio:capacity_list' %}">Portfolio &amp; Program Management</a></li>
+        <li class="active" aria-current="page">{{ capacity.number }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if capacity.status == 'published' %}<span class="badge badge-green">{{ capacity.get_status_display }}</span>
+    {% elif capacity.status == 'draft' %}<span class="badge badge-slate">{{ capacity.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ capacity.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'portfolio:capacity_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'portfolio:capacity_edit' capacity.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'portfolio:capacity_delete' capacity.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete capacity plan {{ capacity.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Capacity Plan Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Number</dt><dd style="margin:0;font-weight:500;">{{ capacity.number|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Period</dt><dd style="margin:0;font-weight:500;">{{ capacity.period|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Portfolio</dt><dd style="margin:0;font-weight:500;">{{ capacity.portfolio.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Team</dt><dd style="margin:0;font-weight:500;">{{ capacity.team|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">{{ capacity.get_status_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Demand Hours</dt><dd style="margin:0;font-weight:500;">{{ capacity.demand_hours }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Capacity Hours</dt><dd style="margin:0;font-weight:500;">{{ capacity.capacity_hours }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Gap Hours</dt><dd style="margin:0;font-weight:500;">{{ capacity.gap_hours }}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Notes</dt><dd style="margin:0;font-weight:500;">{{ capacity.notes|linebreaksbr|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ capacity.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ capacity.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'portfolio:capacity_edit' capacity.pk %}"><i data-lucide="edit-2"></i> Edit Capacity Plan</a>
+        <form method="post" action="{% url 'portfolio:capacity_delete' capacity.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete capacity plan {{ capacity.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Capacity Plan</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'portfolio:capacity_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
