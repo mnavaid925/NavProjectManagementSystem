@@ -6,11 +6,12 @@ A **multi-tenant Project Management System** built with **Django 5.1** (backend)
 multi-tenancy, full authentication & user management, and a reference "Project Dashboard".
 
 This release delivers the complete **Foundation** (multi-tenancy, authentication, user/role management, themed
-dashboard) and **Modules 0–3** end-to-end — **Tenant & Subscription Management**, **Project Initiation &
-Charter**, **Project Planning & Scheduling**, and **Resource Management** (all five sub-modules each) — plus a
-lightweight **Workspace** (Projects / Tasks / Meetings / Tickets / Invoices) that powers the dashboard with real
-seeded data. The remaining 17 modules from `ProjectManagementSystem.md` appear in the sidebar as navigable
-**"on the roadmap"** placeholders and are generated on demand by the `/next-module` Claude Code skill.
+dashboard) and **Modules 0–7** end-to-end — Tenant & Subscription, Project Initiation & Charter, Project
+Planning & Scheduling, Resource, Cost & Budget, Risk & Issue, Quality, and Scope & Requirements Management
+(all five sub-modules each) — plus a lightweight **Workspace** (Projects / Tasks / Meetings / Tickets / Invoices)
+that powers the dashboard with real seeded data. The remaining 13 modules from `ProjectManagementSystem.md`
+appear in the sidebar as navigable **"on the roadmap"** placeholders and are generated on demand by the
+`/next-module` Claude Code skill.
 
 ---
 
@@ -98,6 +99,26 @@ Assembly & Role Assignment** · **Resource Forecasting & Demand Planning** (dema
 Tracking & Timesheets**. Models: `Resource`, `Skill`, `Allocation`, `TeamAssignment`, `DemandForecast`,
 `TimeEntry` (`TE-#####`).
 
+### Module 4 — Cost & Budget Management (complete)
+**Budget Planning & Estimation** · **Cost Baseline & Control Accounts** (EVM: BAC / EV / AC / CPI) · **Expense
+Tracking & Commitments** · **Forecasting & EAC** (BAC / EAC / VAC) · **Change Control & Budget Revisions**.
+Models: `Budget` (`BUD-#####`), `ControlAccount`, `Expense` (`EXP-#####`), `CostForecast`, `BudgetChange` (`BCR-#####`).
+
+### Module 5 — Risk & Issue Management (complete)
+**Risk Identification & Register** · **Qualitative & Quantitative Analysis** (EMV) · **Risk Response Planning**
+(avoid/transfer/mitigate/accept/escalate) · **Issue Logging & Escalation** · **Risk Monitoring & Reporting**.
+Models: `Risk` (`RSK-#####`), `RiskAnalysis`, `RiskResponse`, `Issue` (`ISS-#####`), `RiskReview`.
+
+### Module 6 — Quality Management (complete)
+**Quality Planning & Standards** · **Quality Assurance (QA)** · **Quality Control (QC) & Inspections** ·
+**Continuous Improvement** · **Deliverable Acceptance & Sign-off**. Models: `QualityStandard`, `QualityAudit`
+(`QA-#####`), `Inspection` (`QC-#####`), `ImprovementAction` (`CI-#####`), `DeliverableSignoff` (`SO-#####`).
+
+### Module 7 — Scope & Requirements Management (complete)
+**Requirements Elicitation** (MoSCoW) · **Documentation & Traceability** · **Scope Definition & Boundaries** ·
+**Change Request Management** · **Scope Verification & Control** (scope-creep flag). Models: `Requirement`
+(`RQ-#####`), `RequirementTrace`, `ScopeStatement` (`SCP-#####`), `ChangeRequest` (`CR-#####`), `ScopeVerification` (`SV-#####`).
+
 ---
 
 ## Project Structure
@@ -119,7 +140,11 @@ NavProjectManagementSystem/
 │   ├── dashboard/            # Aggregation view only (no models): KPIs + Chart.js feeds
 │   ├── initiation/           # Module 1: ProjectRequest, BusinessCase, ProjectCharter, Stakeholder, KickoffTask
 │   ├── planning/             # Module 2: WorkPackage(WBS), ScheduleTask, TaskDependency, Milestone, ScheduleBaseline
-│   └── resources/            # Module 3: Resource, Skill, Allocation, TeamAssignment, DemandForecast, TimeEntry
+│   ├── resources/            # Module 3: Resource, Skill, Allocation, TeamAssignment, DemandForecast, TimeEntry
+│   ├── budgeting/            # Module 4: Budget, ControlAccount, Expense, CostForecast, BudgetChange
+│   ├── risks/                # Module 5: Risk, RiskAnalysis, RiskResponse, Issue, RiskReview
+│   ├── quality/              # Module 6: QualityStandard, QualityAudit, Inspection, ImprovementAction, DeliverableSignoff
+│   └── scope/                # Module 7: Requirement, RequirementTrace, ScopeStatement, ChangeRequest, ScopeVerification
 ├── config/                   # settings.py (reads .env), urls.py, wsgi.py, asgi.py,
 │                             # __init__.py (PyMySQL + MariaDB-10.4 compatibility shim)
 ├── templates/
