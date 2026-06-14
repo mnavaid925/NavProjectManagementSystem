@@ -1,3 +1,39 @@
+# TODO — NavPMS Modules 4–7 (Budgeting, Risks, Quality, Scope)
+
+## Status: ✅ COMPLETE & VERIFIED
+
+Built with a parallel **Workflow** (24 build agents: 4 backend + 20 template), then a 5-agent adversarial review.
+Lessons L7–L11 from the Modules 1–3 build were baked into `temp/specs/_conventions.md` (entity-var pin, guarded
+pagination, None-FK guard, `.isdigit()` filter guard) so the build passed **all 6 verification classes on the
+first pass** — zero functional rework.
+
+## Modules delivered (4 × 5 models = 20)
+| # | app | models | sub-modules → Live |
+|---|-----|--------|--------------------|
+| 4 | `budgeting` | Budget, ControlAccount, Expense, CostForecast, BudgetChange | 5/5 |
+| 5 | `risks` | Risk, RiskAnalysis, RiskResponse, Issue, RiskReview | 5/5 |
+| 6 | `quality` | QualityStandard, QualityAudit, Inspection, ImprovementAction, DeliverableSignoff | 5/5 |
+| 7 | `scope` | Requirement, RequirementTrace, ScopeStatement, ChangeRequest, ScopeVerification | 5/5 |
+
+## Verification (single writer) ✅
+- [x] makemigrations (20 models) → migrate → `manage.py check` = 0 issues
+- [x] Seed ×4 both tenants → idempotent (2nd run skips)
+- [x] `verify_modules_4_7.py`: GET sweep (100 checks), template-leak, detail-content, **CRUD round-trips (20)**,
+      **tenant isolation (20)**, malformed FK-filter (7) — ALL PASS on first run
+- [x] Full pytest suite still green
+- [x] Adversarial review (4 module + 1 security): **0 high, 0 medium**
+
+## Findings actioned / not
+- Fixed (cosmetic): `.text-danger`/`.text-red` were undefined in theme.css (used by forecast/controlaccount to
+  flag negative VAC / CPI<1, and one leftover in `resources/forecast_list.html`). Defined both utilities (+ dark
+  variant) once in theme.css — fixes all 5 occurrences. [L13]
+- NOT actioned (intentional): global auto-number sequence (BUD/RSK/etc.), consistent with the reference
+  `INV-#####`/`PINV-#####`; reviewer confirmed IDOR-safe, informational only.
+- Process: wire-up reverted then re-applied post-build because the new check-after-edit hook rejects references
+  to apps that don't exist yet. [L12]
+
+---
+
 # TODO — NavPMS Modules 1–3 (Initiation, Planning, Resources)
 
 ## Status: ✅ COMPLETE & VERIFIED
