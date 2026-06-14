@@ -1,0 +1,72 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ workdependency.work_item }} → {{ workdependency.depends_on }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ workdependency.work_item }} → {{ workdependency.depends_on }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'work:workitem_list' %}">Task &amp; Work Management</a></li>
+        <li class="active" aria-current="page">Dependency</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if workdependency.status == 'active' %}<span class="badge badge-amber">{{ workdependency.get_status_display }}</span>
+    {% elif workdependency.status == 'resolved' %}<span class="badge badge-green">{{ workdependency.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ workdependency.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'work:workdependency_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'work:workdependency_edit' workdependency.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'work:workdependency_delete' workdependency.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete this dependency?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Dependency Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Work Item</dt><dd style="margin:0;font-weight:500;">{{ workdependency.work_item|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Depends On</dt><dd style="margin:0;font-weight:500;">{{ workdependency.depends_on|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Type</dt><dd style="margin:0;font-weight:500;">
+            {% if workdependency.dependency_type == 'blocks' %}<span class="badge badge-red">{{ workdependency.get_dependency_type_display }}</span>
+            {% elif workdependency.dependency_type == 'relates' %}<span class="badge badge-blue">{{ workdependency.get_dependency_type_display }}</span>
+            {% else %}<span class="badge badge-slate">{{ workdependency.get_dependency_type_display }}</span>{% endif %}
+          </dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">
+            {% if workdependency.status == 'active' %}<span class="badge badge-amber">{{ workdependency.get_status_display }}</span>
+            {% elif workdependency.status == 'resolved' %}<span class="badge badge-green">{{ workdependency.get_status_display }}</span>
+            {% else %}<span class="badge badge-slate">{{ workdependency.get_status_display }}</span>{% endif %}
+          </dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Lag (days)</dt><dd style="margin:0;font-weight:500;">{{ workdependency.lag_days }}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Notes</dt><dd style="margin:0;font-weight:500;">{{ workdependency.notes|linebreaksbr|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ workdependency.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ workdependency.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'work:workdependency_edit' workdependency.pk %}"><i data-lucide="edit-2"></i> Edit Dependency</a>
+        <form method="post" action="{% url 'work:workdependency_delete' workdependency.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete this dependency?')"><i data-lucide="trash-2"></i> Delete Dependency</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'work:workdependency_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
