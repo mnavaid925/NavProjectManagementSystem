@@ -1,0 +1,30 @@
+{% extends 'auth/_auth_base.html' %}
+
+{% block title %}Invitation{% endblock %}
+
+{% block brand_body %}
+  <h1 class="auth-headline">This invitation isn&rsquo;t available.</h1>
+  <p class="auth-blurb">Invitations are single-use and time-limited. If yours has expired or already been used, ask your administrator to send a fresh one.</p>
+  <ul class="auth-features">
+    <li><span class="auth-feature-ico"><i data-lucide="clock"></i></span><div>Invites expire after a set period for security.</div></li>
+    <li><span class="auth-feature-ico"><i data-lucide="user-check"></i></span><div>Each invite can only be accepted once.</div></li>
+    <li><span class="auth-feature-ico"><i data-lucide="mail"></i></span><div>Your admin can resend a new invitation anytime.</div></li>
+  </ul>
+{% endblock %}
+
+{% block card %}
+  <div class="auth-card-head">
+    <div class="auth-status-ico is-danger"><i data-lucide="mail-x"></i></div>
+    <h2 class="auth-title">Invitation no longer valid</h2>
+    <p class="auth-subtitle">This invitation has expired or has already been used. Please ask your organization administrator to send you a new one.</p>
+  </div>
+
+  <div class="auth-alert auth-alert-warning" role="alert">
+    <i data-lucide="alert-triangle"></i>
+    <div>If you believe this is a mistake, contact the person who invited you to request a fresh invitation link.</div>
+  </div>
+
+  <a href="{% url 'accounts:login' %}" class="auth-btn">
+    <i data-lucide="log-in"></i> Go to sign in
+  </a>
+{% endblock %}
