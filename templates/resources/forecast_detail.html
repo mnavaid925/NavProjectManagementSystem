@@ -1,0 +1,70 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ forecast.title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ forecast.title }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'resources:forecast_list' %}">Resource Management</a></li>
+        <li class="active" aria-current="page">{{ forecast.title }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    <a class="btn btn-secondary" href="{% url 'resources:forecast_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'resources:forecast_edit' forecast.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'resources:forecast_delete' forecast.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete this forecast?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Forecast Details</h2>
+        <div style="display:flex;gap:.4rem;">
+          {% if forecast.status == 'confirmed' %}<span class="badge badge-green">{{ forecast.get_status_display }}</span>
+          {% elif forecast.status == 'projected' %}<span class="badge badge-blue">{{ forecast.get_status_display }}</span>
+          {% elif forecast.status == 'closed' %}<span class="badge badge-slate">{{ forecast.get_status_display }}</span>
+          {% else %}<span class="badge badge-slate">{{ forecast.get_status_display }}</span>{% endif %}
+        </div>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Title</dt><dd style="margin:0;font-weight:500;">{{ forecast.title|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Period</dt><dd style="margin:0;font-weight:500;">{{ forecast.period|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Project</dt><dd style="margin:0;font-weight:500;">{{ forecast.project.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Skill</dt><dd style="margin:0;font-weight:500;">{{ forecast.skill.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Demand Hours</dt><dd style="margin:0;font-weight:500;">{{ forecast.demand_hours }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Capacity Hours</dt><dd style="margin:0;font-weight:500;">{{ forecast.capacity_hours }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Gap Hours</dt><dd style="margin:0;font-weight:500;{% if forecast.gap_hours > 0 %}color:#dc2626;{% endif %}">{{ forecast.gap_hours }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">{{ forecast.get_status_display }}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Notes</dt><dd style="margin:0;font-weight:500;">{{ forecast.notes|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ forecast.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ forecast.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'resources:forecast_edit' forecast.pk %}"><i data-lucide="edit-2"></i> Edit Forecast</a>
+        <form method="post" action="{% url 'resources:forecast_delete' forecast.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete this forecast?')"><i data-lucide="trash-2"></i> Delete Forecast</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'resources:forecast_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
