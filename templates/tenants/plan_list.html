@@ -1,0 +1,128 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ page_title|default:'Subscription Plans' }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Subscription Plans</h1>
+    <ul class="breadcrumb">
+      <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+      <li><span class="active" aria-current="page">Plans</span></li>
+    </ul>
+  </div>
+  {% if can_manage %}
+  <div class="page-actions">
+    <a href="{% url 'tenants:plan_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> New Plan</a>
+  </div>
+  {% endif %}
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">All Plans <span class="text-muted">({{ total_count }})</span></h2>
+  </div>
+  <div class="card-body">
+    {# ---------------- Filters ---------------- #}
+    <form method="get" class="flex flex-wrap items-end gap-3 mb-4">
+      <div class="form-group mb-0 flex-1" style="min-width:200px">
+        <label class="form-label">Search</label>
+        <input type="text" name="q" value="{{ request.GET.q|default:'' }}" class="form-input" placeholder="Search plan name...">
+      </div>
+      <div class="form-group mb-0" style="min-width:160px">
+        <label class="form-label">Status</label>
+        <select name="status" class="form-select">
+          <option value="">All statuses</option>
+          {% for val, label in status_options %}
+          <option value="{{ val }}" {% if request.GET.status == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group mb-0">
+        <button type="submit" class="btn btn-secondary"><i data-lucide="filter"></i> Filter</button>
+        {% if request.GET.q or request.GET.status %}
+        <a href="{% url 'tenants:plan_list' %}" class="btn btn-outline btn-sm"><i data-lucide="x"></i> Clear</a>
+        {% endif %}
+      </div>
+    </form>
+
+    {# ---------------- Table ---------------- #}
+    {% if plans %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Plan</th>
+            <th>Monthly</th>
+            <th>Yearly</th>
+            <th>Users</th>
+            <th>Projects</th>
+            <th>Storage</th>
+            <th>Status</th>
+            <th style="text-align:right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for plan in plans %}
+          <tr>
+            <td>
+              <div class="font-semibold">{{ plan.name }}
+                {% if plan.is_popular %}<span class="badge badge-purple"><i data-lucide="star"></i> Popular</span>{% endif %}
+              </div>
+              <div class="form-hint">{{ plan.slug }}</div>
+            </td>
+            <td>${{ plan.price_monthly }}</td>
+            <td>${{ plan.price_yearly }}</td>
+            <td>{{ plan.max_users }}</td>
+            <td>{{ plan.max_projects }}</td>
+            <td>{{ plan.max_storage_gb }} GB</td>
+            <td>
+              {% if plan.is_active %}<span class="badge badge-green">Active</span>
+              {% else %}<span class="badge badge-slate">Inactive</span>{% endif %}
+            </td>
+            <td>
+              <div class="table-actions">
+                {% if can_manage %}
+                <a href="{% url 'tenants:plan_edit' plan.pk %}" class="btn-icon" title="Edit"><i data-lucide="edit-2"></i></a>
+                <form method="post" action="{% url 'tenants:plan_delete' plan.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon btn-danger" title="Delete" onclick="return confirm('Delete plan &quot;{{ plan.name|escapejs }}&quot;?')"><i data-lucide="trash-2"></i></button>
+                </form>
+                {% else %}
+                <span class="text-muted text-xs">—</span>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {# ---------------- Pagination ---------------- #}
+    {% if page_obj.paginator.num_pages > 1 %}
+    <ul class="pagination">
+      <li class="{% if not page_obj.has_previous %}disabled{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">Prev</a>
+      </li>
+      {% for n in page_obj.paginator.page_range %}
+      <li class="{% if n == page_obj.number %}active{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&amp;{% endif %}page={{ n }}">{{ n }}</a>
+      </li>
+      {% endfor %}
+      <li class="{% if not page_obj.has_next %}disabled{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&amp;{% endif %}page={{ page_obj.next_page_number }}">Next</a>
+      </li>
+    </ul>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon"><i data-lucide="package"></i></div>
+      <h3>No plans found</h3>
+      <p>{% if request.GET.q or request.GET.status %}No plans match your filters.{% else %}Create your first subscription plan to get started.{% endif %}</p>
+      {% if can_manage %}<a href="{% url 'tenants:plan_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> New Plan</a>{% endif %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
