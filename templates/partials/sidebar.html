@@ -1,0 +1,64 @@
+{% load static nav_extras %}
+{# ============================ Sidebar ============================ #}
+{% comment %}
+NOTE: nav sections are plain dicts. The Dashboard/Workspace sections use an
+'items' key, which collides with the built-in dict.items() method in Django's
+template resolver — so we read it via the |get_item filter, never section.items.
+{% endcomment %}
+<aside class="app-sidebar" id="app-sidebar">
+
+  {# Brand header #}
+  <a href="{% url 'dashboard:index' %}" class="sidebar-brand">
+    <span class="sidebar-brand-logo">{% if current_tenant %}{{ current_tenant.name|slice:':1'|upper }}{% else %}N{% endif %}</span>
+    <span class="sidebar-brand-text">{% if current_tenant %}{{ current_tenant.name }}{% else %}NavPMS{% endif %}</span>
+  </a>
+
+  <nav class="sidebar-scroll" aria-label="Primary">
+    {% for section in nav_sections %}
+      {% with section_items=section|get_item:'items' %}
+      <div class="nav-section">
+
+        {# Section title (Dashboard / Workspace / Modules) #}
+        <p class="nav-section-title">{{ section.label }}</p>
+
+        {# ---- Simple link sections (Dashboard, Workspace) ---- #}
+        {% if section_items %}
+          {% for item in section_items %}
+            <a href="{% nav_link item %}" class="nav-link {% is_active_url item.url_name %}">
+              <i data-lucide="{{ item.icon }}"></i>
+              <span class="nav-label">{{ item.label }}</span>
+            </a>
+          {% endfor %}
+        {% endif %}
+
+        {# ---- Modules section (collapsible groups 0..20) ---- #}
+        {% if section.modules %}
+          {% for module in section.modules %}
+            <div class="nav-group" data-nav-group data-module="{{ module.slug }}">
+              <button type="button" class="nav-group-toggle" data-nav-group-toggle aria-expanded="false">
+                <i data-lucide="{{ module.icon }}"></i>
+                <span class="module-number">{{ module.number }}</span>
+                <span class="nav-label">{{ module.name }}</span>
+                <i data-lucide="chevron-right" class="nav-caret"></i>
+              </button>
+              <div class="nav-submenu" data-nav-submenu>
+                {% for sub in module.submodules %}
+                  {% submodule_link sub module as sub_url %}
+                  <a href="{{ sub_url }}"
+                     class="nav-sublink{% if sub_url == request.path %} active{% endif %}"
+                     {% if sub_url == request.path %}data-active="true"{% endif %}
+                     title="{{ sub.name }}">
+                    <span class="sub-text">{{ sub.name }}</span>
+                    {% if sub.is_live %}<span class="nav-badge-live">Live</span>{% endif %}
+                  </a>
+                {% endfor %}
+              </div>
+            </div>
+          {% endfor %}
+        {% endif %}
+
+      </div>
+      {% endwith %}
+    {% endfor %}
+  </nav>
+</aside>
