@@ -1,0 +1,117 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}Tasks{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Tasks</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li class="active" aria-current="page">Tasks</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    <a class="btn btn-primary" href="{% url 'projects:task_create' %}"><i data-lucide="plus"></i> New Task</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <form method="get" class="form-row" style="grid-template-columns:1fr auto auto auto;align-items:end;gap:.75rem;">
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label" for="q">Search</label>
+        <input type="text" id="q" name="q" class="form-input" placeholder="Title or description&hellip;" value="{{ request.GET.q }}">
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label" for="status">Status</label>
+        <select id="status" name="status" class="form-select">
+          <option value="">All Statuses</option>
+          {% for value, label in status_choices %}
+            <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label" for="project">Project</label>
+        <select id="project" name="project" class="form-select">
+          <option value="">All Projects</option>
+          {% for p in projects %}
+            <option value="{{ p.pk }}" {% if request.GET.project == p.pk|stringformat:"d" %}selected{% endif %}>{{ p.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:0;display:flex;gap:.5rem;">
+        <button type="submit" class="btn btn-secondary"><i data-lucide="filter"></i> Filter</button>
+        <a class="btn btn-outline" href="{% url 'projects:task_list' %}"><i data-lucide="x"></i></a>
+      </div>
+    </form>
+  </div>
+
+  {% if tasks %}
+  <div class="table-wrap" style="border:0;border-top:1px solid var(--border);border-radius:0;">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Task</th>
+          <th>Project</th>
+          <th>Assignee</th>
+          <th>Priority</th>
+          <th>Status</th>
+          <th>Due Date</th>
+          <th style="text-align:right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for task in tasks %}
+        <tr>
+          <td><a href="{% url 'projects:task_detail' task.pk %}" style="font-weight:600;color:var(--text);">{{ task.title }}</a></td>
+          <td>{{ task.project.name }}</td>
+          <td>
+            {% if task.assignee %}
+              <div style="display:flex;align-items:center;gap:.5rem;">
+                <span class="avatar-initial avatar-sm">{{ task.assignee.get_full_name|default:task.assignee.username|make_list|first|upper }}</span>
+                <span>{{ task.assignee.get_full_name|default:task.assignee.username }}</span>
+              </div>
+            {% else %}<span class="text-muted">Unassigned</span>{% endif %}
+          </td>
+          <td>
+            {% if task.priority == 'urgent' %}<span class="badge badge-red">{{ task.get_priority_display }}</span>
+            {% elif task.priority == 'high' %}<span class="badge badge-amber">{{ task.get_priority_display }}</span>
+            {% elif task.priority == 'medium' %}<span class="badge badge-blue">{{ task.get_priority_display }}</span>
+            {% else %}<span class="badge badge-slate">{{ task.get_priority_display }}</span>{% endif %}
+          </td>
+          <td>
+            {% if task.status == 'done' %}<span class="badge badge-green">{{ task.get_status_display }}</span>
+            {% elif task.status == 'in_progress' %}<span class="badge badge-blue">{{ task.get_status_display }}</span>
+            {% elif task.status == 'review' %}<span class="badge badge-purple">{{ task.get_status_display }}</span>
+            {% else %}<span class="badge badge-slate">{{ task.get_status_display }}</span>{% endif %}
+          </td>
+          <td>{{ task.due_date|date:"M d, Y"|default:"—" }}</td>
+          <td>
+            <div class="table-actions">
+              <a class="btn-icon" href="{% url 'projects:task_detail' task.pk %}" title="View"><i data-lucide="eye"></i></a>
+              <a class="btn-icon" href="{% url 'projects:task_edit' task.pk %}" title="Edit"><i data-lucide="edit-2"></i></a>
+              <form method="post" action="{% url 'projects:task_delete' task.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn-icon btn-danger" title="Delete" onclick="return confirm('Delete this task?')"><i data-lucide="trash-2"></i></button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include 'projects/_pagination.html' %}
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon"><i data-lucide="check-square"></i></div>
+    <h3>No tasks found</h3>
+    <p>{% if request.GET.q or request.GET.status or request.GET.project %}No tasks match your filters. Try adjusting them.{% else %}Create your first task to get started.{% endif %}</p>
+    <a class="btn btn-primary" href="{% url 'projects:task_create' %}"><i data-lucide="plus"></i> New Task</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
