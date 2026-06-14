@@ -1,0 +1,38 @@
+{% comment %}
+Reusable field renderer for the Projects forms. Wraps each visible field in a
+.form-group with label, hint and errors. Raw Django widgets are styled via the
+.django-form scope defined in each form page's {% block extra_css %}.
+{% endcomment %}
+{% if form.non_field_errors %}
+  <div class="alert alert-danger" role="alert">
+    <i data-lucide="alert-circle"></i>
+    <div>
+      {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+    </div>
+  </div>
+{% endif %}
+
+<div class="django-form">
+  {% for field in form.visible_fields %}
+    {% if field.field.widget.input_type == 'checkbox' %}
+      <div class="form-group">
+        <label class="form-check" for="{{ field.id_for_label }}">
+          {{ field }}
+          <span>{{ field.label }}</span>
+        </label>
+        {% if field.help_text %}<div class="form-hint">{{ field.help_text }}</div>{% endif %}
+        {% for error in field.errors %}<div class="form-error"><i data-lucide="alert-circle" style="width:12px;height:12px;"></i>{{ error }}</div>{% endfor %}
+      </div>
+    {% else %}
+      <div class="form-group">
+        <label class="form-label" for="{{ field.id_for_label }}">
+          {{ field.label }}{% if field.field.required %} <span class="req">*</span>{% endif %}
+        </label>
+        {{ field }}
+        {% if field.help_text %}<div class="form-hint">{{ field.help_text }}</div>{% endif %}
+        {% for error in field.errors %}<div class="form-error"><i data-lucide="alert-circle" style="width:12px;height:12px;"></i>{{ error }}</div>{% endfor %}
+      </div>
+    {% endif %}
+  {% endfor %}
+  {% for field in form.hidden_fields %}{{ field }}{% endfor %}
+</div>
