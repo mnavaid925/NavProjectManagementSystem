@@ -62,6 +62,11 @@ INSTALLED_APPS = [
     'apps.risks',
     'apps.quality',
     'apps.scope',
+    # Module 8-11
+    'apps.work',
+    'apps.collaboration',
+    'apps.documents',
+    'apps.timesheets',
 ]
 
 MIDDLEWARE = [
