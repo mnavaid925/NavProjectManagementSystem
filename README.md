@@ -190,19 +190,19 @@ python -m venv venv
 .\venv\Scripts\Activate.ps1
 
 # 3. Install dependencies
-venv\Scripts\python.exe -m pip install -r requirements.txt
+python -m pip install -r requirements.txt
 
 # 4. Copy the env template (or keep the supplied .env)
 Copy-Item .env.example .env        # then edit if your MySQL user/password differ
 
 # 5. Migrate
-venv\Scripts\python.exe manage.py migrate
+python manage.py migrate
 
 # 6. Seed demo data (plans + 2 tenants + users + subscriptions + invoices + projects/tasks/…)
-venv\Scripts\python.exe manage.py seed_demo
+python manage.py seed_demo
 
 # 7. Run the dev server
-venv\Scripts\python.exe manage.py runserver
+python manage.py runserver
 ```
 
 Open **http://127.0.0.1:8000/** → you'll be redirected to **`/login/`**. Sign in with a seeded **tenant admin**
@@ -240,14 +240,14 @@ All values are read from `.env` via `python-dotenv`. Defaults assume XAMPP (MySQ
 
 | Command | What it does |
 |---------|--------------|
-| `venv\Scripts\python.exe manage.py migrate` | Apply migrations to `nav_pms`. |
-| `venv\Scripts\python.exe manage.py seed_demo` | **Idempotent** demo seeder — plans, tenants, users, roles, subscriptions, invoices, branding, usage, alerts, projects/tasks/meetings/tickets/invoices, 12-month financial snapshots, and audit logs. Prints login credentials on completion. |
-| `venv\Scripts\python.exe manage.py seed_demo --flush` | Wipe and re-seed demo data. |
-| `venv\Scripts\python.exe manage.py seed_initiation` | **Idempotent** Module 1 seeder (requests, business cases, charters, stakeholders, kickoff tasks) for both tenants. Run after `seed_demo`. |
-| `venv\Scripts\python.exe manage.py seed_planning` | **Idempotent** Module 2 seeder (work packages, schedule tasks, dependencies, milestones, baselines). |
-| `venv\Scripts\python.exe manage.py seed_resources` | **Idempotent** Module 3 seeder (skills, resources, allocations, team assignments, demand forecasts, time entries). |
-| `venv\Scripts\python.exe manage.py createsuperuser` | Optional cross-tenant Django admin (`tenant=None`). |
-| `venv\Scripts\python.exe manage.py runserver` | Start the dev server on `127.0.0.1:8000`. |
+| `python manage.py migrate` | Apply migrations to `nav_pms`. |
+| `python manage.py seed_demo` | **Idempotent** demo seeder — plans, tenants, users, roles, subscriptions, invoices, branding, usage, alerts, projects/tasks/meetings/tickets/invoices, 12-month financial snapshots, and audit logs. Prints login credentials on completion. |
+| `python manage.py seed_demo --flush` | Wipe and re-seed demo data. |
+| `python manage.py seed_initiation` | **Idempotent** Module 1 seeder (requests, business cases, charters, stakeholders, kickoff tasks) for both tenants. Run after `seed_demo`. |
+| `python manage.py seed_planning` | **Idempotent** Module 2 seeder (work packages, schedule tasks, dependencies, milestones, baselines). |
+| `python manage.py seed_resources` | **Idempotent** Module 3 seeder (skills, resources, allocations, team assignments, demand forecasts, time entries). |
+| `python manage.py createsuperuser` | Optional cross-tenant Django admin (`tenant=None`). |
+| `python manage.py runserver` | Start the dev server on `127.0.0.1:8000`. |
 
 > `seed_demo` is safe to run repeatedly — it guards each tenant with an existence check and skips already-seeded
 > data (no duplicates). Use `--flush` to rebuild from scratch.

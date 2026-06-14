@@ -78,6 +78,24 @@ wire-up as the post-build single-writer step (after the workflow completes), not
 there was no such hook so early wire-up worked; on 4–7 it didn't.) Baking the lessons into the spec up front
 (L7–L11 in `temp/specs/_conventions.md`) made the 4–7 build pass all 6 verification classes on the first pass.
 
+## L15 — The browser caches `static/js|css` (Django dev sets no Cache-Control) → version the assets
+Editing `layout.js`/`theme.css` and reloading showed NO change because the browser served the OLD file from
+its HTTP cache (Django's dev static handler sends only `Last-Modified`, so browsers apply *heuristic freshness*
+and skip revalidation for a while). `location.reload()` did not bust it. **Fix:** version the includes —
+`<script src="{% static 'js/layout.js' %}?v=2">` (bump the number when the file changes). Then a normal reload
+fetches the new URL. For verification in the preview, a unique page query (`/?_cb=<ts>`) forces a fresh HTML
+fetch. (Long-term: a `{% static %}`-with-mtime template tag or ManifestStaticFilesStorage auto-versions.)
+
+## L14 — `.claude/launch.json` runs the dev server with `--noreload` → ALWAYS restart after a build
+The preview server (`launch.json` config `navpms`) starts `manage.py runserver --noreload`. `--noreload` means
+**file edits are NEVER picked up** — after building/wiring a module, the running server keeps serving pre-change
+code, so new sub-modules show the "On the roadmap" placeholder and edits look like they "didn't work". This is a
+specific instance of [L6]. **Rule:** after finishing a module build (especially `navigation.py`/`urls.py`/
+`settings.py` wiring), restart the server: find the LISTENING pid on :8000 with **`netstat -ano | Select-String
+':8000\b'`** (NOT `Get-NetTCPConnection` — it false-negatived a real listener here), `Stop-Process -Id <pid>
+-Force`, then `preview_start navpms`. Then verify the live page renders (fetch `/initiation/requests/` → contains
+"Project Requests", not "On the roadmap"). The disk code was already correct — only the stale process was wrong.
+
 ## L13 — Template agents reference utility CSS classes that don't exist
 Agents wrote `<span class="text-danger">`/`text-red` to flag negative/over-threshold values, but theme.css only
 defines `.text-muted`/`.text-brand` — so the values rendered with no emphasis (cosmetic, no error). **Rule:**
