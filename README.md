@@ -6,12 +6,12 @@ A **multi-tenant Project Management System** built with **Django 5.1** (backend)
 multi-tenancy, full authentication & user management, and a reference "Project Dashboard".
 
 This release delivers the complete **Foundation** (multi-tenancy, authentication, user/role management, themed
-dashboard) and **Modules 0–7** end-to-end — Tenant & Subscription, Project Initiation & Charter, Project
-Planning & Scheduling, Resource, Cost & Budget, Risk & Issue, Quality, and Scope & Requirements Management
-(all five sub-modules each) — plus a lightweight **Workspace** (Projects / Tasks / Meetings / Tickets / Invoices)
-that powers the dashboard with real seeded data. The remaining 13 modules from `ProjectManagementSystem.md`
-appear in the sidebar as navigable **"on the roadmap"** placeholders and are generated on demand by the
-`/next-module` Claude Code skill.
+dashboard) and **Modules 0–11** end-to-end — Tenant & Subscription, Project Initiation & Charter, Project
+Planning & Scheduling, Resource, Cost & Budget, Risk & Issue, Quality, Scope & Requirements, Task & Work,
+Collaboration & Communication, Document & Knowledge, and Time & Attendance Tracking (all five sub-modules each)
+— plus a lightweight **Workspace** (Projects / Tasks / Meetings / Tickets / Invoices) that powers the dashboard
+with real seeded data. The remaining 9 modules from `ProjectManagementSystem.md` appear in the sidebar as
+navigable **"on the roadmap"** placeholders and are generated on demand by the `/next-module` Claude Code skill.
 
 ---
 
@@ -254,6 +254,10 @@ All values are read from `.env` via `python-dotenv`. Defaults assume XAMPP (MySQ
 | `python manage.py seed_risks` | **Idempotent** Module 5 seeder (risks, analyses, responses, issues, risk reviews). |
 | `python manage.py seed_quality` | **Idempotent** Module 6 seeder (quality standards, audits, inspections, improvement actions, deliverable sign-offs). |
 | `python manage.py seed_scope` | **Idempotent** Module 7 seeder (requirements, traces, scope statements, change requests, scope verifications). |
+| `python manage.py seed_work` | **Idempotent** Module 8 seeder (work items, priority scores, board columns, board cards, work dependencies). |
+| `python manage.py seed_collaboration` | **Idempotent** Module 9 seeder (channels, shared documents, meetings, notifications, activity entries). |
+| `python manage.py seed_documents` | **Idempotent** Module 10 seeder (documents, document templates, versions, knowledge articles, retention policies). |
+| `python manage.py seed_timesheets` | **Idempotent** Module 11 seeder (timesheets, lines, approvals, leave records, utilization snapshots). |
 | `python manage.py createsuperuser` | Optional cross-tenant Django admin (`tenant=None`). |
 | `python manage.py runserver` | Start the dev server on `127.0.0.1:8000`. |
 
@@ -359,10 +363,10 @@ from the `apps/tenants` reference pattern).
 | 5 | Risk & Issue Management | ✅ Complete (`apps/risks`) |
 | 6 | Quality Management | ✅ Complete (`apps/quality`) |
 | 7 | Scope & Requirements Management | ✅ Complete (`apps/scope`) |
-| 8 | Task & Work Management | 🗺️ Roadmap → `apps/work` |
-| 9 | Collaboration & Communication | 🗺️ Roadmap → `apps/collaboration` |
-| 10 | Document & Knowledge Management | 🗺️ Roadmap → `apps/documents` |
-| 11 | Time & Attendance Tracking | 🗺️ Roadmap → `apps/timesheets` |
+| 8 | Task & Work Management | ✅ Complete (`apps/work`) |
+| 9 | Collaboration & Communication | ✅ Complete (`apps/collaboration`) |
+| 10 | Document & Knowledge Management | ✅ Complete (`apps/documents`) |
+| 11 | Time & Attendance Tracking | ✅ Complete (`apps/timesheets`) |
 | 12 | Portfolio & Program Management | 🗺️ Roadmap → `apps/portfolio` |
 | 13 | Agile & Scrum Management | 🗺️ Roadmap → `apps/agile` |
 | 14 | Client & External Collaboration | 🗺️ Roadmap → `apps/clients` |
@@ -394,7 +398,11 @@ Build the next one with: **`/next-module`** (auto-detects the lowest unbuilt mod
 | Module 5 | `/risks/` | `/risks/register/`, `/risks/analysis/`, `/risks/responses/`, `/risks/issues/`, `/risks/reviews/` |
 | Module 6 | `/quality/` | `/quality/standards/`, `/quality/audits/`, `/quality/inspections/`, `/quality/improvements/`, `/quality/signoffs/` |
 | Module 7 | `/scope/` | `/scope/requirements/`, `/scope/traces/`, `/scope/statements/`, `/scope/change-requests/`, `/scope/verifications/` |
-| Roadmap placeholders | `/m/<module>/<sub>/` | e.g. `/m/task-work-management/task-board/` |
+| Module 8 | `/work/` | `/work/items/`, `/work/priority-scores/`, `/work/board-columns/`, `/work/board-cards/`, `/work/dependencies/` |
+| Module 9 | `/collaboration/` | `/collaboration/channels/`, `/collaboration/shared-documents/`, `/collaboration/meetings/`, `/collaboration/notifications/`, `/collaboration/activities/` |
+| Module 10 | `/documents/` | `/documents/documents/`, `/documents/templates/`, `/documents/versions/`, `/documents/knowledge/`, `/documents/retention-policies/` |
+| Module 11 | `/timesheets/` | `/timesheets/timesheets/`, `/timesheets/timesheet-lines/`, `/timesheets/approvals/`, `/timesheets/leave/`, `/timesheets/utilization/` |
+| Roadmap placeholders | `/m/<module>/<sub>/` | e.g. `/m/portfolio-program-management/portfolio-dashboard/` |
 | Audit log | `/audit-log/` | tenant-scoped activity trail |
 | Django admin | `/admin/` | superuser only |
 
