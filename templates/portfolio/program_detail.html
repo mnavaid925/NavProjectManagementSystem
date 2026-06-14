@@ -1,0 +1,71 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ program.number }} — {{ program.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ program.number }} — {{ program.name }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'portfolio:program_list' %}">Portfolio &amp; Program Management</a></li>
+        <li class="active" aria-current="page">{{ program.number }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if program.status == 'active' %}<span class="badge badge-green">{{ program.get_status_display }}</span>
+    {% elif program.status == 'completed' %}<span class="badge badge-blue">{{ program.get_status_display }}</span>
+    {% elif program.status == 'planning' %}<span class="badge badge-slate">{{ program.get_status_display }}</span>
+    {% elif program.status == 'on_hold' %}<span class="badge badge-amber">{{ program.get_status_display }}</span>
+    {% elif program.status == 'cancelled' %}<span class="badge badge-red">{{ program.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ program.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'portfolio:program_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'portfolio:program_edit' program.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'portfolio:program_delete' program.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete program {{ program.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Program Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Number</dt><dd style="margin:0;font-weight:500;">{{ program.number|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Name</dt><dd style="margin:0;font-weight:500;">{{ program.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Portfolio</dt><dd style="margin:0;font-weight:500;">{{ program.portfolio.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Manager</dt><dd style="margin:0;font-weight:500;">{% if program.program_manager %}{{ program.program_manager.get_full_name|default:program.program_manager.username }}{% else %}—{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">{{ program.get_status_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Health</dt><dd style="margin:0;font-weight:500;">{{ program.get_health_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Start Date</dt><dd style="margin:0;font-weight:500;">{{ program.start_date|date:"M d, Y"|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">End Date</dt><dd style="margin:0;font-weight:500;">{{ program.end_date|date:"M d, Y"|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Budget</dt><dd style="margin:0;font-weight:500;">{{ program.budget|default:"—" }}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Description</dt><dd style="margin:0;font-weight:500;">{{ program.description|linebreaksbr|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ program.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ program.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'portfolio:program_edit' program.pk %}"><i data-lucide="edit-2"></i> Edit Program</a>
+        <form method="post" action="{% url 'portfolio:program_delete' program.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete program {{ program.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Program</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'portfolio:program_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
