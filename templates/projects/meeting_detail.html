@@ -1,0 +1,76 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ meeting.title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ meeting.title }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'projects:meeting_list' %}">Meetings</a></li>
+        <li class="active" aria-current="page">{{ meeting.title }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    <a class="btn btn-secondary" href="{% url 'projects:meeting_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'projects:meeting_edit' meeting.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'projects:meeting_delete' meeting.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete this meeting?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Notes</h2>
+      {% if meeting.meeting_type == 'client' %}<span class="badge badge-purple">{{ meeting.get_meeting_type_display }}</span>
+      {% elif meeting.meeting_type == 'review' %}<span class="badge badge-blue">{{ meeting.get_meeting_type_display }}</span>
+      {% elif meeting.meeting_type == 'planning' %}<span class="badge badge-amber">{{ meeting.get_meeting_type_display }}</span>
+      {% elif meeting.meeting_type == 'retro' %}<span class="badge badge-green">{{ meeting.get_meeting_type_display }}</span>
+      {% else %}<span class="badge badge-slate">{{ meeting.get_meeting_type_display }}</span>{% endif %}
+    </div>
+    <div class="card-body">
+      {% if meeting.notes %}
+        <p style="color:var(--text-muted);margin:0;">{{ meeting.notes|linebreaksbr }}</p>
+      {% else %}
+        <p class="text-muted" style="margin:0;">No notes recorded.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Details</h2></div>
+      <div class="card-body">
+        <dl style="margin:0;display:grid;gap:.85rem;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Scheduled For</dt><dd style="margin:0;font-weight:500;">{{ meeting.scheduled_for|date:"M d, Y · H:i" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Duration</dt><dd style="margin:0;font-weight:500;">{{ meeting.duration_minutes }} min</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Location</dt><dd style="margin:0;font-weight:500;">{{ meeting.location|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Organizer</dt><dd style="margin:0;font-weight:500;">{{ meeting.organizer.get_full_name|default:meeting.organizer.username|default:"—" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Attendees</h2></div>
+      <div class="card-body">
+        {% if meeting.attendees.all %}
+          <div style="display:flex;flex-direction:column;gap:.6rem;">
+            {% for person in meeting.attendees.all %}
+              <div style="display:flex;align-items:center;gap:.55rem;">
+                <span class="avatar-initial avatar-sm">{{ person.get_full_name|default:person.username|make_list|first|upper }}</span>
+                <span>{{ person.get_full_name|default:person.username }}</span>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-muted" style="margin:0;">No attendees added.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
