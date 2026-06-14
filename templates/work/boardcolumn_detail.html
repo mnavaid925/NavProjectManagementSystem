@@ -1,0 +1,69 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ boardcolumn.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ boardcolumn.name }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'work:workitem_list' %}">Task &amp; Work Management</a></li>
+        <li><a href="{% url 'work:boardcolumn_list' %}">Board Columns</a></li>
+        <li class="active" aria-current="page">{{ boardcolumn.name }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if boardcolumn.column_type == 'done' %}<span class="badge badge-green">{{ boardcolumn.get_column_type_display }}</span>
+    {% elif boardcolumn.column_type == 'in_progress' %}<span class="badge badge-blue">{{ boardcolumn.get_column_type_display }}</span>
+    {% elif boardcolumn.column_type == 'review' %}<span class="badge badge-amber">{{ boardcolumn.get_column_type_display }}</span>
+    {% elif boardcolumn.column_type == 'backlog' %}<span class="badge badge-slate">{{ boardcolumn.get_column_type_display }}</span>
+    {% elif boardcolumn.column_type == 'todo' %}<span class="badge badge-slate">{{ boardcolumn.get_column_type_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ boardcolumn.get_column_type_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'work:boardcolumn_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'work:boardcolumn_edit' boardcolumn.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'work:boardcolumn_delete' boardcolumn.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete column {{ boardcolumn.name|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Board Column Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Name</dt><dd style="margin:0;font-weight:500;">{{ boardcolumn.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Project</dt><dd style="margin:0;font-weight:500;">{{ boardcolumn.project.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Type</dt><dd style="margin:0;font-weight:500;">{{ boardcolumn.get_column_type_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Order</dt><dd style="margin:0;font-weight:500;">{{ boardcolumn.order }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">WIP Limit</dt><dd style="margin:0;font-weight:500;">{% if boardcolumn.wip_limit %}{{ boardcolumn.wip_limit }}{% else %}No limit{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Done Column?</dt><dd style="margin:0;font-weight:500;">{% if boardcolumn.is_done_column %}<span class="badge badge-green">Yes</span>{% else %}<span class="badge badge-slate">No</span>{% endif %}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Description</dt><dd style="margin:0;font-weight:500;">{{ boardcolumn.description|linebreaksbr|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ boardcolumn.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ boardcolumn.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'work:boardcolumn_edit' boardcolumn.pk %}"><i data-lucide="edit-2"></i> Edit Board Column</a>
+        <form method="post" action="{% url 'work:boardcolumn_delete' boardcolumn.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete column {{ boardcolumn.name|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Board Column</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'work:boardcolumn_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
