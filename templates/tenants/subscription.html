@@ -1,0 +1,167 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ page_title|default:'Subscription & Billing' }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Subscription &amp; Billing</h1>
+    <ul class="breadcrumb">
+      <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+      <li><span class="active" aria-current="page">Subscription</span></li>
+    </ul>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'tenants:invoice_list' %}" class="btn btn-outline"><i data-lucide="file-text"></i> Invoices</a>
+    <a href="{% url 'tenants:payment_method_list' %}" class="btn btn-secondary"><i data-lucide="credit-card"></i> Payment Methods</a>
+  </div>
+</div>
+
+{# ---------------- Current subscription summary ---------------- #}
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">Current Subscription</h2>
+    {% if subscription %}
+      {% if subscription.status == 'active' %}<span class="badge badge-green"><i data-lucide="check-circle"></i> Active</span>
+      {% elif subscription.status == 'trialing' %}<span class="badge badge-blue"><i data-lucide="clock"></i> Trialing</span>
+      {% elif subscription.status == 'past_due' %}<span class="badge badge-amber"><i data-lucide="alert-triangle"></i> Past Due</span>
+      {% elif subscription.status == 'canceled' %}<span class="badge badge-red"><i data-lucide="x-circle"></i> Canceled</span>
+      {% else %}<span class="badge badge-muted">{{ subscription.get_status_display }}</span>{% endif %}
+    {% else %}
+      <span class="badge badge-muted">None</span>
+    {% endif %}
+  </div>
+  <div class="card-body">
+    {% if subscription %}
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div>
+        <div class="form-hint">Plan</div>
+        <div class="text-lg font-bold">{{ subscription.plan.name|default:'—' }}</div>
+      </div>
+      <div>
+        <div class="form-hint">Billing Cycle</div>
+        <div class="text-lg font-bold">{{ subscription.get_billing_cycle_display }}</div>
+      </div>
+      <div>
+        <div class="form-hint">Seats</div>
+        <div class="text-lg font-bold">{{ subscription.seats }}</div>
+      </div>
+      <div>
+        <div class="form-hint">{% if subscription.is_trial %}Trial Ends{% else %}Renews{% endif %}</div>
+        <div class="text-lg font-bold">{{ subscription.days_left }} day{{ subscription.days_left|pluralize }}</div>
+      </div>
+    </div>
+    {% else %}
+      <div class="alert alert-info"><i data-lucide="info"></i><div>No active subscription. Choose a plan below to get started.</div></div>
+    {% endif %}
+  </div>
+</div>
+
+{# ---------------- Plan comparison ---------------- #}
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">Choose Your Plan</h2>
+    <p class="card-subtitle">Switch or upgrade at any time.</p>
+  </div>
+  <div class="card-body">
+    {% if plans %}
+    <form method="post">
+      {% csrf_token %}
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        {% for plan in plans %}
+        {% if subscription and subscription.plan_id == plan.pk %}{% with is_current=True %}{% endwith %}{% endif %}
+        <div class="rounded-xl border p-5 flex flex-col
+                    {% if subscription and subscription.plan_id == plan.pk %}border-brand-600 ring-2 ring-brand-500/30{% elif plan.is_popular %}border-brand-400{% else %}border-slate-200 dark:border-slate-700{% endif %}">
+          <div class="flex items-center justify-between mb-1">
+            <h3 class="text-base font-bold">{{ plan.name }}</h3>
+            {% if plan.is_popular %}<span class="badge badge-purple"><i data-lucide="star"></i> Popular</span>{% endif %}
+            {% if subscription and subscription.plan_id == plan.pk %}<span class="badge badge-green">Current</span>{% endif %}
+          </div>
+          <div class="mb-3">
+            <span class="text-2xl font-bold">${{ plan.price_monthly }}</span>
+            <span class="form-hint">/mo &middot; ${{ plan.price_yearly }}/yr</span>
+          </div>
+          <ul class="space-y-2 text-sm flex-1 mb-4">
+            <li class="flex items-center gap-2"><i data-lucide="users" class="w-4 h-4 text-brand-600"></i> {{ plan.max_users }} users</li>
+            <li class="flex items-center gap-2"><i data-lucide="folder" class="w-4 h-4 text-brand-600"></i> {{ plan.max_projects }} projects</li>
+            <li class="flex items-center gap-2"><i data-lucide="hard-drive" class="w-4 h-4 text-brand-600"></i> {{ plan.max_storage_gb }} GB storage</li>
+            {% for feat in plan.features %}
+            <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-green-600"></i> {{ feat }}</li>
+            {% endfor %}
+          </ul>
+          {% if subscription and subscription.plan_id == plan.pk %}
+            <button type="button" class="btn btn-secondary w-full" disabled>Current Plan</button>
+          {% elif subscription %}
+            <button type="submit" name="plan" value="{{ plan.pk }}" class="btn btn-primary w-full"><i data-lucide="arrow-up-circle"></i> Switch to {{ plan.name }}</button>
+          {% else %}
+            <button type="submit" name="plan" value="{{ plan.pk }}" class="btn btn-primary w-full"><i data-lucide="check"></i> Choose {{ plan.name }}</button>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% if subscription %}
+      <div class="mt-4 flex items-center gap-3">
+        <label class="form-label mb-0">Billing cycle:</label>
+        <select name="billing_cycle" class="form-select" style="width:auto">
+          <option value="monthly" {% if subscription.billing_cycle == 'monthly' %}selected{% endif %}>Monthly</option>
+          <option value="yearly" {% if subscription.billing_cycle == 'yearly' %}selected{% endif %}>Yearly</option>
+        </select>
+        <span class="form-hint">Applied when you switch plans.</span>
+      </div>
+      {% endif %}
+    </form>
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-icon"><i data-lucide="package"></i></div>
+        <h3>No plans available</h3>
+        <p>There are no active plans to choose from yet.</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+{# ---------------- Payment methods + recent invoices ---------------- #}
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Payment Methods</h2>
+      <a href="{% url 'tenants:payment_method_create' %}" class="btn btn-outline btn-sm"><i data-lucide="plus"></i> Add</a>
+    </div>
+    <div class="card-body">
+      {% for pm in payment_methods %}
+      <div class="flex items-center gap-3 py-2 {% if not forloop.last %}border-b border-slate-200 dark:border-slate-700{% endif %}">
+        <i data-lucide="{% if pm.type == 'card' %}credit-card{% elif pm.type == 'bank' %}landmark{% else %}wallet{% endif %}" class="text-brand-600"></i>
+        <div class="flex-1">
+          <div class="font-medium">{{ pm.brand|default:pm.get_type_display }} &bull;&bull;&bull;&bull; {{ pm.last4 }}</div>
+          <div class="form-hint">{{ pm.holder_name }}{% if pm.exp_month %} &middot; exp {{ pm.exp_month }}/{{ pm.exp_year }}{% endif %}</div>
+        </div>
+        {% if pm.is_default %}<span class="badge badge-blue">Default</span>{% endif %}
+      </div>
+      {% empty %}
+      <p class="text-muted">No payment methods on file. <a href="{% url 'tenants:payment_method_create' %}" class="text-brand">Add one</a>.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Recent Invoices</h2>
+      <a href="{% url 'tenants:invoice_list' %}" class="btn btn-outline btn-sm">View all</a>
+    </div>
+    <div class="card-body">
+      {% for inv in recent_invoices %}
+      <div class="flex items-center gap-3 py-2 {% if not forloop.last %}border-b border-slate-200 dark:border-slate-700{% endif %}">
+        <a href="{% url 'tenants:invoice_detail' inv.pk %}" class="font-medium text-brand flex-1">{{ inv.number }}</a>
+        <span class="text-muted">${{ inv.total }}</span>
+        {% if inv.status == 'paid' %}<span class="badge badge-green">Paid</span>
+        {% elif inv.status == 'overdue' %}<span class="badge badge-red">Overdue</span>
+        {% elif inv.status == 'sent' %}<span class="badge badge-amber">Sent</span>
+        {% elif inv.status == 'void' %}<span class="badge badge-muted">Void</span>
+        {% else %}<span class="badge badge-slate">Draft</span>{% endif %}
+      </div>
+      {% empty %}
+      <p class="text-muted">No invoices yet.</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
