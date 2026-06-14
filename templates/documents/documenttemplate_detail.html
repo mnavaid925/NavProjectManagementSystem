@@ -1,0 +1,66 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ documenttemplate.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ documenttemplate.name }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'documents:document_list' %}">Document &amp; Knowledge Management</a></li>
+        <li><a href="{% url 'documents:documenttemplate_list' %}">Document Templates</a></li>
+        <li class="active" aria-current="page">{{ documenttemplate.name }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if documenttemplate.is_active %}<span class="badge badge-green">Active</span>
+    {% else %}<span class="badge badge-slate">Inactive</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'documents:documenttemplate_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'documents:documenttemplate_edit' documenttemplate.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'documents:documenttemplate_delete' documenttemplate.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete template {{ documenttemplate.name|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Template Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Name</dt><dd style="margin:0;font-weight:500;">{{ documenttemplate.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Category</dt><dd style="margin:0;font-weight:500;"><span class="badge badge-slate">{{ documenttemplate.get_category_display }}</span></dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Format</dt><dd style="margin:0;font-weight:500;"><span class="badge badge-slate">{{ documenttemplate.get_doc_format_display }}</span></dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Version</dt><dd style="margin:0;font-weight:500;">{{ documenttemplate.version|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Active</dt><dd style="margin:0;font-weight:500;">{% if documenttemplate.is_active %}<span class="badge badge-green">Active</span>{% else %}<span class="badge badge-slate">Inactive</span>{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created By</dt><dd style="margin:0;font-weight:500;">{% if documenttemplate.created_by %}{{ documenttemplate.created_by.get_full_name|default:documenttemplate.created_by.username }}{% else %}—{% endif %}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Description</dt><dd style="margin:0;font-weight:500;">{{ documenttemplate.description|default:"—" }}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Body</dt><dd style="margin:0;font-weight:500;">{{ documenttemplate.body|linebreaksbr|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ documenttemplate.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ documenttemplate.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'documents:documenttemplate_edit' documenttemplate.pk %}"><i data-lucide="edit-2"></i> Edit Template</a>
+        <form method="post" action="{% url 'documents:documenttemplate_delete' documenttemplate.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete template {{ documenttemplate.name|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Template</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'documents:documenttemplate_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
