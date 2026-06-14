@@ -1,0 +1,88 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ document.number }} — {{ document.title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ document.number }} — {{ document.title }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'documents:document_list' %}">Document &amp; Knowledge Management</a></li>
+        <li class="active" aria-current="page">{{ document.number }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if document.status == 'approved' %}<span class="badge badge-green">{{ document.get_status_display }}</span>
+    {% elif document.status == 'in_review' %}<span class="badge badge-amber">{{ document.get_status_display }}</span>
+    {% elif document.status == 'archived' %}<span class="badge badge-slate">{{ document.get_status_display }}</span>
+    {% elif document.status == 'draft' %}<span class="badge badge-slate">{{ document.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ document.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'documents:document_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'documents:document_edit' document.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'documents:document_delete' document.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete document {{ document.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Document Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Number</dt><dd style="margin:0;font-weight:500;">{{ document.number|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Title</dt><dd style="margin:0;font-weight:500;">{{ document.title|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Project</dt><dd style="margin:0;font-weight:500;">{{ document.project.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Category</dt><dd style="margin:0;font-weight:500;">
+            {% if document.category == 'contract' %}<span class="badge badge-amber">{{ document.get_category_display }}</span>
+            {% elif document.category == 'charter' %}<span class="badge badge-blue">{{ document.get_category_display }}</span>
+            {% elif document.category == 'plan' %}<span class="badge badge-purple">{{ document.get_category_display }}</span>
+            {% elif document.category == 'report' %}<span class="badge badge-green">{{ document.get_category_display }}</span>
+            {% elif document.category == 'spec' %}<span class="badge badge-slate">{{ document.get_category_display }}</span>
+            {% elif document.category == 'other' %}<span class="badge badge-slate">{{ document.get_category_display }}</span>
+            {% else %}<span class="badge badge-slate">{{ document.get_category_display }}</span>{% endif %}
+          </dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">
+            {% if document.status == 'approved' %}<span class="badge badge-green">{{ document.get_status_display }}</span>
+            {% elif document.status == 'in_review' %}<span class="badge badge-amber">{{ document.get_status_display }}</span>
+            {% elif document.status == 'archived' %}<span class="badge badge-slate">{{ document.get_status_display }}</span>
+            {% elif document.status == 'draft' %}<span class="badge badge-slate">{{ document.get_status_display }}</span>
+            {% else %}<span class="badge badge-slate">{{ document.get_status_display }}</span>{% endif %}
+          </dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Folder</dt><dd style="margin:0;font-weight:500;">{{ document.folder|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Version</dt><dd style="margin:0;font-weight:500;">{{ document.current_version|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Confidential</dt><dd style="margin:0;font-weight:500;">
+            {% if document.is_confidential %}<span class="badge badge-red">Confidential</span>
+            {% else %}<span class="badge badge-slate">—</span>{% endif %}
+          </dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Owner</dt><dd style="margin:0;font-weight:500;">{% if document.owner %}{{ document.owner.get_full_name|default:document.owner.username }}{% else %}—{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Document URL</dt><dd style="margin:0;font-weight:500;">{% if document.doc_url %}<a href="{{ document.doc_url }}" class="text-brand" target="_blank" rel="noopener">{{ document.doc_url }}</a>{% else %}—{% endif %}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Description</dt><dd style="margin:0;font-weight:500;">{{ document.description|linebreaksbr|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ document.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ document.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'documents:document_edit' document.pk %}"><i data-lucide="edit-2"></i> Edit Document</a>
+        <form method="post" action="{% url 'documents:document_delete' document.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete document {{ document.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Document</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'documents:document_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
