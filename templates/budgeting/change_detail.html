@@ -1,0 +1,69 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ change.number }} — {{ change.title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ change.number }} — {{ change.title }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'budgeting:change_list' %}">Cost &amp; Budget Management</a></li>
+        <li class="active" aria-current="page">{{ change.number }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if change.status == 'implemented' %}<span class="badge badge-green">{{ change.get_status_display }}</span>
+    {% elif change.status == 'approved' %}<span class="badge badge-blue">{{ change.get_status_display }}</span>
+    {% elif change.status == 'rejected' %}<span class="badge badge-red">{{ change.get_status_display }}</span>
+    {% elif change.status == 'pending' %}<span class="badge badge-amber">{{ change.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ change.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'budgeting:change_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'budgeting:change_edit' change.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'budgeting:change_delete' change.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete budget change {{ change.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Budget Change Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Number</dt><dd style="margin:0;font-weight:500;">{{ change.number|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Title</dt><dd style="margin:0;font-weight:500;">{{ change.title|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Budget</dt><dd style="margin:0;font-weight:500;">{{ change.budget.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Change Type</dt><dd style="margin:0;font-weight:500;">{{ change.get_change_type_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Amount</dt><dd style="margin:0;font-weight:500;">{{ change.amount|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">{{ change.get_status_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Requested By</dt><dd style="margin:0;font-weight:500;">{% if change.requested_by %}{{ change.requested_by.get_full_name|default:change.requested_by.username }}{% else %}—{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Decided At</dt><dd style="margin:0;font-weight:500;">{{ change.decided_at|date:"M d, Y"|default:"—" }}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Reason</dt><dd style="margin:0;font-weight:500;">{{ change.reason|linebreaksbr|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ change.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ change.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'budgeting:change_edit' change.pk %}"><i data-lucide="edit-2"></i> Edit Budget Change</a>
+        <form method="post" action="{% url 'budgeting:change_delete' change.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete budget change {{ change.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Budget Change</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'budgeting:change_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
