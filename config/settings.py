@@ -67,6 +67,11 @@ INSTALLED_APPS = [
     'apps.collaboration',
     'apps.documents',
     'apps.timesheets',
+    # Module 12-15
+    'apps.portfolio',
+    'apps.agile',
+    'apps.clients',
+    'apps.finance',
 ]
 
 MIDDLEWARE = [
