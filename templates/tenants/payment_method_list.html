@@ -1,0 +1,98 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ page_title|default:'Payment Methods' }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Payment Methods</h1>
+    <ul class="breadcrumb">
+      <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+      <li><a href="{% url 'tenants:subscription' %}">Billing</a></li>
+      <li><span class="active" aria-current="page">Payment Methods</span></li>
+    </ul>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'tenants:payment_method_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> Add Payment Method</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">Saved Methods <span class="text-muted">({{ total_count }})</span></h2>
+  </div>
+  <div class="card-body">
+    {% if payment_methods %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Brand</th>
+            <th>Number</th>
+            <th>Holder</th>
+            <th>Expires</th>
+            <th>Default</th>
+            <th style="text-align:right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for pm in payment_methods %}
+          <tr>
+            <td>
+              <span class="inline-flex items-center gap-2">
+                <i data-lucide="{% if pm.type == 'card' %}credit-card{% elif pm.type == 'bank' %}landmark{% else %}wallet{% endif %}" class="w-4 h-4 text-brand-600"></i>
+                {{ pm.get_type_display }}
+              </span>
+            </td>
+            <td>{{ pm.brand|default:"—" }}</td>
+            <td>&bull;&bull;&bull;&bull; {{ pm.last4|default:"----" }}</td>
+            <td>{{ pm.holder_name|default:"—" }}</td>
+            <td>{% if pm.exp_month %}{{ pm.exp_month }}/{{ pm.exp_year }}{% else %}—{% endif %}</td>
+            <td>
+              {% if pm.is_default %}<span class="badge badge-blue"><i data-lucide="check"></i> Default</span>
+              {% else %}<span class="text-muted text-xs">—</span>{% endif %}
+            </td>
+            <td>
+              <div class="table-actions">
+                {% if not pm.is_default %}
+                <form method="post" action="{% url 'tenants:payment_method_set_default' pm.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon" title="Set as default"><i data-lucide="star"></i></button>
+                </form>
+                {% endif %}
+                <a href="{% url 'tenants:payment_method_edit' pm.pk %}" class="btn-icon" title="Edit"><i data-lucide="edit-2"></i></a>
+                <form method="post" action="{% url 'tenants:payment_method_delete' pm.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon btn-danger" title="Delete" onclick="return confirm('Remove this payment method?')"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <ul class="pagination">
+      <li class="{% if not page_obj.has_previous %}disabled{% endif %}"><a href="?page={{ page_obj.previous_page_number }}">Prev</a></li>
+      {% for n in page_obj.paginator.page_range %}
+      <li class="{% if n == page_obj.number %}active{% endif %}"><a href="?page={{ n }}">{{ n }}</a></li>
+      {% endfor %}
+      <li class="{% if not page_obj.has_next %}disabled{% endif %}"><a href="?page={{ page_obj.next_page_number }}">Next</a></li>
+    </ul>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon"><i data-lucide="credit-card"></i></div>
+      <h3>No payment methods</h3>
+      <p>Add a payment method to manage billing for your subscription.</p>
+      <a href="{% url 'tenants:payment_method_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> Add Payment Method</a>
+    </div>
+    {% endif %}
+
+    <p class="form-hint mt-4"><i data-lucide="shield" class="inline w-3.5 h-3.5"></i> Demo data only — never store real card numbers. Use a PCI-compliant gateway in production.</p>
+  </div>
+</div>
+{% endblock %}
