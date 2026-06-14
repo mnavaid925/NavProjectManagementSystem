@@ -1,0 +1,134 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ page_title|default:'Control Accounts' }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Control Accounts</h1>
+    <ul class="breadcrumb">
+      <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+      <li><a href="{% url 'budgeting:controlaccount_list' %}">Cost &amp; Budget Management</a></li>
+      <li><span class="active" aria-current="page">Control Accounts</span></li>
+    </ul>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'budgeting:controlaccount_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> New Control Account</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">All Control Accounts <span class="text-muted">({{ total_count }})</span></h2>
+  </div>
+  <div class="card-body">
+    {% comment %} Filters {% endcomment %}
+    <form method="get" class="flex flex-wrap items-end gap-3 mb-4">
+      <div class="form-group mb-0 flex-1" style="min-width:200px">
+        <label class="form-label">Search</label>
+        <input type="text" name="q" value="{{ request.GET.q|default:'' }}" class="form-input" placeholder="Search code or name...">
+      </div>
+      <div class="form-group mb-0" style="min-width:160px">
+        <label class="form-label">Status</label>
+        <select name="status" class="form-select">
+          <option value="">All statuses</option>
+          {% for val, label in status_choices %}
+          <option value="{{ val }}" {% if request.GET.status == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group mb-0" style="min-width:180px">
+        <label class="form-label">Project</label>
+        <select name="project" class="form-select">
+          <option value="">All projects</option>
+          {% for p in projects %}
+          <option value="{{ p.pk }}" {% if request.GET.project == p.pk|stringformat:"d" %}selected{% endif %}>{{ p.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group mb-0">
+        <button type="submit" class="btn btn-secondary"><i data-lucide="filter"></i> Filter</button>
+        {% if request.GET.q or request.GET.status or request.GET.project %}
+        <a href="{% url 'budgeting:controlaccount_list' %}" class="btn btn-outline btn-sm"><i data-lucide="x"></i> Clear</a>
+        {% endif %}
+      </div>
+    </form>
+
+    {% comment %} Table {% endcomment %}
+    {% if control_accounts %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Name</th>
+            <th>Project</th>
+            <th style="text-align:right">BAC</th>
+            <th style="text-align:right">EV</th>
+            <th style="text-align:right">AC</th>
+            <th style="text-align:right">CPI</th>
+            <th>Status</th>
+            <th style="text-align:right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for obj in control_accounts %}
+          <tr>
+            <td>{{ obj.code|default:"—" }}</td>
+            <td><a href="{% url 'budgeting:controlaccount_detail' obj.pk %}" class="font-semibold text-brand">{{ obj.name }}</a></td>
+            <td>{{ obj.project.name|default:"—" }}</td>
+            <td style="text-align:right" class="font-semibold">{{ obj.bac }}</td>
+            <td style="text-align:right">{{ obj.earned_value }}</td>
+            <td style="text-align:right">{{ obj.actual_cost }}</td>
+            <td style="text-align:right">
+              {% if obj.cpi < 1 %}<span class="text-danger font-semibold">{{ obj.cpi }}</span>
+              {% else %}{{ obj.cpi }}{% endif %}
+            </td>
+            <td>
+              {% if obj.status == 'closed' %}<span class="badge badge-green">{{ obj.get_status_display }}</span>
+              {% elif obj.status == 'in_progress' %}<span class="badge badge-blue">{{ obj.get_status_display }}</span>
+              {% elif obj.status == 'open' %}<span class="badge badge-slate">{{ obj.get_status_display }}</span>
+              {% else %}<span class="badge badge-slate">{{ obj.get_status_display }}</span>{% endif %}
+            </td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'budgeting:controlaccount_detail' obj.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'budgeting:controlaccount_edit' obj.pk %}" class="btn-icon" title="Edit"><i data-lucide="edit-2"></i></a>
+                <form method="post" action="{% url 'budgeting:controlaccount_delete' obj.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon btn-danger" title="Delete" onclick="return confirm('Delete control account {{ obj.name|escapejs }}?')"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <ul class="pagination">
+      <li class="{% if not page_obj.has_previous %}disabled{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&amp;{% endif %}{% if request.GET.project %}project={{ request.GET.project }}&amp;{% endif %}page={% if page_obj.has_previous %}{{ page_obj.previous_page_number }}{% else %}1{% endif %}">Prev</a>
+      </li>
+      {% for n in page_obj.paginator.page_range %}
+      <li class="{% if n == page_obj.number %}active{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&amp;{% endif %}{% if request.GET.project %}project={{ request.GET.project }}&amp;{% endif %}page={{ n }}">{{ n }}</a>
+      </li>
+      {% endfor %}
+      <li class="{% if not page_obj.has_next %}disabled{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&amp;{% endif %}{% if request.GET.project %}project={{ request.GET.project }}&amp;{% endif %}page={% if page_obj.has_next %}{{ page_obj.next_page_number }}{% else %}{{ page_obj.paginator.num_pages }}{% endif %}">Next</a>
+      </li>
+    </ul>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon"><i data-lucide="layout-grid"></i></div>
+      <h3>No control accounts found</h3>
+      <p>{% if request.GET.q or request.GET.status or request.GET.project %}No control accounts match your filters.{% else %}Create your first control account to get started.{% endif %}</p>
+      <a href="{% url 'budgeting:controlaccount_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> New Control Account</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
