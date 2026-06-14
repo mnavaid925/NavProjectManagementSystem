@@ -1,0 +1,211 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}User Management{% endblock %}
+{% block content %}
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">User Management</h1>
+      <nav aria-label="Breadcrumb">
+        <ol class="breadcrumb">
+          <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+          <li class="active" aria-current="page">Users</li>
+        </ol>
+      </nav>
+    </div>
+    <div class="page-actions">
+      <a class="btn btn-outline btn-sm" href="{% url 'accounts:role_list' %}">
+        <i data-lucide="shield"></i> Roles
+      </a>
+      <a class="btn btn-primary" href="{% url 'accounts:user_invite' %}">
+        <i data-lucide="user-plus"></i> Invite User
+      </a>
+    </div>
+  </div>
+
+  {% if pending_invites %}
+    <div class="card" style="margin-bottom:1.25rem;">
+      <div class="card-header">
+        <h2 class="card-title">Pending Invitations</h2>
+        <span class="badge badge-amber">{{ pending_invites|length }} pending</span>
+      </div>
+      <div class="table-wrap" style="border:0;border-radius:0;">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Invited By</th>
+              <th>Expires</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for invite in pending_invites %}
+              <tr>
+                <td style="font-weight:500;">{{ invite.email }}</td>
+                <td>{% if invite.role %}{{ invite.role.name }}{% else %}<span class="text-muted">&mdash;</span>{% endif %}</td>
+                <td>{% if invite.invited_by %}{{ invite.invited_by.display_name }}{% else %}<span class="text-muted">&mdash;</span>{% endif %}</td>
+                <td>{{ invite.expires_at|date:"M j, Y" }}</td>
+                <td><span class="badge badge-amber">{{ invite.get_status_display }}</span></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% endif %}
+
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Team Members</h2>
+      <span class="text-muted" style="font-size:.82rem;">{{ total_count }} member{{ total_count|pluralize }}</span>
+    </div>
+    <div class="card-body">
+      <form method="get" class="form-row" style="grid-template-columns:1fr auto auto auto;align-items:end;margin-bottom:1.25rem;">
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label" for="q">Search</label>
+          <input type="text" id="q" name="q" class="form-input" placeholder="Name, email or username&hellip;"
+                 value="{{ request.GET.q }}">
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label" for="role">Role</label>
+          <select id="role" name="role" class="form-select">
+            <option value="">All roles</option>
+            {% for r in roles %}
+              <option value="{{ r.pk }}" {% if request.GET.role == r.pk|stringformat:"d" %}selected{% endif %}>{{ r.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label" for="status">Status</label>
+          <select id="status" name="status" class="form-select">
+            <option value="">All statuses</option>
+            {% for value, label in status_options %}
+              <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0;display:flex;gap:.5rem;">
+          <button type="submit" class="btn btn-primary"><i data-lucide="search"></i> Filter</button>
+          {% if request.GET.q or request.GET.role or request.GET.status %}
+            <a href="{% url 'accounts:user_list' %}" class="btn btn-secondary" title="Clear filters"><i data-lucide="x"></i></a>
+          {% endif %}
+        </div>
+      </form>
+
+      {% if users %}
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Member</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th style="text-align:right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for member in users %}
+                <tr>
+                  <td>
+                    <div style="display:flex;align-items:center;gap:.65rem;">
+                      {% if member.avatar %}
+                        <img class="avatar" src="{{ member.avatar.url }}" alt="{{ member.display_name }}">
+                      {% else %}
+                        <span class="avatar-initial">{{ member.initials }}</span>
+                      {% endif %}
+                      <div style="min-width:0;">
+                        <div style="font-weight:600;">{{ member.display_name }}</div>
+                        <div class="text-muted" style="font-size:.76rem;">
+                          {% if member.job_title %}{{ member.job_title }}{% else %}@{{ member.username }}{% endif %}
+                          {% if member.is_tenant_admin %}<span class="badge badge-purple" style="margin-left:.35rem;">Admin</span>{% endif %}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>{{ member.email|default:"&mdash;" }}</td>
+                  <td>
+                    {% if member.role %}
+                      <span class="badge badge-blue">{{ member.role.name }}</span>
+                    {% else %}
+                      <span class="text-muted">No role</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if member.is_active %}
+                      <span class="badge badge-green">Active</span>
+                    {% else %}
+                      <span class="badge badge-slate">Inactive</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <div class="table-actions">
+                      <a class="btn-icon" href="{% url 'accounts:user_detail' member.pk %}" title="View"><i data-lucide="eye"></i></a>
+                      <a class="btn-icon" href="{% url 'accounts:user_edit' member.pk %}" title="Edit"><i data-lucide="edit-2"></i></a>
+                      <form method="post" action="{% url 'accounts:user_toggle_active' member.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-icon"
+                                title="{% if member.is_active %}Deactivate{% else %}Activate{% endif %}"
+                                onclick="return confirm('{% if member.is_active %}Deactivate{% else %}Activate{% endif %} this member?')">
+                          <i data-lucide="{% if member.is_active %}user-x{% else %}user-check{% endif %}"></i>
+                        </button>
+                      </form>
+                      <form method="post" action="{% url 'accounts:user_delete' member.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-icon btn-danger" title="Delete"
+                                onclick="return confirm('Delete {{ member.display_name|escapejs }}? This cannot be undone.')">
+                          <i data-lucide="trash-2"></i>
+                        </button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        {% if page_obj.paginator.num_pages > 1 %}
+          <nav aria-label="Pagination">
+            <ul class="pagination">
+              {% if page_obj.has_previous %}
+                <li><a href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q|urlencode }}{% endif %}{% if request.GET.role %}&role={{ request.GET.role }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}"><i data-lucide="chevron-left" style="width:16px;height:16px;"></i></a></li>
+              {% else %}
+                <li class="disabled"><span><i data-lucide="chevron-left" style="width:16px;height:16px;"></i></span></li>
+              {% endif %}
+              {% for num in page_obj.paginator.page_range %}
+                {% if num == page_obj.number %}
+                  <li class="active"><span>{{ num }}</span></li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                  <li><a href="?page={{ num }}{% if request.GET.q %}&q={{ request.GET.q|urlencode }}{% endif %}{% if request.GET.role %}&role={{ request.GET.role }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">{{ num }}</a></li>
+                {% endif %}
+              {% endfor %}
+              {% if page_obj.has_next %}
+                <li><a href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q|urlencode }}{% endif %}{% if request.GET.role %}&role={{ request.GET.role }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}"><i data-lucide="chevron-right" style="width:16px;height:16px;"></i></a></li>
+              {% else %}
+                <li class="disabled"><span><i data-lucide="chevron-right" style="width:16px;height:16px;"></i></span></li>
+              {% endif %}
+            </ul>
+          </nav>
+        {% endif %}
+      {% else %}
+        <div class="empty-state">
+          <div class="empty-icon"><i data-lucide="users"></i></div>
+          <h3>No members found</h3>
+          <p>
+            {% if request.GET.q or request.GET.role or request.GET.status %}
+              No members match your current filters. Try adjusting or clearing them.
+            {% else %}
+              Get started by inviting your first team member.
+            {% endif %}
+          </p>
+          {% if request.GET.q or request.GET.role or request.GET.status %}
+            <a href="{% url 'accounts:user_list' %}" class="btn btn-secondary"><i data-lucide="x"></i> Clear filters</a>
+          {% else %}
+            <a href="{% url 'accounts:user_invite' %}" class="btn btn-primary"><i data-lucide="user-plus"></i> Invite User</a>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}
