@@ -1,0 +1,69 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ statement.number }} — {{ statement.title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ statement.number }} — {{ statement.title }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'scope:statement_list' %}">Scope &amp; Requirements Management</a></li>
+        <li class="active" aria-current="page">{{ statement.number }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if statement.status == 'baselined' %}<span class="badge badge-green">{{ statement.get_status_display }}</span>
+    {% elif statement.status == 'approved' %}<span class="badge badge-blue">{{ statement.get_status_display }}</span>
+    {% elif statement.status == 'draft' %}<span class="badge badge-slate">{{ statement.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ statement.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'scope:statement_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'scope:statement_edit' statement.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'scope:statement_delete' statement.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete scope statement {{ statement.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Scope Statement Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Number</dt><dd style="margin:0;font-weight:500;">{{ statement.number|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Title</dt><dd style="margin:0;font-weight:500;">{{ statement.title|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Project</dt><dd style="margin:0;font-weight:500;">{{ statement.project.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">{{ statement.get_status_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Approved By</dt><dd style="margin:0;font-weight:500;">{% if statement.approved_by %}{{ statement.approved_by.get_full_name|default:statement.approved_by.username }}{% else %}—{% endif %}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">In Scope</dt><dd style="margin:0;font-weight:500;">{{ statement.in_scope|linebreaksbr|default:"—" }}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Out of Scope</dt><dd style="margin:0;font-weight:500;">{{ statement.out_of_scope|linebreaksbr|default:"—" }}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Assumptions</dt><dd style="margin:0;font-weight:500;">{{ statement.assumptions|linebreaksbr|default:"—" }}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Constraints</dt><dd style="margin:0;font-weight:500;">{{ statement.constraints|linebreaksbr|default:"—" }}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Deliverables</dt><dd style="margin:0;font-weight:500;">{{ statement.deliverables|linebreaksbr|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ statement.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ statement.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'scope:statement_edit' statement.pk %}"><i data-lucide="edit-2"></i> Edit Scope Statement</a>
+        <form method="post" action="{% url 'scope:statement_delete' statement.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete scope statement {{ statement.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Scope Statement</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'scope:statement_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
