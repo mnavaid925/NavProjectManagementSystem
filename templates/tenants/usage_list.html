@@ -1,0 +1,80 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ page_title|default:'Usage Metrics' }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Usage Metrics</h1>
+    <ul class="breadcrumb">
+      <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+      <li><a href="{% url 'tenants:health' %}">Health</a></li>
+      <li><span class="active" aria-current="page">Usage</span></li>
+    </ul>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'tenants:health' %}" class="btn btn-outline"><i data-lucide="activity"></i> Health Overview</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">All Metrics <span class="text-muted">({{ total_count }})</span></h2>
+  </div>
+  <div class="card-body">
+    {% if usage_metrics %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Label</th>
+            <th style="text-align:right">Value</th>
+            <th style="text-align:right">Limit</th>
+            <th>Period</th>
+            <th style="min-width:180px">Usage</th>
+            <th>Recorded</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in usage_metrics %}
+          <tr>
+            <td><span class="font-semibold">{{ m.get_metric_display }}</span></td>
+            <td>{{ m.label|default:"—" }}</td>
+            <td style="text-align:right">{{ m.value }}{% if m.unit %} {{ m.unit }}{% endif %}</td>
+            <td style="text-align:right">{{ m.limit }}{% if m.unit %} {{ m.unit }}{% endif %}</td>
+            <td>{{ m.period|default:"—" }}</td>
+            <td>
+              <div class="flex items-center gap-2">
+                <div class="progress" style="flex:1">
+                  <div class="progress-bar" style="width:{{ m.percent }}%;{% if m.percent >= 90 %}background:#dc2626{% elif m.percent >= 75 %}background:#d97706{% endif %}"></div>
+                </div>
+                <span class="badge {% if m.percent >= 90 %}badge-red{% elif m.percent >= 75 %}badge-amber{% else %}badge-green{% endif %}">{{ m.percent }}%</span>
+              </div>
+            </td>
+            <td class="text-muted">{{ m.recorded_at|date:"M d, Y H:i" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <ul class="pagination">
+      <li class="{% if not page_obj.has_previous %}disabled{% endif %}"><a href="?page={{ page_obj.previous_page_number }}">Prev</a></li>
+      {% for n in page_obj.paginator.page_range %}
+      <li class="{% if n == page_obj.number %}active{% endif %}"><a href="?page={{ n }}">{{ n }}</a></li>
+      {% endfor %}
+      <li class="{% if not page_obj.has_next %}disabled{% endif %}"><a href="?page={{ page_obj.next_page_number }}">Next</a></li>
+    </ul>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon"><i data-lucide="bar-chart-3"></i></div>
+      <h3>No usage metrics</h3>
+      <p>Usage data will appear here once metrics are recorded for your tenant.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
