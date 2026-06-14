@@ -1,0 +1,81 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ knowledgearticle.number }} — {{ knowledgearticle.title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ knowledgearticle.number }} — {{ knowledgearticle.title }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'documents:document_list' %}">Document &amp; Knowledge Management</a></li>
+        <li><a href="{% url 'documents:knowledgearticle_list' %}">Knowledge Articles</a></li>
+        <li class="active" aria-current="page">{{ knowledgearticle.number }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if knowledgearticle.status == 'published' %}<span class="badge badge-green">{{ knowledgearticle.get_status_display }}</span>
+    {% elif knowledgearticle.status == 'archived' %}<span class="badge badge-slate">{{ knowledgearticle.get_status_display }}</span>
+    {% elif knowledgearticle.status == 'draft' %}<span class="badge badge-amber">{{ knowledgearticle.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ knowledgearticle.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'documents:knowledgearticle_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'documents:knowledgearticle_edit' knowledgearticle.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'documents:knowledgearticle_delete' knowledgearticle.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete article {{ knowledgearticle.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Knowledge Article Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Number</dt><dd style="margin:0;font-weight:500;">{{ knowledgearticle.number|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Title</dt><dd style="margin:0;font-weight:500;">{{ knowledgearticle.title|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Project</dt><dd style="margin:0;font-weight:500;">{{ knowledgearticle.project.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Category</dt><dd style="margin:0;font-weight:500;">
+            {% if knowledgearticle.category == 'lesson_learned' %}<span class="badge badge-amber">{{ knowledgearticle.get_category_display }}</span>
+            {% elif knowledgearticle.category == 'how_to' %}<span class="badge badge-blue">{{ knowledgearticle.get_category_display }}</span>
+            {% elif knowledgearticle.category == 'faq' %}<span class="badge badge-purple">{{ knowledgearticle.get_category_display }}</span>
+            {% elif knowledgearticle.category == 'policy' %}<span class="badge badge-red">{{ knowledgearticle.get_category_display }}</span>
+            {% elif knowledgearticle.category == 'playbook' %}<span class="badge badge-green">{{ knowledgearticle.get_category_display }}</span>
+            {% else %}<span class="badge badge-slate">{{ knowledgearticle.get_category_display }}</span>{% endif %}
+          </dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">
+            {% if knowledgearticle.status == 'published' %}<span class="badge badge-green">{{ knowledgearticle.get_status_display }}</span>
+            {% elif knowledgearticle.status == 'archived' %}<span class="badge badge-slate">{{ knowledgearticle.get_status_display }}</span>
+            {% elif knowledgearticle.status == 'draft' %}<span class="badge badge-amber">{{ knowledgearticle.get_status_display }}</span>
+            {% else %}<span class="badge badge-slate">{{ knowledgearticle.get_status_display }}</span>{% endif %}
+          </dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Views</dt><dd style="margin:0;font-weight:500;">{{ knowledgearticle.views_count }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Author</dt><dd style="margin:0;font-weight:500;">{% if knowledgearticle.author %}{{ knowledgearticle.author.get_full_name|default:knowledgearticle.author.username }}{% else %}—{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Tags</dt><dd style="margin:0;font-weight:500;">{{ knowledgearticle.tags|default:"—" }}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Body</dt><dd style="margin:0;font-weight:500;">{{ knowledgearticle.body|linebreaksbr|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ knowledgearticle.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ knowledgearticle.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'documents:knowledgearticle_edit' knowledgearticle.pk %}"><i data-lucide="edit-2"></i> Edit Knowledge Article</a>
+        <form method="post" action="{% url 'documents:knowledgearticle_delete' knowledgearticle.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete article {{ knowledgearticle.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Knowledge Article</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'documents:knowledgearticle_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
