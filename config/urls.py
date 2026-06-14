@@ -36,6 +36,14 @@ urlpatterns = [
     path('documents/', include('apps.documents.urls')),
     # Module 11 - Time & Attendance Tracking.
     path('timesheets/', include('apps.timesheets.urls')),
+    # Module 12 - Portfolio & Program Management.
+    path('portfolio/', include('apps.portfolio.urls')),
+    # Module 13 - Agile & Scrum Management.
+    path('agile/', include('apps.agile.urls')),
+    # Module 14 - Client & External Collaboration.
+    path('clients/', include('apps.clients.urls')),
+    # Module 15 - Financial & Billing Management.
+    path('finance/', include('apps.finance.urls')),
     # Core: module placeholders + audit log.
     path('', include('apps.core.urls')),
 ]
