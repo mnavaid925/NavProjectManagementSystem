@@ -1,0 +1,110 @@
+{% load static %}
+{# ============================ Topbar ============================ #}
+<header class="app-topbar">
+
+  {# Sidebar toggle #}
+  <button type="button" class="topbar-btn" data-sidebar-toggle aria-label="Toggle sidebar">
+    <i data-lucide="menu"></i>
+  </button>
+
+  {# Brand / logo (uses current tenant name) #}
+  <a href="{% url 'dashboard:index' %}" class="topbar-brand">
+    <span class="sidebar-brand-logo">{% if current_tenant %}{{ current_tenant.name|slice:':1'|upper }}{% else %}N{% endif %}</span>
+    <span class="hidden sm:inline">{% if current_tenant %}{{ current_tenant.name }}{% else %}NavPMS{% endif %}</span>
+  </a>
+
+  {# Global search #}
+  <form class="topbar-search" role="search" action="{% url 'projects:project_list' %}" method="get">
+    <i data-lucide="search"></i>
+    <input type="text" name="q" placeholder="Search…" aria-label="Search" autocomplete="off">
+  </form>
+
+  <div class="topbar-spacer"></div>
+
+  {# Dark-mode toggle #}
+  <button type="button" class="topbar-btn" data-theme-toggle aria-label="Toggle dark mode" title="Toggle theme">
+    <i data-lucide="moon" data-theme-icon-dark></i>
+    <i data-lucide="sun" data-theme-icon-light style="display:none"></i>
+  </button>
+
+  {# Fullscreen toggle #}
+  <button type="button" class="topbar-btn" data-fullscreen-toggle aria-label="Toggle fullscreen" title="Fullscreen">
+    <i data-lucide="maximize"></i>
+  </button>
+
+  {# Notifications bell #}
+  <div class="dropdown" data-dropdown>
+    <button type="button" class="topbar-btn" data-dropdown-toggle aria-label="Notifications">
+      <i data-lucide="bell"></i>
+      <span class="topbar-badge">3</span>
+    </button>
+    <div class="dropdown-menu menu-wide" role="menu">
+      <div class="dropdown-header" style="display:flex;align-items:center;justify-content:space-between;">
+        <span>Notifications</span>
+        <span class="badge badge-blue">3 new</span>
+      </div>
+      <div class="notif-item">
+        <span class="notif-dot"><i data-lucide="check-circle"></i></span>
+        <span class="notif-text">Task <strong>"Charter draft"</strong> was approved.<br><small>2 minutes ago</small></span>
+      </div>
+      <div class="notif-item">
+        <span class="notif-dot"><i data-lucide="user-plus"></i></span>
+        <span class="notif-text">New member joined your workspace.<br><small>1 hour ago</small></span>
+      </div>
+      <div class="notif-item">
+        <span class="notif-dot"><i data-lucide="alert-triangle"></i></span>
+        <span class="notif-text">Budget threshold reached on Project X.<br><small>Yesterday</small></span>
+      </div>
+      <div class="dropdown-divider"></div>
+      <a class="dropdown-item" href="#" style="justify-content:center;color:var(--brand-600);font-weight:600;">View all notifications</a>
+    </div>
+  </div>
+
+  {# Apps / grid #}
+  <div class="dropdown" data-dropdown>
+    <button type="button" class="topbar-btn" data-dropdown-toggle aria-label="Apps">
+      <i data-lucide="layout-grid"></i>
+    </button>
+    <div class="dropdown-menu menu-apps" role="menu">
+      <div class="dropdown-header">Quick access</div>
+      <div class="apps-grid">
+        <a href="{% url 'projects:project_list' %}"><i data-lucide="briefcase"></i>Projects</a>
+        <a href="{% url 'projects:task_list' %}"><i data-lucide="check-square"></i>Tasks</a>
+        <a href="{% url 'projects:meeting_list' %}"><i data-lucide="calendar"></i>Meetings</a>
+        <a href="{% url 'projects:ticket_list' %}"><i data-lucide="life-buoy"></i>Tickets</a>
+        <a href="{% url 'projects:invoice_list' %}"><i data-lucide="file-text"></i>Invoices</a>
+        <a href="{% url 'accounts:user_list' %}"><i data-lucide="users"></i>Users</a>
+      </div>
+    </div>
+  </div>
+
+  {# User dropdown #}
+  <div class="dropdown" data-dropdown>
+    <button type="button" class="user-chip" data-dropdown-toggle aria-label="Account menu">
+      {% if user.is_authenticated and user.avatar %}
+        <img src="{{ user.avatar.url }}" alt="" class="avatar avatar-sm">
+      {% else %}
+        <span class="avatar-initial avatar-sm">{% if user.is_authenticated %}{{ user.initials }}{% else %}?{% endif %}</span>
+      {% endif %}
+      <span class="user-chip-meta">
+        <span class="user-chip-name">{% if user.is_authenticated %}{{ user.display_name }}{% else %}Guest{% endif %}</span>
+        <span class="user-chip-role">{% if user.is_authenticated %}{{ user.job_title|default:'Member' }}{% else %}Not signed in{% endif %}</span>
+      </span>
+      <i data-lucide="chevron-down" style="width:15px;height:15px;color:var(--text-subtle);"></i>
+    </button>
+    <div class="dropdown-menu" role="menu">
+      <div class="dropdown-header">
+        {% if user.is_authenticated %}{{ user.display_name }}{% else %}Welcome{% endif %}
+        {% if user.email %}<div style="font-weight:400;color:var(--text-muted);font-size:.74rem;">{{ user.email }}</div>{% endif %}
+      </div>
+      <a class="dropdown-item" href="{% url 'accounts:profile' %}"><i data-lucide="user"></i> Profile</a>
+      <button type="button" class="dropdown-item" data-customizer-open><i data-lucide="settings-2"></i> Preferences</button>
+      <div class="dropdown-divider"></div>
+      <form method="post" action="{% url 'accounts:logout' %}" style="margin:0;">
+        {% csrf_token %}
+        <button type="submit" class="dropdown-item danger"><i data-lucide="log-out"></i> Logout</button>
+      </form>
+    </div>
+  </div>
+
+</header>
