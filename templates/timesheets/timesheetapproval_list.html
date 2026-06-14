@@ -1,0 +1,117 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ page_title|default:'Timesheet Approvals' }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Timesheet Approvals</h1>
+    <ul class="breadcrumb">
+      <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+      <li><a href="{% url 'timesheets:timesheet_list' %}">Time &amp; Attendance Tracking</a></li>
+      <li><span class="active" aria-current="page">Timesheet Approvals</span></li>
+    </ul>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'timesheets:timesheetapproval_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> New TimesheetApproval</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">All Timesheet Approvals <span class="text-muted">({{ total_count }})</span></h2>
+  </div>
+  <div class="card-body">
+    {% comment %} Filters {% endcomment %}
+    <form method="get" class="flex flex-wrap items-end gap-3 mb-4">
+      <div class="form-group mb-0 flex-1" style="min-width:200px">
+        <label class="form-label">Search</label>
+        <input type="text" name="q" value="{{ request.GET.q|default:'' }}" class="form-input" placeholder="Search comments or timesheet number...">
+      </div>
+      <div class="form-group mb-0" style="min-width:160px">
+        <label class="form-label">Decision</label>
+        <select name="decision" class="form-select">
+          <option value="">All decisions</option>
+          {% for val, label in decision_choices %}
+          <option value="{{ val }}" {% if request.GET.decision == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group mb-0">
+        <button type="submit" class="btn btn-secondary"><i data-lucide="filter"></i> Filter</button>
+        {% if request.GET.q or request.GET.decision %}
+        <a href="{% url 'timesheets:timesheetapproval_list' %}" class="btn btn-outline btn-sm"><i data-lucide="x"></i> Clear</a>
+        {% endif %}
+      </div>
+    </form>
+
+    {% comment %} Table {% endcomment %}
+    {% if approvals %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Timesheet</th>
+            <th>Approver</th>
+            <th>Decision</th>
+            <th>Level</th>
+            <th>Decided</th>
+            <th style="text-align:right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for timesheetapproval in approvals %}
+          <tr>
+            <td><a href="{% url 'timesheets:timesheetapproval_detail' timesheetapproval.pk %}" class="font-semibold text-brand">{{ timesheetapproval.timesheet }}</a></td>
+            <td>{% if timesheetapproval.approver %}{{ timesheetapproval.approver.get_full_name|default:timesheetapproval.approver.username }}{% else %}—{% endif %}</td>
+            <td>
+              {% if timesheetapproval.decision == 'approved' %}<span class="badge badge-green">{{ timesheetapproval.get_decision_display }}</span>
+              {% elif timesheetapproval.decision == 'rejected' %}<span class="badge badge-red">{{ timesheetapproval.get_decision_display }}</span>
+              {% elif timesheetapproval.decision == 'returned' %}<span class="badge badge-amber">{{ timesheetapproval.get_decision_display }}</span>
+              {% elif timesheetapproval.decision == 'pending' %}<span class="badge badge-slate">{{ timesheetapproval.get_decision_display }}</span>
+              {% else %}<span class="badge badge-slate">{{ timesheetapproval.get_decision_display }}</span>{% endif %}
+            </td>
+            <td>{{ timesheetapproval.level }}</td>
+            <td>{% if timesheetapproval.decided_at %}{{ timesheetapproval.decided_at|date:"M d, Y H:i" }}{% else %}—{% endif %}</td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'timesheets:timesheetapproval_detail' timesheetapproval.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'timesheets:timesheetapproval_edit' timesheetapproval.pk %}" class="btn-icon" title="Edit"><i data-lucide="edit-2"></i></a>
+                <form method="post" action="{% url 'timesheets:timesheetapproval_delete' timesheetapproval.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon btn-danger" title="Delete" onclick="return confirm('Delete this approval?')"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <ul class="pagination">
+      <li class="{% if not page_obj.has_previous %}disabled{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.decision %}decision={{ request.GET.decision }}&amp;{% endif %}page={% if page_obj.has_previous %}{{ page_obj.previous_page_number }}{% else %}1{% endif %}">Prev</a>
+      </li>
+      {% for n in page_obj.paginator.page_range %}
+      <li class="{% if n == page_obj.number %}active{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.decision %}decision={{ request.GET.decision }}&amp;{% endif %}page={{ n }}">{{ n }}</a>
+      </li>
+      {% endfor %}
+      <li class="{% if not page_obj.has_next %}disabled{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.decision %}decision={{ request.GET.decision }}&amp;{% endif %}page={% if page_obj.has_next %}{{ page_obj.next_page_number }}{% else %}{{ page_obj.paginator.num_pages }}{% endif %}">Next</a>
+      </li>
+    </ul>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon"><i data-lucide="check-circle"></i></div>
+      <h3>No timesheet approvals found</h3>
+      <p>{% if request.GET.q or request.GET.decision %}No approvals match your filters.{% else %}Create your first timesheet approval to get started.{% endif %}</p>
+      <a href="{% url 'timesheets:timesheetapproval_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> New TimesheetApproval</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
