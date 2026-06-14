@@ -1,0 +1,84 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}My Profile{% endblock %}
+{% block content %}
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">My Profile</h1>
+      <nav aria-label="Breadcrumb">
+        <ol class="breadcrumb">
+          <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+          <li class="active" aria-current="page">Profile</li>
+        </ol>
+      </nav>
+    </div>
+    <div class="page-actions">
+      <a class="btn btn-outline btn-sm" href="{% url 'accounts:change_password' %}"><i data-lucide="key-round"></i> Change Password</a>
+      <a class="btn btn-primary" href="{% url 'accounts:profile_edit' %}"><i data-lucide="edit-2"></i> Edit Profile</a>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:340px 1fr;gap:1.25rem;align-items:start;" class="profile-grid">
+    {# --- Identity card --- #}
+    <div class="card">
+      <div class="card-body" style="text-align:center;">
+        {% if member.avatar %}
+          <img class="avatar avatar-lg" src="{{ member.avatar.url }}" alt="{{ member.display_name }}" style="margin:0 auto;">
+        {% else %}
+          <span class="avatar-initial avatar-lg" style="margin:0 auto;">{{ member.initials }}</span>
+        {% endif %}
+        <h2 style="margin:.85rem 0 .15rem;font-size:1.15rem;font-weight:700;">{{ member.display_name }}</h2>
+        <div class="text-muted" style="font-size:.85rem;">{{ member.job_title|default:"No job title" }}</div>
+        <div style="margin-top:.75rem;display:flex;justify-content:center;gap:.4rem;flex-wrap:wrap;">
+          {% if member.role %}<span class="badge badge-blue">{{ member.role.name }}</span>{% endif %}
+          {% if member.is_tenant_admin %}<span class="badge badge-purple">Tenant Admin</span>{% endif %}
+        </div>
+      </div>
+      <div class="card-footer" style="flex-direction:column;align-items:stretch;gap:.5rem;">
+        <a class="btn btn-secondary btn-sm" href="{% url 'accounts:profile_edit' %}"><i data-lucide="edit-2"></i> Edit Profile</a>
+        <a class="btn btn-secondary btn-sm" href="{% url 'accounts:change_password' %}"><i data-lucide="key-round"></i> Change Password</a>
+      </div>
+    </div>
+
+    {# --- Account details --- #}
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Account Information</h2>
+      </div>
+      <div class="card-body">
+        <div class="form-row" style="gap:1.25rem;">
+          <div>
+            <div class="section-title">Full Name</div>
+            <div style="margin-bottom:1.1rem;">{{ member.get_full_name|default:"&mdash;" }}</div>
+            <div class="section-title">Email</div>
+            <div style="margin-bottom:1.1rem;">{{ member.email|default:"&mdash;" }}</div>
+            <div class="section-title">Phone</div>
+            <div style="margin-bottom:0;">{{ member.phone|default:"&mdash;" }}</div>
+          </div>
+          <div>
+            <div class="section-title">Username</div>
+            <div style="margin-bottom:1.1rem;">@{{ member.username }}</div>
+            <div class="section-title">Job Title</div>
+            <div style="margin-bottom:1.1rem;">{{ member.job_title|default:"&mdash;" }}</div>
+            <div class="section-title">Organization</div>
+            <div style="margin-bottom:0;">{% if member.tenant %}{{ member.tenant.name }}{% else %}<span class="text-muted">&mdash;</span>{% endif %}</div>
+          </div>
+        </div>
+        <hr class="hr">
+        <div class="form-row" style="gap:1.25rem;">
+          <div>
+            <div class="section-title">Member Since</div>
+            <div>{{ member.date_joined|date:"M j, Y" }}</div>
+          </div>
+          <div>
+            <div class="section-title">Last Login</div>
+            <div>{% if member.last_login %}{{ member.last_login|date:"M j, Y, g:i a" }}{% else %}<span class="text-muted">&mdash;</span>{% endif %}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    @media (max-width: 900px) { .profile-grid { grid-template-columns: 1fr !important; } }
+  </style>
+{% endblock %}
