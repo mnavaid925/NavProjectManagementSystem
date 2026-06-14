@@ -1,0 +1,71 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ timesheet.number }} — Timesheet{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ timesheet.number }}{% if timesheet.owner %} — {{ timesheet.owner.get_full_name|default:timesheet.owner.username }}{% endif %}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'timesheets:timesheet_list' %}">Time &amp; Attendance Tracking</a></li>
+        <li class="active" aria-current="page">{{ timesheet.number }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if timesheet.status == 'approved' %}<span class="badge badge-green">{{ timesheet.get_status_display }}</span>
+    {% elif timesheet.status == 'submitted' %}<span class="badge badge-blue">{{ timesheet.get_status_display }}</span>
+    {% elif timesheet.status == 'rejected' %}<span class="badge badge-red">{{ timesheet.get_status_display }}</span>
+    {% elif timesheet.status == 'draft' %}<span class="badge badge-slate">{{ timesheet.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ timesheet.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'timesheets:timesheet_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'timesheets:timesheet_edit' timesheet.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'timesheets:timesheet_delete' timesheet.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete timesheet {{ timesheet.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Timesheet Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Number</dt><dd style="margin:0;font-weight:500;">{{ timesheet.number|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Owner</dt><dd style="margin:0;font-weight:500;">{% if timesheet.owner %}{{ timesheet.owner.get_full_name|default:timesheet.owner.username }}{% else %}—{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Project</dt><dd style="margin:0;font-weight:500;">{{ timesheet.project.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">{{ timesheet.get_status_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Period Start</dt><dd style="margin:0;font-weight:500;">{{ timesheet.period_start|date:"M d, Y"|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Period End</dt><dd style="margin:0;font-weight:500;">{{ timesheet.period_end|date:"M d, Y"|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Total Hours</dt><dd style="margin:0;font-weight:500;">{{ timesheet.total_hours }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Billable Hours</dt><dd style="margin:0;font-weight:500;">{{ timesheet.billable_hours }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Overtime Hours</dt><dd style="margin:0;font-weight:500;">{{ timesheet.overtime_hours }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Submitted At</dt><dd style="margin:0;font-weight:500;">{% if timesheet.submitted_at %}{{ timesheet.submitted_at|date:"M d, Y H:i" }}{% else %}—{% endif %}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Notes</dt><dd style="margin:0;font-weight:500;">{{ timesheet.notes|linebreaksbr|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ timesheet.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ timesheet.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'timesheets:timesheet_edit' timesheet.pk %}"><i data-lucide="edit-2"></i> Edit Timesheet</a>
+        <form method="post" action="{% url 'timesheets:timesheet_delete' timesheet.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete timesheet {{ timesheet.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Timesheet</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'timesheets:timesheet_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
