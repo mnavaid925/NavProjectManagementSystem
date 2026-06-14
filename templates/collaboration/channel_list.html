@@ -1,0 +1,129 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ page_title|default:'Channels' }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Channels</h1>
+    <ul class="breadcrumb">
+      <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+      <li><a href="{% url 'collaboration:channel_list' %}">Collaboration &amp; Communication</a></li>
+      <li><span class="active" aria-current="page">Channels</span></li>
+    </ul>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'collaboration:channel_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> New Channel</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">All Channels <span class="text-muted">({{ total_count }})</span></h2>
+  </div>
+  <div class="card-body">
+    {% comment %} Filters {% endcomment %}
+    <form method="get" class="flex flex-wrap items-end gap-3 mb-4">
+      <div class="form-group mb-0 flex-1" style="min-width:200px">
+        <label class="form-label">Search</label>
+        <input type="text" name="q" value="{{ request.GET.q|default:'' }}" class="form-input" placeholder="Search name, topic or description...">
+      </div>
+      <div class="form-group mb-0" style="min-width:160px">
+        <label class="form-label">Type</label>
+        <select name="channel_type" class="form-select">
+          <option value="">All types</option>
+          {% for val, label in channel_type_choices %}
+          <option value="{{ val }}" {% if request.GET.channel_type == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group mb-0" style="min-width:160px">
+        <label class="form-label">Project</label>
+        <select name="project" class="form-select">
+          <option value="">All projects</option>
+          {% for p in projects %}
+          <option value="{{ p.pk }}" {% if request.GET.project == p.pk|stringformat:"d" %}selected{% endif %}>{{ p.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group mb-0">
+        <button type="submit" class="btn btn-secondary"><i data-lucide="filter"></i> Filter</button>
+        {% if request.GET.q or request.GET.channel_type or request.GET.project %}
+        <a href="{% url 'collaboration:channel_list' %}" class="btn btn-outline btn-sm"><i data-lucide="x"></i> Clear</a>
+        {% endif %}
+      </div>
+    </form>
+
+    {% comment %} Table {% endcomment %}
+    {% if channels %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Project</th>
+            <th>Type</th>
+            <th>Members</th>
+            <th>Archived?</th>
+            <th style="text-align:right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for channel in channels %}
+          <tr>
+            <td><a href="{% url 'collaboration:channel_detail' channel.pk %}" class="font-semibold text-brand">{{ channel.name }}</a></td>
+            <td>{{ channel.project.name|default:"—" }}</td>
+            <td>
+              {% if channel.channel_type == 'announcement' %}<span class="badge badge-amber">{{ channel.get_channel_type_display }}</span>
+              {% elif channel.channel_type == 'private' %}<span class="badge badge-purple">{{ channel.get_channel_type_display }}</span>
+              {% elif channel.channel_type == 'direct' %}<span class="badge badge-blue">{{ channel.get_channel_type_display }}</span>
+              {% elif channel.channel_type == 'public' %}<span class="badge badge-slate">{{ channel.get_channel_type_display }}</span>
+              {% else %}<span class="badge badge-slate">{{ channel.get_channel_type_display }}</span>{% endif %}
+            </td>
+            <td>{{ channel.member_count }}</td>
+            <td>
+              {% if channel.is_archived %}<span class="badge badge-slate">Archived</span>
+              {% else %}<span class="badge badge-green">Active</span>{% endif %}
+            </td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'collaboration:channel_detail' channel.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'collaboration:channel_edit' channel.pk %}" class="btn-icon" title="Edit"><i data-lucide="edit-2"></i></a>
+                <form method="post" action="{% url 'collaboration:channel_delete' channel.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon btn-danger" title="Delete" onclick="return confirm('Delete channel {{ channel.name|escapejs }}?')"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <ul class="pagination">
+      <li class="{% if not page_obj.has_previous %}disabled{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.channel_type %}channel_type={{ request.GET.channel_type }}&amp;{% endif %}{% if request.GET.project %}project={{ request.GET.project }}&amp;{% endif %}page={% if page_obj.has_previous %}{{ page_obj.previous_page_number }}{% else %}1{% endif %}">Prev</a>
+      </li>
+      {% for n in page_obj.paginator.page_range %}
+      <li class="{% if n == page_obj.number %}active{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.channel_type %}channel_type={{ request.GET.channel_type }}&amp;{% endif %}{% if request.GET.project %}project={{ request.GET.project }}&amp;{% endif %}page={{ n }}">{{ n }}</a>
+      </li>
+      {% endfor %}
+      <li class="{% if not page_obj.has_next %}disabled{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.channel_type %}channel_type={{ request.GET.channel_type }}&amp;{% endif %}{% if request.GET.project %}project={{ request.GET.project }}&amp;{% endif %}page={% if page_obj.has_next %}{{ page_obj.next_page_number }}{% else %}{{ page_obj.paginator.num_pages }}{% endif %}">Next</a>
+      </li>
+    </ul>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon"><i data-lucide="message-square"></i></div>
+      <h3>No channels found</h3>
+      <p>{% if request.GET.q or request.GET.channel_type or request.GET.project %}No channels match your filters.{% else %}Create your first channel to get started.{% endif %}</p>
+      <a href="{% url 'collaboration:channel_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> New Channel</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
