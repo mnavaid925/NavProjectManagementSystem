@@ -1,0 +1,228 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ project.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ project.name }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'projects:project_list' %}">Projects</a></li>
+        <li class="active" aria-current="page">{{ project.name }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    <a class="btn btn-secondary" href="{% url 'projects:project_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'projects:project_edit' project.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'projects:project_delete' project.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete this project?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+{# ---- Top summary cards ---- #}
+<div class="form-row" style="grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.25rem;">
+  <div class="stat-card">
+    <div class="stat-icon"><i data-lucide="user"></i></div>
+    <div class="stat-body">
+      <div class="stat-value" style="font-size:1.05rem;">{{ project.client_name|default:"—" }}</div>
+      <div class="stat-label">Client</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon"><i data-lucide="wallet"></i></div>
+    <div class="stat-body">
+      <div class="stat-value" style="font-size:1.25rem;">{{ project.budget }}</div>
+      <div class="stat-label">Budget</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon"><i data-lucide="trending-down"></i></div>
+    <div class="stat-body">
+      <div class="stat-value" style="font-size:1.25rem;">{{ project.spent }}</div>
+      <div class="stat-label">Spent &middot; {{ project.budget_used_percent }}% of budget</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon"><i data-lucide="activity"></i></div>
+    <div class="stat-body">
+      <div class="stat-value" style="font-size:1.25rem;">{{ project.progress }}%</div>
+      <div class="stat-label">Progress</div>
+    </div>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    {# ---- Overview ---- #}
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Overview</h2>
+        <div style="display:flex;gap:.4rem;">
+          {% if project.status == 'completed' %}<span class="badge badge-green">{{ project.get_status_display }}</span>
+          {% elif project.status == 'in_progress' %}<span class="badge badge-blue">{{ project.get_status_display }}</span>
+          {% elif project.status == 'on_hold' %}<span class="badge badge-amber">{{ project.get_status_display }}</span>
+          {% elif project.status == 'cancelled' %}<span class="badge badge-red">{{ project.get_status_display }}</span>
+          {% else %}<span class="badge badge-slate">{{ project.get_status_display }}</span>{% endif %}
+          {% if project.priority == 'urgent' %}<span class="badge badge-red">{{ project.get_priority_display }}</span>
+          {% elif project.priority == 'high' %}<span class="badge badge-amber">{{ project.get_priority_display }}</span>
+          {% elif project.priority == 'medium' %}<span class="badge badge-blue">{{ project.get_priority_display }}</span>
+          {% else %}<span class="badge badge-slate">{{ project.get_priority_display }}</span>{% endif %}
+        </div>
+      </div>
+      <div class="card-body">
+        <div style="margin-bottom:1rem;">
+          <div style="display:flex;justify-content:space-between;font-size:.78rem;color:var(--text-muted);margin-bottom:.35rem;">
+            <span>Completion</span><span>{{ project.progress }}%</span>
+          </div>
+          <div class="progress"><div class="progress-bar" style="width:{{ project.progress }}%;"></div></div>
+        </div>
+        {% if project.description %}
+          <p style="color:var(--text-muted);margin:0 0 1rem;">{{ project.description|linebreaksbr }}</p>
+        {% endif %}
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Code</dt><dd style="margin:0;font-weight:500;">{{ project.code|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Owner</dt><dd style="margin:0;font-weight:500;">{{ project.owner.get_full_name|default:project.owner.username|default:"Unassigned" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Start Date</dt><dd style="margin:0;font-weight:500;">{{ project.start_date|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">End Date</dt><dd style="margin:0;font-weight:500;">{{ project.end_date|date:"M d, Y"|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Billable</dt><dd style="margin:0;font-weight:500;">{% if project.is_billable %}Yes{% else %}No{% endif %}</dd></div>
+        </dl>
+      </div>
+    </div>
+
+    {# ---- Tasks ---- #}
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Tasks <span class="text-muted" style="font-weight:400;">({{ tasks|length }})</span></h2>
+        <a class="btn btn-sm btn-secondary" href="{% url 'projects:task_create' %}"><i data-lucide="plus"></i> New Task</a>
+      </div>
+      {% if tasks %}
+      <div class="table-wrap" style="border:0;border-top:1px solid var(--border);border-radius:0;">
+        <table class="table">
+          <thead><tr><th>Task</th><th>Assignee</th><th>Status</th><th>Due</th></tr></thead>
+          <tbody>
+            {% for task in tasks %}
+            <tr>
+              <td><a href="{% url 'projects:task_detail' task.pk %}" style="font-weight:500;color:var(--text);">{{ task.title }}</a></td>
+              <td>{{ task.assignee.get_full_name|default:task.assignee.username|default:"—" }}</td>
+              <td>
+                {% if task.status == 'done' %}<span class="badge badge-green">{{ task.get_status_display }}</span>
+                {% elif task.status == 'in_progress' %}<span class="badge badge-blue">{{ task.get_status_display }}</span>
+                {% elif task.status == 'review' %}<span class="badge badge-purple">{{ task.get_status_display }}</span>
+                {% else %}<span class="badge badge-slate">{{ task.get_status_display }}</span>{% endif %}
+              </td>
+              <td>{{ task.due_date|date:"M d, Y"|default:"—" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="card-body"><p class="text-muted" style="margin:0;">No tasks yet.</p></div>
+      {% endif %}
+    </div>
+
+    {# ---- Tickets ---- #}
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Tickets <span class="text-muted" style="font-weight:400;">({{ tickets|length }})</span></h2>
+        <a class="btn btn-sm btn-secondary" href="{% url 'projects:ticket_create' %}"><i data-lucide="plus"></i> New Ticket</a>
+      </div>
+      {% if tickets %}
+      <div class="table-wrap" style="border:0;border-top:1px solid var(--border);border-radius:0;">
+        <table class="table">
+          <thead><tr><th>Subject</th><th>Category</th><th>Status</th><th>Priority</th></tr></thead>
+          <tbody>
+            {% for ticket in tickets %}
+            <tr>
+              <td><a href="{% url 'projects:ticket_detail' ticket.pk %}" style="font-weight:500;color:var(--text);">{{ ticket.subject }}</a></td>
+              <td>{{ ticket.get_category_display }}</td>
+              <td>
+                {% if ticket.status == 'resolved' %}<span class="badge badge-green">{{ ticket.get_status_display }}</span>
+                {% elif ticket.status == 'in_progress' %}<span class="badge badge-blue">{{ ticket.get_status_display }}</span>
+                {% elif ticket.status == 'closed' %}<span class="badge badge-slate">{{ ticket.get_status_display }}</span>
+                {% else %}<span class="badge badge-amber">{{ ticket.get_status_display }}</span>{% endif %}
+              </td>
+              <td>
+                {% if ticket.priority == 'urgent' %}<span class="badge badge-red">{{ ticket.get_priority_display }}</span>
+                {% elif ticket.priority == 'high' %}<span class="badge badge-amber">{{ ticket.get_priority_display }}</span>
+                {% elif ticket.priority == 'medium' %}<span class="badge badge-blue">{{ ticket.get_priority_display }}</span>
+                {% else %}<span class="badge badge-slate">{{ ticket.get_priority_display }}</span>{% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="card-body"><p class="text-muted" style="margin:0;">No tickets yet.</p></div>
+      {% endif %}
+    </div>
+
+    {# ---- Invoices ---- #}
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Invoices <span class="text-muted" style="font-weight:400;">({{ invoices|length }})</span></h2>
+        <a class="btn btn-sm btn-secondary" href="{% url 'projects:invoice_create' %}"><i data-lucide="plus"></i> New Invoice</a>
+      </div>
+      {% if invoices %}
+      <div class="table-wrap" style="border:0;border-top:1px solid var(--border);border-radius:0;">
+        <table class="table">
+          <thead><tr><th>Number</th><th>Total</th><th>Status</th><th>Due</th></tr></thead>
+          <tbody>
+            {% for invoice in invoices %}
+            <tr>
+              <td><a href="{% url 'projects:invoice_detail' invoice.pk %}" style="font-weight:500;color:var(--text);">{{ invoice.number }}</a></td>
+              <td>{{ invoice.total }}</td>
+              <td>
+                {% if invoice.status == 'paid' %}<span class="badge badge-green">{{ invoice.get_status_display }}</span>
+                {% elif invoice.status == 'partially_paid' %}<span class="badge badge-blue">{{ invoice.get_status_display }}</span>
+                {% elif invoice.status == 'sent' %}<span class="badge badge-amber">{{ invoice.get_status_display }}</span>
+                {% elif invoice.status == 'overdue' %}<span class="badge badge-red">{{ invoice.get_status_display }}</span>
+                {% else %}<span class="badge badge-slate">{{ invoice.get_status_display }}</span>{% endif %}
+              </td>
+              <td>{{ invoice.due_date|date:"M d, Y" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="card-body"><p class="text-muted" style="margin:0;">No invoices yet.</p></div>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ---- Sidebar: budget breakdown ---- #}
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Budget</h2></div>
+      <div class="card-body">
+        <div style="margin-bottom:1rem;">
+          <div style="display:flex;justify-content:space-between;font-size:.78rem;color:var(--text-muted);margin-bottom:.35rem;">
+            <span>Spent</span><span>{{ project.budget_used_percent }}%</span>
+          </div>
+          <div class="progress"><div class="progress-bar" style="width:{{ project.budget_used_percent }}%;{% if project.budget_used_percent >= 100 %}background:#dc2626;{% endif %}"></div></div>
+        </div>
+        <dl style="margin:0;display:grid;gap:.65rem;">
+          <div style="display:flex;justify-content:space-between;"><dt class="text-muted">Budget</dt><dd style="margin:0;font-weight:600;">{{ project.budget }}</dd></div>
+          <div style="display:flex;justify-content:space-between;"><dt class="text-muted">Spent</dt><dd style="margin:0;font-weight:600;">{{ project.spent }}</dd></div>
+          <hr class="hr" style="margin:.25rem 0;">
+          <div style="display:flex;justify-content:space-between;"><dt class="text-muted">Budget Used</dt><dd style="margin:0;font-weight:700;color:var(--brand-600);">{{ project.budget_used_percent }}%</dd></div>
+        </dl>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Quick Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'projects:project_edit' project.pk %}"><i data-lucide="edit-2"></i> Edit Project</a>
+        <a class="btn btn-secondary" href="{% url 'projects:task_create' %}"><i data-lucide="plus"></i> Add Task</a>
+        <a class="btn btn-secondary" href="{% url 'projects:invoice_create' %}"><i data-lucide="file-text"></i> Add Invoice</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
