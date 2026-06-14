@@ -1,0 +1,92 @@
+{% extends 'auth/_auth_base.html' %}
+
+{% block title %}Accept Invitation{% endblock %}
+
+{% block brand_body %}
+  <h1 class="auth-headline">You&rsquo;ve been invited to collaborate.</h1>
+  <p class="auth-blurb">Join your team on NavPMS to work on projects, tasks, meetings, tickets and invoices together — securely, in one shared workspace.</p>
+  <ul class="auth-features">
+    <li><span class="auth-feature-ico"><i data-lucide="users"></i></span><div>Jump straight into your team&rsquo;s active projects.</div></li>
+    <li><span class="auth-feature-ico"><i data-lucide="user-check"></i></span><div>Your role and permissions are set up for you.</div></li>
+    <li><span class="auth-feature-ico"><i data-lucide="zap"></i></span><div>Just set a password and you&rsquo;re in — no setup needed.</div></li>
+  </ul>
+{% endblock %}
+
+{% block card %}
+  <div class="auth-card-head">
+    <p class="auth-eyebrow">You&rsquo;re invited</p>
+    <h2 class="auth-title">Join {{ invite.tenant.name }}</h2>
+    <p class="auth-subtitle">Set your name and password to activate your account.</p>
+  </div>
+
+  <div class="auth-invite-card">
+    <div class="ic"><i data-lucide="building-2" style="width:20px;height:20px;"></i></div>
+    <div class="meta">
+      <strong>{{ invite.tenant.name }}</strong>
+      <span>{{ invite.email }}{% if invite.role %} &middot; {{ invite.role.name }}{% endif %}</span>
+    </div>
+  </div>
+
+  {% if form.non_field_errors %}
+    <div class="auth-alert auth-alert-danger" role="alert">
+      <i data-lucide="alert-circle"></i>
+      <div>{% for error in form.non_field_errors %}{{ error }}{% endfor %}</div>
+    </div>
+  {% endif %}
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+
+    <div class="auth-form-group">
+      <label class="auth-label" for="{{ form.full_name.id_for_label }}">Your full name <span class="req">*</span></label>
+      <div class="auth-input-wrap">
+        <i class="field-ico" data-lucide="user"></i>
+        <input type="text" name="{{ form.full_name.html_name }}" id="{{ form.full_name.id_for_label }}"
+               class="auth-input has-ico{% if form.full_name.errors %} is-invalid{% endif %}"
+               value="{{ form.full_name.value|default:'' }}"
+               placeholder="Jane Cooper" autocomplete="name" autofocus required>
+      </div>
+      {% for error in form.full_name.errors %}
+        <div class="auth-error"><i data-lucide="alert-circle"></i><span>{{ error }}</span></div>
+      {% endfor %}
+    </div>
+
+    <div class="auth-form-group">
+      <label class="auth-label" for="{{ form.password1.id_for_label }}">Password <span class="req">*</span></label>
+      <div class="auth-input-wrap">
+        <i class="field-ico" data-lucide="lock"></i>
+        <input type="password" name="{{ form.password1.html_name }}" id="{{ form.password1.id_for_label }}"
+               class="auth-input has-ico has-toggle{% if form.password1.errors %} is-invalid{% endif %}"
+               placeholder="Create a password" autocomplete="new-password" required>
+        <button type="button" class="pw-toggle" data-pw-toggle="{{ form.password1.id_for_label }}" aria-label="Show password"><i data-lucide="eye"></i></button>
+      </div>
+      {% for error in form.password1.errors %}
+        <div class="auth-error"><i data-lucide="alert-circle"></i><span>{{ error }}</span></div>
+      {% endfor %}
+    </div>
+
+    <div class="auth-form-group">
+      <label class="auth-label" for="{{ form.password2.id_for_label }}">Confirm password <span class="req">*</span></label>
+      <div class="auth-input-wrap">
+        <i class="field-ico" data-lucide="lock"></i>
+        <input type="password" name="{{ form.password2.html_name }}" id="{{ form.password2.id_for_label }}"
+               class="auth-input has-ico has-toggle{% if form.password2.errors %} is-invalid{% endif %}"
+               placeholder="Repeat your password" autocomplete="new-password" required>
+        <button type="button" class="pw-toggle" data-pw-toggle="{{ form.password2.id_for_label }}" aria-label="Show password"><i data-lucide="eye"></i></button>
+      </div>
+      {% for error in form.password2.errors %}
+        <div class="auth-error"><i data-lucide="alert-circle"></i><span>{{ error }}</span></div>
+      {% endfor %}
+    </div>
+
+    <p class="auth-hint" style="margin: 0 0 1.25rem;">Use at least 8 characters with a mix of letters and numbers.</p>
+
+    <button type="submit" class="auth-btn">
+      <i data-lucide="user-check"></i> Accept &amp; join
+    </button>
+  </form>
+
+  <p class="auth-foot">
+    Already have an account? <a href="{% url 'accounts:login' %}">Sign in</a>
+  </p>
+{% endblock %}
