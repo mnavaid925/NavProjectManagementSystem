@@ -1,0 +1,165 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ page_title|default:'Tenant Onboarding' }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Tenant Onboarding</h1>
+    <ul class="breadcrumb">
+      <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+      <li><span class="active" aria-current="page">Onboarding</span></li>
+    </ul>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'tenants:branding' %}" class="btn btn-outline"><i data-lucide="palette"></i> Branding</a>
+    <a href="{% url 'tenants:subscription' %}" class="btn btn-primary"><i data-lucide="credit-card"></i> Subscription</a>
+  </div>
+</div>
+
+{% if not tenant %}
+  <div class="alert alert-warning">
+    <i data-lucide="alert-triangle"></i>
+    <div>No active tenant on this session. Log in as a tenant admin (e.g. <strong>admin_&lt;slug&gt;</strong>) to configure onboarding.</div>
+  </div>
+{% else %}
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+  {# ---------------- Left: org config form ---------------- #}
+  <div class="lg:col-span-2 space-y-5">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">Organization Information</h2>
+          <p class="card-subtitle">Core details used across the workspace.</p>
+        </div>
+        <span class="badge {% if tenant.is_active %}badge-green{% else %}badge-slate{% endif %}">
+          <i data-lucide="{% if tenant.is_active %}check-circle{% else %}pause-circle{% endif %}"></i>
+          {% if tenant.is_active %}Active{% else %}Inactive{% endif %}
+        </span>
+      </div>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="card-body">
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger"><i data-lucide="alert-circle"></i><div>{{ form.non_field_errors }}</div></div>
+          {% endif %}
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="{{ form.name.id_for_label }}">Organization Name <span class="req">*</span></label>
+              <input type="text" name="{{ form.name.html_name }}" id="{{ form.name.id_for_label }}"
+                     class="form-input{% if form.name.errors %} is-invalid{% endif %}"
+                     value="{{ form.name.value|default:'' }}" required>
+              {% for e in form.name.errors %}<p class="form-error"><i data-lucide="alert-circle"></i>{{ e }}</p>{% endfor %}
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="{{ form.subdomain.id_for_label }}">Subdomain</label>
+              <input type="text" name="{{ form.subdomain.html_name }}" id="{{ form.subdomain.id_for_label }}"
+                     class="form-input{% if form.subdomain.errors %} is-invalid{% endif %}"
+                     value="{{ form.subdomain.value|default:'' }}">
+              {% for e in form.subdomain.errors %}<p class="form-error"><i data-lucide="alert-circle"></i>{{ e }}</p>{% endfor %}
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="{{ form.contact_email.id_for_label }}">Contact Email</label>
+            <input type="email" name="{{ form.contact_email.html_name }}" id="{{ form.contact_email.id_for_label }}"
+                   class="form-input{% if form.contact_email.errors %} is-invalid{% endif %}"
+                   value="{{ form.contact_email.value|default:'' }}">
+            {% for e in form.contact_email.errors %}<p class="form-error"><i data-lucide="alert-circle"></i>{{ e }}</p>{% endfor %}
+          </div>
+          <label class="form-check">
+            <input type="checkbox" name="{{ form.is_active.html_name }}" {% if form.is_active.value %}checked{% endif %}>
+            <span>Organization is active</span>
+          </label>
+        </div>
+        <div class="card-footer">
+          <a href="{% url 'dashboard:index' %}" class="btn btn-secondary">Cancel</a>
+          <button type="submit" class="btn btn-primary"><i data-lucide="save"></i> Save Configuration</button>
+        </div>
+      </form>
+    </div>
+
+    {# ---------------- Setup checklist ---------------- #}
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Setup Checklist</h2></div>
+      <div class="card-body space-y-3">
+        {% with done='text-green-600 dark:text-green-400' todo='text-slate-400' %}
+        <div class="flex items-center gap-3">
+          <i data-lucide="{% if tenant.name %}check-circle-2{% else %}circle{% endif %}" class="{% if tenant.name %}{{ done }}{% else %}{{ todo }}{% endif %}"></i>
+          <span class="flex-1">Organization profile completed</span>
+          <span class="badge {% if tenant.name %}badge-green{% else %}badge-slate{% endif %}">{% if tenant.name %}Done{% else %}Pending{% endif %}</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <i data-lucide="{% if subscription %}check-circle-2{% else %}circle{% endif %}" class="{% if subscription %}{{ done }}{% else %}{{ todo }}{% endif %}"></i>
+          <span class="flex-1">Subscription plan selected</span>
+          {% if subscription %}<a href="{% url 'tenants:subscription' %}" class="badge badge-green">{{ subscription.plan.name|default:'Active' }}</a>
+          {% else %}<a href="{% url 'tenants:subscription' %}" class="badge badge-amber">Choose plan</a>{% endif %}
+        </div>
+        <div class="flex items-center gap-3">
+          <i data-lucide="{% if member_count > 1 %}check-circle-2{% else %}circle{% endif %}" class="{% if member_count > 1 %}{{ done }}{% else %}{{ todo }}{% endif %}"></i>
+          <span class="flex-1">Team members invited</span>
+          <a href="{% url 'accounts:user_list' %}" class="badge {% if member_count > 1 %}badge-green{% else %}badge-slate{% endif %}">{{ member_count }} member{{ member_count|pluralize }}</a>
+        </div>
+        <div class="flex items-center gap-3">
+          <i data-lucide="{% if project_count %}check-circle-2{% else %}circle{% endif %}" class="{% if project_count %}{{ done }}{% else %}{{ todo }}{% endif %}"></i>
+          <span class="flex-1">First project created</span>
+          <a href="{% url 'projects:project_list' %}" class="badge {% if project_count %}badge-green{% else %}badge-slate{% endif %}">{{ project_count }} project{{ project_count|pluralize }}</a>
+        </div>
+        {% endwith %}
+      </div>
+    </div>
+  </div>
+
+  {# ---------------- Right: summary sidebar ---------------- #}
+  <div class="space-y-5">
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Current Plan</h2></div>
+      <div class="card-body">
+        {% if subscription %}
+          <div class="text-2xl font-bold">{{ subscription.plan.name|default:'—' }}</div>
+          <div class="mt-2">
+            {% if subscription.status == 'active' %}<span class="badge badge-green">Active</span>
+            {% elif subscription.status == 'trialing' %}<span class="badge badge-blue">Trialing</span>
+            {% elif subscription.status == 'past_due' %}<span class="badge badge-amber">Past Due</span>
+            {% elif subscription.status == 'canceled' %}<span class="badge badge-red">Canceled</span>
+            {% else %}<span class="badge badge-muted">{{ subscription.get_status_display }}</span>{% endif %}
+            <span class="badge badge-slate">{{ subscription.get_billing_cycle_display }}</span>
+          </div>
+          <p class="form-hint mt-3">{{ subscription.days_left }} day{{ subscription.days_left|pluralize }} remaining in current period.</p>
+        {% else %}
+          <p class="text-muted">No subscription yet.</p>
+        {% endif %}
+        <a href="{% url 'tenants:subscription' %}" class="btn btn-outline btn-sm mt-3"><i data-lucide="arrow-up-right"></i> Manage subscription</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Branding Snapshot</h2></div>
+      <div class="card-body">
+        {% if branding %}
+          <div class="flex items-center gap-2 mb-3">
+            {% if branding.logo %}
+              <img src="{{ branding.logo.url }}" alt="Logo" class="avatar avatar-lg" style="border-radius:.6rem">
+            {% else %}
+              <span class="avatar-initial avatar-lg" style="border-radius:.6rem">{{ tenant.name|slice:':2'|upper }}</span>
+            {% endif %}
+            <div>
+              <div class="font-semibold">{{ branding.email_from_name|default:tenant.name }}</div>
+              <div class="form-hint">{% if branding.enable_white_label %}White-label enabled{% else %}NavPMS branding{% endif %}</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="inline-block w-7 h-7 rounded-md border border-slate-200 dark:border-slate-700" style="background:{{ branding.primary_color }}" title="Primary"></span>
+            <span class="inline-block w-7 h-7 rounded-md border border-slate-200 dark:border-slate-700" style="background:{{ branding.secondary_color }}" title="Secondary"></span>
+            <span class="inline-block w-7 h-7 rounded-md border border-slate-200 dark:border-slate-700" style="background:{{ branding.accent_color }}" title="Accent"></span>
+          </div>
+        {% else %}
+          <p class="text-muted">No branding configured.</p>
+        {% endif %}
+        <a href="{% url 'tenants:branding' %}" class="btn btn-outline btn-sm mt-3"><i data-lucide="palette"></i> Edit branding</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
