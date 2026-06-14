@@ -1,0 +1,114 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ page_title|default:'Tenant Health Monitoring' }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Tenant Health Monitoring</h1>
+    <ul class="breadcrumb">
+      <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+      <li><span class="active" aria-current="page">Health</span></li>
+    </ul>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'tenants:usage_list' %}" class="btn btn-outline"><i data-lucide="bar-chart-3"></i> Usage Details</a>
+  </div>
+</div>
+
+{# ---------------- Summary stats ---------------- #}
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-1">
+  <div class="stat-card">
+    <div class="stat-icon"><i data-lucide="activity"></i></div>
+    <div class="stat-body">
+      <div class="stat-value">{{ usage_metrics|length }}</div>
+      <div class="stat-label">Tracked Metrics</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon" style="background:#fef3c7;color:#b45309"><i data-lucide="bell"></i></div>
+    <div class="stat-body">
+      <div class="stat-value">{{ open_alert_count }}</div>
+      <div class="stat-label">Open Alerts</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon" style="background:#dcfce7;color:#15803d"><i data-lucide="check-circle"></i></div>
+    <div class="stat-body">
+      <div class="stat-value">{{ alerts|length }}</div>
+      <div class="stat-label">Total Alerts</div>
+    </div>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+  {# ---------------- Usage bars ---------------- #}
+  <div class="lg:col-span-2">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Resource Usage</h2>
+        <a href="{% url 'tenants:usage_list' %}" class="btn btn-outline btn-sm">View all</a>
+      </div>
+      <div class="card-body space-y-5">
+        {% for m in usage_metrics %}
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <span class="font-medium">{{ m.label|default:m.get_metric_display }}</span>
+            <span class="text-muted">
+              {{ m.value }}{% if m.unit %} {{ m.unit }}{% endif %} / {{ m.limit }}{% if m.unit %} {{ m.unit }}{% endif %}
+              <span class="badge {% if m.percent >= 90 %}badge-red{% elif m.percent >= 75 %}badge-amber{% else %}badge-green{% endif %}">{{ m.percent }}%</span>
+            </span>
+          </div>
+          <div class="progress">
+            <div class="progress-bar" style="width:{{ m.percent }}%;{% if m.percent >= 90 %}background:#dc2626{% elif m.percent >= 75 %}background:#d97706{% endif %}"></div>
+          </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">
+          <div class="empty-icon"><i data-lucide="bar-chart-3"></i></div>
+          <h3>No usage metrics</h3>
+          <p>Resource usage will appear here once tracking data is recorded.</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  {# ---------------- Alerts ---------------- #}
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">System Alerts</h2></div>
+      <div class="card-body space-y-3">
+        {% for alert in alerts %}
+        <div class="rounded-lg border p-3 {% if alert.severity == 'critical' %}border-red-300 dark:border-red-800{% elif alert.severity == 'warning' %}border-amber-300 dark:border-amber-800{% else %}border-slate-200 dark:border-slate-700{% endif %}{% if alert.is_resolved %} opacity-60{% endif %}">
+          <div class="flex items-center justify-between gap-2 mb-1">
+            {% if alert.severity == 'critical' %}<span class="badge badge-red"><i data-lucide="alert-octagon"></i> Critical</span>
+            {% elif alert.severity == 'warning' %}<span class="badge badge-amber"><i data-lucide="alert-triangle"></i> Warning</span>
+            {% else %}<span class="badge badge-blue"><i data-lucide="info"></i> Info</span>{% endif %}
+            <span class="badge badge-slate">{{ alert.get_category_display }}</span>
+          </div>
+          <div class="font-semibold">{{ alert.title }}</div>
+          {% if alert.message %}<p class="form-hint">{{ alert.message }}</p>{% endif %}
+          <div class="flex items-center justify-between mt-2">
+            <span class="form-hint">{{ alert.created_at|date:"M d, H:i" }}</span>
+            {% if alert.is_resolved %}
+              <span class="badge badge-green"><i data-lucide="check"></i> Resolved</span>
+            {% else %}
+              <form method="post" action="{% url 'tenants:alert_resolve' alert.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success btn-sm"><i data-lucide="check"></i> Resolve</button>
+              </form>
+            {% endif %}
+          </div>
+        </div>
+        {% empty %}
+        <div class="empty-state" style="padding:2rem 1rem">
+          <div class="empty-icon"><i data-lucide="bell-off"></i></div>
+          <h3>No alerts</h3>
+          <p>Your tenant is healthy with no active alerts.</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
