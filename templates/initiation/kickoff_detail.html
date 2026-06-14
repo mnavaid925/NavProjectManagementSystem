@@ -1,0 +1,73 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ kickoff.title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ kickoff.title }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'initiation:kickoff_list' %}">Project Initiation &amp; Charter</a></li>
+        <li class="active" aria-current="page">{{ kickoff.title }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    <a class="btn btn-secondary" href="{% url 'initiation:kickoff_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'initiation:kickoff_edit' kickoff.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'initiation:kickoff_delete' kickoff.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete this kickoff task?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Kickoff Task Details</h2>
+        <div style="display:flex;gap:.4rem;">
+          {% if kickoff.status == 'done' %}<span class="badge badge-green">{{ kickoff.get_status_display }}</span>
+          {% elif kickoff.status == 'in_progress' %}<span class="badge badge-blue">{{ kickoff.get_status_display }}</span>
+          {% elif kickoff.status == 'pending' %}<span class="badge badge-slate">{{ kickoff.get_status_display }}</span>
+          {% else %}<span class="badge badge-slate">{{ kickoff.get_status_display }}</span>{% endif %}
+        </div>
+      </div>
+      <div class="card-body">
+        {% if kickoff.description %}
+          <p style="color:var(--text-muted);margin:0 0 1rem;">{{ kickoff.description|linebreaksbr }}</p>
+        {% endif %}
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Title</dt><dd style="margin:0;font-weight:500;">{{ kickoff.title|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Category</dt><dd style="margin:0;font-weight:500;">{{ kickoff.get_category_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Project</dt><dd style="margin:0;font-weight:500;">{{ kickoff.project.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Charter</dt><dd style="margin:0;font-weight:500;">{{ kickoff.charter.title|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Owner</dt><dd style="margin:0;font-weight:500;">{% if kickoff.owner %}{{ kickoff.owner.get_full_name|default:kickoff.owner.username }}{% else %}—{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Due Date</dt><dd style="margin:0;font-weight:500;">{{ kickoff.due_date|date:"M d, Y"|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">{{ kickoff.get_status_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Complete</dt><dd style="margin:0;font-weight:500;">{% if kickoff.is_complete %}Yes{% else %}No{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ kickoff.created_at|date:"M d, Y"|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ kickoff.updated_at|date:"M d, Y"|default:"—" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  {% comment %} Actions sidebar {% endcomment %}
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'initiation:kickoff_edit' kickoff.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+        <form method="post" action="{% url 'initiation:kickoff_delete' kickoff.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete this kickoff task?')"><i data-lucide="trash-2"></i> Delete</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'initiation:kickoff_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
