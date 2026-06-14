@@ -1,0 +1,86 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ obj.number }} — {{ obj.title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.number }} — {{ obj.title }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'initiation:request_list' %}">Project Initiation &amp; Charter</a></li>
+        <li class="active" aria-current="page">{{ obj.number }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if obj.status == 'approved' %}<span class="badge badge-green">{{ obj.get_status_display }}</span>
+    {% elif obj.status == 'under_review' %}<span class="badge badge-blue">{{ obj.get_status_display }}</span>
+    {% elif obj.status == 'submitted' %}<span class="badge badge-blue">{{ obj.get_status_display }}</span>
+    {% elif obj.status == 'rejected' %}<span class="badge badge-red">{{ obj.get_status_display }}</span>
+    {% elif obj.status == 'draft' %}<span class="badge badge-slate">{{ obj.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ obj.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'initiation:request_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'initiation:request_edit' obj.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'initiation:request_delete' obj.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete request {{ obj.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Request Details</h2>
+        <div style="display:flex;gap:.4rem;">
+          {% if obj.priority == 'urgent' %}<span class="badge badge-red">{{ obj.get_priority_display }}</span>
+          {% elif obj.priority == 'high' %}<span class="badge badge-amber">{{ obj.get_priority_display }}</span>
+          {% elif obj.priority == 'medium' %}<span class="badge badge-blue">{{ obj.get_priority_display }}</span>
+          {% elif obj.priority == 'low' %}<span class="badge badge-slate">{{ obj.get_priority_display }}</span>
+          {% else %}<span class="badge badge-slate">{{ obj.get_priority_display }}</span>{% endif %}
+        </div>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Number</dt><dd style="margin:0;font-weight:500;">{{ obj.number|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Title</dt><dd style="margin:0;font-weight:500;">{{ obj.title|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Department</dt><dd style="margin:0;font-weight:500;">{{ obj.department|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Requested By</dt><dd style="margin:0;font-weight:500;">{% if obj.requested_by %}{{ obj.requested_by.get_full_name|default:obj.requested_by.username }}{% else %}—{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Priority</dt><dd style="margin:0;font-weight:500;">{{ obj.get_priority_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">{{ obj.get_status_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Estimated Budget</dt><dd style="margin:0;font-weight:500;">{{ obj.estimated_budget|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Target Start Date</dt><dd style="margin:0;font-weight:500;">{{ obj.target_start_date|date:"M d, Y"|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Project</dt><dd style="margin:0;font-weight:500;">{{ obj.project.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ obj.created_at|date:"M d, Y"|default:"—" }}</dd></div>
+        </dl>
+
+        <hr class="hr" style="margin:1rem 0;">
+        <div style="margin-bottom:1rem;">
+          <dt class="text-muted" style="font-size:.75rem;margin-bottom:.25rem;">Description</dt>
+          <dd style="margin:0;">{{ obj.description|linebreaksbr|default:"—" }}</dd>
+        </div>
+        <div>
+          <dt class="text-muted" style="font-size:.75rem;margin-bottom:.25rem;">Expected Benefit</dt>
+          <dd style="margin:0;">{{ obj.expected_benefit|linebreaksbr|default:"—" }}</dd>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'initiation:request_edit' obj.pk %}"><i data-lucide="edit-2"></i> Edit Request</a>
+        <form method="post" action="{% url 'initiation:request_delete' obj.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete request {{ obj.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Request</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'initiation:request_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
