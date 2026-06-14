@@ -1,0 +1,69 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ goal.number }} — {{ goal.title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ goal.number }} — {{ goal.title }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'portfolio:goal_list' %}">Portfolio &amp; Program Management</a></li>
+        <li class="active" aria-current="page">{{ goal.number }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if goal.status == 'achieved' %}<span class="badge badge-green">{{ goal.get_status_display }}</span>
+    {% elif goal.status == 'active' %}<span class="badge badge-blue">{{ goal.get_status_display }}</span>
+    {% elif goal.status == 'missed' %}<span class="badge badge-red">{{ goal.get_status_display }}</span>
+    {% elif goal.status == 'proposed' %}<span class="badge badge-slate">{{ goal.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ goal.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'portfolio:goal_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'portfolio:goal_edit' goal.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'portfolio:goal_delete' goal.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete strategic goal {{ goal.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Goal Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Number</dt><dd style="margin:0;font-weight:500;">{{ goal.number|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Title</dt><dd style="margin:0;font-weight:500;">{{ goal.title|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Portfolio</dt><dd style="margin:0;font-weight:500;">{{ goal.portfolio.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Category</dt><dd style="margin:0;font-weight:500;">{{ goal.get_category_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Priority</dt><dd style="margin:0;font-weight:500;">{{ goal.get_priority_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">{{ goal.get_status_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Alignment Score</dt><dd style="margin:0;font-weight:500;">{{ goal.alignment_score|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Target Date</dt><dd style="margin:0;font-weight:500;">{{ goal.target_date|date:"M d, Y"|default:"—" }}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Description</dt><dd style="margin:0;font-weight:500;">{{ goal.description|linebreaksbr|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ goal.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ goal.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'portfolio:goal_edit' goal.pk %}"><i data-lucide="edit-2"></i> Edit Goal</a>
+        <form method="post" action="{% url 'portfolio:goal_delete' goal.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete strategic goal {{ goal.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Goal</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'portfolio:goal_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
