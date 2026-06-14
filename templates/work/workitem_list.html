@@ -1,0 +1,152 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ page_title|default:'Work Items' }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Work Items</h1>
+    <ul class="breadcrumb">
+      <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+      <li><a href="{% url 'work:workitem_list' %}">Task &amp; Work Management</a></li>
+      <li><span class="active" aria-current="page">Work Items</span></li>
+    </ul>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'work:workitem_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> New WorkItem</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">All Work Items <span class="text-muted">({{ total_count }})</span></h2>
+  </div>
+  <div class="card-body">
+    {% comment %} Filters {% endcomment %}
+    <form method="get" class="flex flex-wrap items-end gap-3 mb-4">
+      <div class="form-group mb-0 flex-1" style="min-width:200px">
+        <label class="form-label">Search</label>
+        <input type="text" name="q" value="{{ request.GET.q|default:'' }}" class="form-input" placeholder="Search number, title or description...">
+      </div>
+      <div class="form-group mb-0" style="min-width:160px">
+        <label class="form-label">Status</label>
+        <select name="status" class="form-select">
+          <option value="">All statuses</option>
+          {% for val, label in status_choices %}
+          <option value="{{ val }}" {% if request.GET.status == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group mb-0" style="min-width:160px">
+        <label class="form-label">Type</label>
+        <select name="item_type" class="form-select">
+          <option value="">All types</option>
+          {% for val, label in type_choices %}
+          <option value="{{ val }}" {% if request.GET.item_type == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group mb-0" style="min-width:160px">
+        <label class="form-label">Priority</label>
+        <select name="priority" class="form-select">
+          <option value="">All priorities</option>
+          {% for val, label in priority_choices %}
+          <option value="{{ val }}" {% if request.GET.priority == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group mb-0">
+        <button type="submit" class="btn btn-secondary"><i data-lucide="filter"></i> Filter</button>
+        {% if request.GET.q or request.GET.status or request.GET.item_type or request.GET.priority %}
+        <a href="{% url 'work:workitem_list' %}" class="btn btn-outline btn-sm"><i data-lucide="x"></i> Clear</a>
+        {% endif %}
+      </div>
+    </form>
+
+    {% comment %} Table {% endcomment %}
+    {% if workitems %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Number</th>
+            <th>Title</th>
+            <th>Type</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>Assignee</th>
+            <th style="text-align:right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for workitem in workitems %}
+          <tr>
+            <td><a href="{% url 'work:workitem_detail' workitem.pk %}" class="font-semibold text-brand">{{ workitem.number }}</a></td>
+            <td>{{ workitem.title }}</td>
+            <td>
+              {% if workitem.item_type == 'bug' %}<span class="badge badge-red">{{ workitem.get_item_type_display }}</span>
+              {% elif workitem.item_type == 'story' %}<span class="badge badge-blue">{{ workitem.get_item_type_display }}</span>
+              {% elif workitem.item_type == 'task' %}<span class="badge badge-slate">{{ workitem.get_item_type_display }}</span>
+              {% elif workitem.item_type == 'spike' %}<span class="badge badge-purple">{{ workitem.get_item_type_display }}</span>
+              {% elif workitem.item_type == 'chore' %}<span class="badge badge-amber">{{ workitem.get_item_type_display }}</span>
+              {% else %}<span class="badge badge-slate">{{ workitem.get_item_type_display }}</span>{% endif %}
+            </td>
+            <td>
+              {% if workitem.priority == 'urgent' %}<span class="badge badge-red">{{ workitem.get_priority_display }}</span>
+              {% elif workitem.priority == 'high' %}<span class="badge badge-amber">{{ workitem.get_priority_display }}</span>
+              {% elif workitem.priority == 'medium' %}<span class="badge badge-blue">{{ workitem.get_priority_display }}</span>
+              {% elif workitem.priority == 'low' %}<span class="badge badge-slate">{{ workitem.get_priority_display }}</span>
+              {% else %}<span class="badge badge-slate">{{ workitem.get_priority_display }}</span>{% endif %}
+            </td>
+            <td>
+              {% if workitem.status == 'done' %}<span class="badge badge-green">{{ workitem.get_status_display }}</span>
+              {% elif workitem.status == 'in_progress' %}<span class="badge badge-blue">{{ workitem.get_status_display }}</span>
+              {% elif workitem.status == 'review' %}<span class="badge badge-amber">{{ workitem.get_status_display }}</span>
+              {% elif workitem.status == 'blocked' %}<span class="badge badge-red">{{ workitem.get_status_display }}</span>
+              {% elif workitem.status == 'todo' %}<span class="badge badge-slate">{{ workitem.get_status_display }}</span>
+              {% elif workitem.status == 'backlog' %}<span class="badge badge-slate">{{ workitem.get_status_display }}</span>
+              {% else %}<span class="badge badge-slate">{{ workitem.get_status_display }}</span>{% endif %}
+            </td>
+            <td>{% if workitem.assignee %}{{ workitem.assignee.get_full_name|default:workitem.assignee.username }}{% else %}—{% endif %}</td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'work:workitem_detail' workitem.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'work:workitem_edit' workitem.pk %}" class="btn-icon" title="Edit"><i data-lucide="edit-2"></i></a>
+                <form method="post" action="{% url 'work:workitem_delete' workitem.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon btn-danger" title="Delete" onclick="return confirm('Delete work item {{ workitem.number|escapejs }}?')"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <ul class="pagination">
+      <li class="{% if not page_obj.has_previous %}disabled{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&amp;{% endif %}{% if request.GET.item_type %}item_type={{ request.GET.item_type }}&amp;{% endif %}{% if request.GET.priority %}priority={{ request.GET.priority }}&amp;{% endif %}page={% if page_obj.has_previous %}{{ page_obj.previous_page_number }}{% else %}1{% endif %}">Prev</a>
+      </li>
+      {% for n in page_obj.paginator.page_range %}
+      <li class="{% if n == page_obj.number %}active{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&amp;{% endif %}{% if request.GET.item_type %}item_type={{ request.GET.item_type }}&amp;{% endif %}{% if request.GET.priority %}priority={{ request.GET.priority }}&amp;{% endif %}page={{ n }}">{{ n }}</a>
+      </li>
+      {% endfor %}
+      <li class="{% if not page_obj.has_next %}disabled{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&amp;{% endif %}{% if request.GET.item_type %}item_type={{ request.GET.item_type }}&amp;{% endif %}{% if request.GET.priority %}priority={{ request.GET.priority }}&amp;{% endif %}page={% if page_obj.has_next %}{{ page_obj.next_page_number }}{% else %}{{ page_obj.paginator.num_pages }}{% endif %}">Next</a>
+      </li>
+    </ul>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon"><i data-lucide="list-checks"></i></div>
+      <h3>No work items found</h3>
+      <p>{% if request.GET.q or request.GET.status or request.GET.item_type or request.GET.priority %}No work items match your filters.{% else %}Create your first work item to get started.{% endif %}</p>
+      <a href="{% url 'work:workitem_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> New WorkItem</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
