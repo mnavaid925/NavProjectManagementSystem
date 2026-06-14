@@ -102,3 +102,22 @@ defines `.text-muted`/`.text-brand` — so the values rendered with no emphasis 
 define the common utilities (`.text-danger`, `.text-red`) once in theme.css's "Utility helpers" section (mirrors
 `.text-muted`), with a `.dark` variant — DRY, and fixes every occurrence at once. Better: list the available
 utility classes in the spec so agents don't invent class names.
+
+## L16 — Date-equality tests flake on the UTC-offset window (use Django's `timezone`, not `datetime.date.today()`)
+With `USE_TZ=True` + `TIME_ZONE='UTC'`, model/view code computes "today" as `timezone.now().date()` (the **UTC**
+date). Tests that build a reference date with `datetime.date.today()` use the **local** machine date. The user is
+UTC+5, so for the ~5h each morning after local midnight (local date has rolled, UTC hasn't), the two differ by
+one day and any exact date-equality assertion fails — e.g. `Subscription.days_left()` returned 8 vs expected 7, and
+`Invoice.paid_at == datetime.date.today()` saw UTC `06-14` vs local `06-15`. The on_stop hook (`pytest -x`) then
+blocks the turn. These are **pre-existing flakes**, invisible most of the day, surfaced only by the date rollover.
+**Rule:** in tests, derive the reference date from the SAME basis the code under test uses — `timezone.now().date()`
+(or `timezone.localdate()`), never `datetime.date.today()` — whenever you assert exact equality against a
+model/view-set date. (Two such assertions existed in `apps/tenants/tests`; fixed both.)
+
+## L17 — A stale/half-created `test_<db>` blocks the whole suite (drop it, don't reuse)
+An interrupted pytest run left `test_nav_pms` existing but without its `django_migrations` table; the next run
+(reuse-db) reused the broken DB → `ProgrammingError: Table 'test_nav_pms.django_migrations' doesn't exist` /
+`(1007, Can't create database 'test_nav_pms'; database exists')` in setUp, failing every test before it ran.
+**Rule:** when pytest errors on the test DB itself (not an assertion), drop it and let pytest recreate clean:
+`& "C:\xampp\mysql\bin\mysql.exe" -u root -h 127.0.0.1 -P 3306 -e "DROP DATABASE IF EXISTS test_nav_pms;"`
+(root / no password on this XAMPP). Unrelated to app code — it's an environment reset.
