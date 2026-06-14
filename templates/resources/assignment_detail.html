@@ -1,0 +1,69 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ assignment.resource.name }} — {{ assignment.role_on_project }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ assignment.resource.name }} — {{ assignment.role_on_project }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'resources:assignment_list' %}">Resource Management</a></li>
+        <li class="active" aria-current="page">{{ assignment.role_on_project }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    <a class="btn btn-secondary" href="{% url 'resources:assignment_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'resources:assignment_edit' assignment.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'resources:assignment_delete' assignment.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete this assignment?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Assignment Details</h2>
+        <div style="display:flex;gap:.4rem;">
+          {% if assignment.status == 'active' %}<span class="badge badge-green">{{ assignment.get_status_display }}</span>
+          {% elif assignment.status == 'proposed' %}<span class="badge badge-amber">{{ assignment.get_status_display }}</span>
+          {% elif assignment.status == 'released' %}<span class="badge badge-slate">{{ assignment.get_status_display }}</span>
+          {% else %}<span class="badge badge-slate">{{ assignment.get_status_display }}</span>{% endif %}
+          {% if assignment.is_lead %}<span class="badge badge-green">Lead</span>{% endif %}
+        </div>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Resource</dt><dd style="margin:0;font-weight:500;">{{ assignment.resource.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Project</dt><dd style="margin:0;font-weight:500;">{{ assignment.project.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Role on Project</dt><dd style="margin:0;font-weight:500;">{{ assignment.role_on_project|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Lead</dt><dd style="margin:0;font-weight:500;">{% if assignment.is_lead %}Yes{% else %}No{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">{{ assignment.get_status_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Start Date</dt><dd style="margin:0;font-weight:500;">{{ assignment.start_date|date:"M d, Y"|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">End Date</dt><dd style="margin:0;font-weight:500;">{{ assignment.end_date|date:"M d, Y"|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ assignment.created_at|date:"M d, Y"|default:"—" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  {# ---- Sidebar: actions ---- #}
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'resources:assignment_edit' assignment.pk %}"><i data-lucide="edit-2"></i> Edit Assignment</a>
+        <form method="post" action="{% url 'resources:assignment_delete' assignment.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete this assignment?')"><i data-lucide="trash-2"></i> Delete</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'resources:assignment_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
