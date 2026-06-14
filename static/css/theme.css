@@ -810,6 +810,8 @@ body.customizer-open .customizer { transform: translateX(0); }
    -------------------------------------------------------------------------- */
 .text-muted { color: var(--text-muted) !important; }
 .text-brand { color: var(--brand-600) !important; }
+.text-danger, .text-red { color: #dc2626 !important; }
+.dark .text-danger, .dark .text-red { color: #fca5a5 !important; }
 .hr { height: 1px; background: var(--border); border: 0; margin: 1rem 0; }
 .section-title { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); margin: 0 0 .75rem; }
 .kbd { font-size: .68rem; padding: .1rem .35rem; border: 1px solid var(--border-strong); border-bottom-width: 2px; border-radius: .3rem; background: var(--surface-2); color: var(--text-muted); }
