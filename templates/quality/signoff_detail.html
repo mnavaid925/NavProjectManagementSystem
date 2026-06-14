@@ -1,0 +1,69 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ signoff.number }} — {{ signoff.deliverable_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ signoff.number }} — {{ signoff.deliverable_name }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'quality:signoff_list' %}">Quality Management</a></li>
+        <li class="active" aria-current="page">{{ signoff.number }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if signoff.status == 'approved' %}<span class="badge badge-green">{{ signoff.get_status_display }}</span>
+    {% elif signoff.status == 'rejected' %}<span class="badge badge-red">{{ signoff.get_status_display }}</span>
+    {% elif signoff.status == 'revisions' %}<span class="badge badge-amber">{{ signoff.get_status_display }}</span>
+    {% elif signoff.status == 'pending' %}<span class="badge badge-slate">{{ signoff.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ signoff.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'quality:signoff_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'quality:signoff_edit' signoff.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'quality:signoff_delete' signoff.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete sign-off {{ signoff.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Sign-off Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Number</dt><dd style="margin:0;font-weight:500;">{{ signoff.number|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Deliverable</dt><dd style="margin:0;font-weight:500;">{{ signoff.deliverable_name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Project</dt><dd style="margin:0;font-weight:500;">{{ signoff.project.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">{{ signoff.get_status_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Submitted By</dt><dd style="margin:0;font-weight:500;">{% if signoff.submitted_by %}{{ signoff.submitted_by.get_full_name|default:signoff.submitted_by.username }}{% else %}—{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Approver</dt><dd style="margin:0;font-weight:500;">{% if signoff.approver %}{{ signoff.approver.get_full_name|default:signoff.approver.username }}{% else %}—{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Submitted Date</dt><dd style="margin:0;font-weight:500;">{{ signoff.submitted_date|date:"M d, Y"|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Sign-off Date</dt><dd style="margin:0;font-weight:500;">{{ signoff.signoff_date|date:"M d, Y"|default:"—" }}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Description</dt><dd style="margin:0;font-weight:500;">{{ signoff.description|linebreaksbr|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ signoff.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ signoff.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'quality:signoff_edit' signoff.pk %}"><i data-lucide="edit-2"></i> Edit Sign-off</a>
+        <form method="post" action="{% url 'quality:signoff_delete' signoff.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete sign-off {{ signoff.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Sign-off</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'quality:signoff_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
