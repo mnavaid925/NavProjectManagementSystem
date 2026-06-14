@@ -1,0 +1,155 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ page_title|default:'Tenant Isolation & Security' }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Tenant Isolation &amp; Security</h1>
+    <ul class="breadcrumb">
+      <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+      <li><span class="active" aria-current="page">Isolation &amp; Security</span></li>
+    </ul>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'core:audit_log' %}" class="btn btn-outline"><i data-lucide="scroll-text"></i> Full Audit Log</a>
+  </div>
+</div>
+
+{# ---------------- Posture stat cards ---------------- #}
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-1">
+  <div class="stat-card">
+    <div class="stat-icon"><i data-lucide="layers"></i></div>
+    <div class="stat-body">
+      <div class="stat-value" style="font-size:1.1rem">{{ isolation_model }}</div>
+      <div class="stat-label">Isolation Model</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon"><i data-lucide="database"></i></div>
+    <div class="stat-body">
+      <div class="stat-value" style="font-size:1.1rem">{% if encryption_at_rest %}Enabled{% else %}Disabled{% endif %}</div>
+      <div class="stat-label">Encryption at Rest</div>
+      <span class="stat-trend {% if encryption_at_rest %}up{% else %}down{% endif %}">
+        <i data-lucide="{% if encryption_at_rest %}check{% else %}x{% endif %}"></i>{% if encryption_at_rest %}AES-256{% else %}Off{% endif %}
+      </span>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon"><i data-lucide="lock"></i></div>
+    <div class="stat-body">
+      <div class="stat-value" style="font-size:1.1rem">{% if encryption_in_transit %}Enabled{% else %}Disabled{% endif %}</div>
+      <div class="stat-label">Encryption in Transit</div>
+      <span class="stat-trend {% if encryption_in_transit %}up{% else %}down{% endif %}">
+        <i data-lucide="{% if encryption_in_transit %}check{% else %}x{% endif %}"></i>{% if encryption_in_transit %}TLS 1.2+{% else %}Off{% endif %}
+      </span>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon"><i data-lucide="scroll-text"></i></div>
+    <div class="stat-body">
+      <div class="stat-value">{{ audit_count }}</div>
+      <div class="stat-label">Audit Log Entries</div>
+    </div>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+  {# ---------------- Left: model explainer ---------------- #}
+  <div class="lg:col-span-2 space-y-5">
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">How Your Data Is Isolated</h2></div>
+      <div class="card-body space-y-4">
+        <div class="flex gap-3">
+          <i data-lucide="shield-check" class="text-brand-600 flex-shrink-0 mt-1"></i>
+          <div>
+            <div class="font-semibold">Row-level tenant isolation</div>
+            <p class="text-muted">Every record carries a <code class="kbd">tenant</code> foreign key. All queries are automatically scoped to <code class="kbd">request.tenant</code>, so one organization can never read or write another organization's rows — even within the shared database schema.</p>
+          </div>
+        </div>
+        <div class="flex gap-3">
+          <i data-lucide="database" class="text-brand-600 flex-shrink-0 mt-1"></i>
+          <div>
+            <div class="font-semibold">Encryption at rest</div>
+            <p class="text-muted">Stored data is protected with AES-256 encryption on the underlying storage volumes.</p>
+          </div>
+        </div>
+        <div class="flex gap-3">
+          <i data-lucide="lock" class="text-brand-600 flex-shrink-0 mt-1"></i>
+          <div>
+            <div class="font-semibold">Encryption in transit</div>
+            <p class="text-muted">All traffic between your browser and the application is secured with TLS 1.2 or higher.</p>
+          </div>
+        </div>
+        <div class="flex gap-3">
+          <i data-lucide="file-clock" class="text-brand-600 flex-shrink-0 mt-1"></i>
+          <div>
+            <div class="font-semibold">Full audit trail</div>
+            <p class="text-muted">Create, update, and delete actions are recorded in a tamper-evident audit log scoped to your tenant.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# ---------------- Audit summary ---------------- #}
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Recent Activity</h2>
+        <a href="{% url 'core:audit_log' %}" class="btn btn-outline btn-sm">View all</a>
+      </div>
+      <div class="card-body">
+        {% if recent_audit %}
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th>Action</th><th>Entity</th><th>User</th><th>When</th></tr></thead>
+            <tbody>
+              {% for log in recent_audit %}
+              <tr>
+                <td><span class="badge badge-slate">{{ log.action }}</span></td>
+                <td>{{ log.entity }}{% if log.object_repr %}: {{ log.object_repr }}{% endif %}</td>
+                <td>{{ log.user|default:"System" }}</td>
+                <td class="text-muted">{{ log.created_at|date:"M d, Y H:i" }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <div class="empty-icon"><i data-lucide="scroll-text"></i></div>
+          <h3>No audit entries yet</h3>
+          <p>Actions performed in your workspace will appear here.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {# ---------------- Right: security alerts ---------------- #}
+  <div class="space-y-5">
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Security Alerts</h2></div>
+      <div class="card-body space-y-3">
+        {% for alert in security_alerts %}
+        <div class="rounded-lg border p-3 {% if alert.severity == 'critical' %}border-red-300 dark:border-red-800{% elif alert.severity == 'warning' %}border-amber-300 dark:border-amber-800{% else %}border-slate-200 dark:border-slate-700{% endif %}">
+          <div class="flex items-center justify-between gap-2 mb-1">
+            {% if alert.severity == 'critical' %}<span class="badge badge-red"><i data-lucide="alert-octagon"></i> Critical</span>
+            {% elif alert.severity == 'warning' %}<span class="badge badge-amber"><i data-lucide="alert-triangle"></i> Warning</span>
+            {% else %}<span class="badge badge-blue"><i data-lucide="info"></i> Info</span>{% endif %}
+            {% if alert.is_resolved %}<span class="badge badge-green">Resolved</span>{% endif %}
+          </div>
+          <div class="font-semibold">{{ alert.title }}</div>
+          {% if alert.message %}<p class="form-hint">{{ alert.message }}</p>{% endif %}
+          <div class="form-hint mt-1">{{ alert.created_at|date:"M d, Y H:i" }}</div>
+        </div>
+        {% empty %}
+        <div class="empty-state" style="padding:2rem 1rem">
+          <div class="empty-icon"><i data-lucide="shield-check"></i></div>
+          <h3>No security alerts</h3>
+          <p>Your tenant has no outstanding security alerts.</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
