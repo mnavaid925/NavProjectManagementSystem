@@ -1,0 +1,133 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ page_title|default:'Budget Changes' }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Budget Changes</h1>
+    <ul class="breadcrumb">
+      <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+      <li><a href="{% url 'budgeting:change_list' %}">Cost &amp; Budget Management</a></li>
+      <li><span class="active" aria-current="page">Budget Changes</span></li>
+    </ul>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'budgeting:change_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> New Budget Change</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">All Budget Changes <span class="text-muted">({{ total_count }})</span></h2>
+  </div>
+  <div class="card-body">
+    {% comment %} Filters {% endcomment %}
+    <form method="get" class="flex flex-wrap items-end gap-3 mb-4">
+      <div class="form-group mb-0 flex-1" style="min-width:200px">
+        <label class="form-label">Search</label>
+        <input type="text" name="q" value="{{ request.GET.q|default:'' }}" class="form-input" placeholder="Search number or title...">
+      </div>
+      <div class="form-group mb-0" style="min-width:160px">
+        <label class="form-label">Status</label>
+        <select name="status" class="form-select">
+          <option value="">All statuses</option>
+          {% for val, label in status_choices %}
+          <option value="{{ val }}" {% if request.GET.status == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group mb-0" style="min-width:160px">
+        <label class="form-label">Type</label>
+        <select name="change_type" class="form-select">
+          <option value="">All types</option>
+          {% for val, label in type_choices %}
+          <option value="{{ val }}" {% if request.GET.change_type == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group mb-0">
+        <button type="submit" class="btn btn-secondary"><i data-lucide="filter"></i> Filter</button>
+        {% if request.GET.q or request.GET.status or request.GET.change_type %}
+        <a href="{% url 'budgeting:change_list' %}" class="btn btn-outline btn-sm"><i data-lucide="x"></i> Clear</a>
+        {% endif %}
+      </div>
+    </form>
+
+    {% comment %} Table {% endcomment %}
+    {% if changes %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Number</th>
+            <th>Title</th>
+            <th>Budget</th>
+            <th>Type</th>
+            <th style="text-align:right">Amount</th>
+            <th>Status</th>
+            <th style="text-align:right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for change in changes %}
+          <tr>
+            <td><a href="{% url 'budgeting:change_detail' change.pk %}" class="font-semibold text-brand">{{ change.number }}</a></td>
+            <td>{{ change.title }}</td>
+            <td>{{ change.budget.name|default:"—" }}</td>
+            <td>
+              {% if change.change_type == 'increase' %}<span class="badge badge-green">{{ change.get_change_type_display }}</span>
+              {% elif change.change_type == 'decrease' %}<span class="badge badge-red">{{ change.get_change_type_display }}</span>
+              {% elif change.change_type == 'reallocation' %}<span class="badge badge-slate">{{ change.get_change_type_display }}</span>
+              {% else %}<span class="badge badge-slate">{{ change.get_change_type_display }}</span>{% endif %}
+            </td>
+            <td style="text-align:right" class="font-semibold">{{ change.amount }}</td>
+            <td>
+              {% if change.status == 'implemented' %}<span class="badge badge-green">{{ change.get_status_display }}</span>
+              {% elif change.status == 'approved' %}<span class="badge badge-blue">{{ change.get_status_display }}</span>
+              {% elif change.status == 'rejected' %}<span class="badge badge-red">{{ change.get_status_display }}</span>
+              {% elif change.status == 'pending' %}<span class="badge badge-amber">{{ change.get_status_display }}</span>
+              {% else %}<span class="badge badge-slate">{{ change.get_status_display }}</span>{% endif %}
+            </td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'budgeting:change_detail' change.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'budgeting:change_edit' change.pk %}" class="btn-icon" title="Edit"><i data-lucide="edit-2"></i></a>
+                <form method="post" action="{% url 'budgeting:change_delete' change.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon btn-danger" title="Delete" onclick="return confirm('Delete budget change {{ change.number|escapejs }}?')"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <ul class="pagination">
+      <li class="{% if not page_obj.has_previous %}disabled{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&amp;{% endif %}{% if request.GET.change_type %}change_type={{ request.GET.change_type }}&amp;{% endif %}page={% if page_obj.has_previous %}{{ page_obj.previous_page_number }}{% else %}1{% endif %}">Prev</a>
+      </li>
+      {% for n in page_obj.paginator.page_range %}
+      <li class="{% if n == page_obj.number %}active{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&amp;{% endif %}{% if request.GET.change_type %}change_type={{ request.GET.change_type }}&amp;{% endif %}page={{ n }}">{{ n }}</a>
+      </li>
+      {% endfor %}
+      <li class="{% if not page_obj.has_next %}disabled{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&amp;{% endif %}{% if request.GET.change_type %}change_type={{ request.GET.change_type }}&amp;{% endif %}page={% if page_obj.has_next %}{{ page_obj.next_page_number }}{% else %}{{ page_obj.paginator.num_pages }}{% endif %}">Next</a>
+      </li>
+    </ul>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon"><i data-lucide="file-plus"></i></div>
+      <h3>No budget changes found</h3>
+      <p>{% if request.GET.q or request.GET.status or request.GET.change_type %}No budget changes match your filters.{% else %}Create your first budget change to get started.{% endif %}</p>
+      <a href="{% url 'budgeting:change_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> New Budget Change</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
