@@ -1,0 +1,70 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ verification.number }} — {{ verification.title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ verification.number }} — {{ verification.title }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'scope:requirement_list' %}">Scope &amp; Requirements Management</a></li>
+        <li><a href="{% url 'scope:verification_list' %}">Scope Verifications</a></li>
+        <li class="active" aria-current="page">{{ verification.number }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if verification.status == 'completed' %}<span class="badge badge-green">{{ verification.get_status_display }}</span>
+    {% elif verification.status == 'pending' %}<span class="badge badge-amber">{{ verification.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ verification.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'scope:verification_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'scope:verification_edit' verification.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'scope:verification_delete' verification.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete verification {{ verification.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Verification Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Number</dt><dd style="margin:0;font-weight:500;">{{ verification.number|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Title</dt><dd style="margin:0;font-weight:500;">{{ verification.title|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Project</dt><dd style="margin:0;font-weight:500;">{{ verification.project.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Scope Statement</dt><dd style="margin:0;font-weight:500;">{{ verification.scope_statement|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Verification Date</dt><dd style="margin:0;font-weight:500;">{{ verification.verification_date|date:"M d, Y"|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Verified By</dt><dd style="margin:0;font-weight:500;">{% if verification.verified_by %}{{ verification.verified_by.get_full_name|default:verification.verified_by.username }}{% else %}—{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Deliverable</dt><dd style="margin:0;font-weight:500;">{{ verification.deliverable|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Result</dt><dd style="margin:0;font-weight:500;">{{ verification.get_result_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Scope Creep</dt><dd style="margin:0;font-weight:500;">{% if verification.scope_creep_flag %}<span class="badge badge-red">Creep</span>{% else %}<span class="badge badge-slate">—</span>{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">{{ verification.get_status_display }}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Notes</dt><dd style="margin:0;font-weight:500;">{{ verification.notes|linebreaksbr|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ verification.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ verification.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'scope:verification_edit' verification.pk %}"><i data-lucide="edit-2"></i> Edit Verification</a>
+        <form method="post" action="{% url 'scope:verification_delete' verification.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete verification {{ verification.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Verification</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'scope:verification_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
