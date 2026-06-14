@@ -1,0 +1,86 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ submodule.name }}{% endblock %}
+
+{% block content %}
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">{{ submodule.name }}</h1>
+      <nav aria-label="Breadcrumb">
+        <ol class="breadcrumb">
+          <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+          <li>{{ module.name }}</li>
+          <li aria-current="page" class="active">{{ submodule.name }}</li>
+        </ol>
+      </nav>
+    </div>
+    <div class="page-actions">
+      <a href="{% url 'dashboard:index' %}" class="btn btn-secondary">
+        <i data-lucide="arrow-left"></i> Back to Dashboard
+      </a>
+    </div>
+  </div>
+
+  <div class="card roadmap-card">
+    <div class="card-body roadmap-body">
+      <div class="roadmap-module">
+        <span class="roadmap-number">{{ module.number }}</span>
+        <span class="roadmap-module-icon"><i data-lucide="{{ module.icon }}"></i></span>
+        <div class="roadmap-module-meta">
+          <span class="roadmap-module-eyebrow">Module {{ module.number }}</span>
+          <span class="roadmap-module-name">{{ module.name }}</span>
+        </div>
+      </div>
+
+      <h2 class="roadmap-title">{{ submodule.name }}</h2>
+
+      {% if submodule.description %}
+        <p class="roadmap-desc">{{ submodule.description }}</p>
+      {% endif %}
+
+      <div class="roadmap-note">
+        <i data-lucide="rocket"></i>
+        <div>
+          <strong>On the roadmap.</strong>
+          This capability is planned and coming in a future release. It isn&rsquo;t available to use just yet &mdash;
+          check back soon as we continue building out the platform.
+        </div>
+      </div>
+
+      <div class="roadmap-actions">
+        <a href="{% url 'dashboard:index' %}" class="btn btn-primary">
+          <i data-lucide="arrow-left"></i> Back to Dashboard
+        </a>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  .roadmap-card { max-width: 720px; margin: 0 auto; }
+  .roadmap-body { text-align: center; padding: 2.75rem 2rem; }
+
+  .roadmap-module { display: inline-flex; align-items: center; gap: 1rem; padding: .85rem 1.25rem; border: 1px solid var(--border); border-radius: .85rem; background: var(--surface-2); margin-bottom: 1.75rem; text-align: left; }
+  .roadmap-number {
+    display: grid; place-items: center; flex: 0 0 auto;
+    width: 44px; height: 44px; border-radius: .7rem;
+    background: var(--brand-600); color: #fff;
+    font-size: 1.25rem; font-weight: 800; letter-spacing: -.02em;
+  }
+  .roadmap-module-icon { display: grid; place-items: center; width: 44px; height: 44px; border-radius: .7rem; background: var(--brand-50); color: var(--brand-600); flex: 0 0 auto; }
+  .dark .roadmap-module-icon { background: rgba(37,99,235,.18); color: #93c5fd; }
+  .roadmap-module-icon i { width: 24px; height: 24px; }
+  .roadmap-module-meta { display: flex; flex-direction: column; line-height: 1.2; }
+  .roadmap-module-eyebrow { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--text-subtle); }
+  .roadmap-module-name { font-size: .95rem; font-weight: 600; color: var(--text); }
+
+  .roadmap-title { font-size: 1.7rem; font-weight: 700; letter-spacing: -.02em; color: var(--text); margin: 0 0 .85rem; }
+  .roadmap-desc { font-size: .95rem; color: var(--text-muted); max-width: 540px; margin: 0 auto 1.75rem; line-height: 1.65; }
+
+  .roadmap-note { display: flex; align-items: flex-start; gap: .75rem; text-align: left; max-width: 540px; margin: 0 auto 2rem; padding: 1rem 1.15rem; border-radius: .7rem; background: var(--brand-50); color: var(--brand-800); border: 1px solid var(--brand-100); font-size: .88rem; line-height: 1.55; }
+  .dark .roadmap-note { background: rgba(37,99,235,.12); color: #bfdbfe; border-color: transparent; }
+  .roadmap-note i { width: 20px; height: 20px; flex: 0 0 20px; margin-top: 1px; }
+
+  .roadmap-actions { display: flex; align-items: center; justify-content: center; gap: .6rem; flex-wrap: wrap; }
+</style>
+{% endblock %}
