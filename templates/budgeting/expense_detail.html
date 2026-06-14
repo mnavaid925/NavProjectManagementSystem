@@ -1,0 +1,72 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ expense.number }} — {{ expense.description }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ expense.number }} — {{ expense.description }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'budgeting:expense_list' %}">Cost &amp; Budget Management</a></li>
+        <li class="active" aria-current="page">{{ expense.number }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if expense.status == 'paid' %}<span class="badge badge-green">{{ expense.get_status_display }}</span>
+    {% elif expense.status == 'approved' %}<span class="badge badge-green">{{ expense.get_status_display }}</span>
+    {% elif expense.status == 'submitted' %}<span class="badge badge-blue">{{ expense.get_status_display }}</span>
+    {% elif expense.status == 'rejected' %}<span class="badge badge-red">{{ expense.get_status_display }}</span>
+    {% elif expense.status == 'draft' %}<span class="badge badge-slate">{{ expense.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ expense.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'budgeting:expense_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'budgeting:expense_edit' expense.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'budgeting:expense_delete' expense.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete expense {{ expense.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Expense Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Number</dt><dd style="margin:0;font-weight:500;">{{ expense.number|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Description</dt><dd style="margin:0;font-weight:500;">{{ expense.description|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Project</dt><dd style="margin:0;font-weight:500;">{{ expense.project.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Control Account</dt><dd style="margin:0;font-weight:500;">{{ expense.control_account|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Category</dt><dd style="margin:0;font-weight:500;">{{ expense.get_category_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Amount</dt><dd style="margin:0;font-weight:500;">{{ expense.amount|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Expense Date</dt><dd style="margin:0;font-weight:500;">{{ expense.expense_date|date:"M d, Y"|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Vendor</dt><dd style="margin:0;font-weight:500;">{{ expense.vendor|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Type</dt><dd style="margin:0;font-weight:500;">{{ expense.get_expense_type_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">{{ expense.get_status_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Submitted By</dt><dd style="margin:0;font-weight:500;">{% if expense.submitted_by %}{{ expense.submitted_by.get_full_name|default:expense.submitted_by.username }}{% else %}—{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ expense.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ expense.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'budgeting:expense_edit' expense.pk %}"><i data-lucide="edit-2"></i> Edit Expense</a>
+        <form method="post" action="{% url 'budgeting:expense_delete' expense.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete expense {{ expense.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Expense</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'budgeting:expense_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
