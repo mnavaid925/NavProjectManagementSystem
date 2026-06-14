@@ -1,0 +1,69 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ inspection.number }} — {{ inspection.title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ inspection.number }} — {{ inspection.title }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'quality:inspection_list' %}">Quality Management</a></li>
+        <li class="active" aria-current="page">{{ inspection.number }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if inspection.status == 'completed' %}<span class="badge badge-green">{{ inspection.get_status_display }}</span>
+    {% elif inspection.status == 'in_progress' %}<span class="badge badge-blue">{{ inspection.get_status_display }}</span>
+    {% elif inspection.status == 'scheduled' %}<span class="badge badge-slate">{{ inspection.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ inspection.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'quality:inspection_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'quality:inspection_edit' inspection.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'quality:inspection_delete' inspection.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete inspection {{ inspection.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Inspection Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Number</dt><dd style="margin:0;font-weight:500;">{{ inspection.number|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Title</dt><dd style="margin:0;font-weight:500;">{{ inspection.title|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Project</dt><dd style="margin:0;font-weight:500;">{{ inspection.project.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Deliverable</dt><dd style="margin:0;font-weight:500;">{{ inspection.deliverable|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Inspection Date</dt><dd style="margin:0;font-weight:500;">{{ inspection.inspection_date|date:"M d, Y"|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Inspector</dt><dd style="margin:0;font-weight:500;">{% if inspection.inspector %}{{ inspection.inspector.get_full_name|default:inspection.inspector.username }}{% else %}—{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Defects Found</dt><dd style="margin:0;font-weight:500;">{{ inspection.defects_found }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Result</dt><dd style="margin:0;font-weight:500;">{{ inspection.get_result_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">{{ inspection.get_status_display }}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Notes</dt><dd style="margin:0;font-weight:500;">{{ inspection.notes|linebreaksbr|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ inspection.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ inspection.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'quality:inspection_edit' inspection.pk %}"><i data-lucide="edit-2"></i> Edit Inspection</a>
+        <form method="post" action="{% url 'quality:inspection_delete' inspection.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete inspection {{ inspection.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Inspection</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'quality:inspection_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
