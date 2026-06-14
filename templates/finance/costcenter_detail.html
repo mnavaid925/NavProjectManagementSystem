@@ -1,0 +1,68 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ costcenter.number }} — {{ costcenter.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ costcenter.number }} — {{ costcenter.name }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'finance:costcenter_list' %}">Financial &amp; Billing Management</a></li>
+        <li class="active" aria-current="page">{{ costcenter.number }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if costcenter.status == 'active' %}<span class="badge badge-green">{{ costcenter.get_status_display }}</span>
+    {% elif costcenter.status == 'inactive' %}<span class="badge badge-slate">{{ costcenter.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ costcenter.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'finance:costcenter_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'finance:costcenter_edit' costcenter.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'finance:costcenter_delete' costcenter.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete cost center {{ costcenter.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Cost Center Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Number</dt><dd style="margin:0;font-weight:500;">{{ costcenter.number|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Name</dt><dd style="margin:0;font-weight:500;">{{ costcenter.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Code</dt><dd style="margin:0;font-weight:500;">{{ costcenter.code|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Manager</dt><dd style="margin:0;font-weight:500;">{% if costcenter.manager %}{{ costcenter.manager.get_full_name|default:costcenter.manager.username }}{% else %}—{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Type</dt><dd style="margin:0;font-weight:500;">{{ costcenter.get_cost_center_type_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">{{ costcenter.get_status_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Budget</dt><dd style="margin:0;font-weight:500;">{{ costcenter.budget|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Actual Cost</dt><dd style="margin:0;font-weight:500;">{{ costcenter.actual_cost|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Variance</dt><dd style="margin:0;font-weight:500;">{{ costcenter.variance }}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Description</dt><dd style="margin:0;font-weight:500;">{{ costcenter.description|linebreaksbr|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ costcenter.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ costcenter.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'finance:costcenter_edit' costcenter.pk %}"><i data-lucide="edit-2"></i> Edit Cost Center</a>
+        <form method="post" action="{% url 'finance:costcenter_delete' costcenter.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete cost center {{ costcenter.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Cost Center</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'finance:costcenter_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
