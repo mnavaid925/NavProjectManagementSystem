@@ -113,7 +113,7 @@ def timesheet_delete(request, pk):
 @login_required
 def timesheetline_list(request):
     qs = TimesheetLine.objects.filter(tenant=request.tenant).select_related(
-        'timesheet', 'project',
+        'timesheet', 'timesheet__owner', 'project',
     )
     q = request.GET.get('q', '').strip()
     if q:
@@ -195,7 +195,7 @@ def timesheetline_delete(request, pk):
 @login_required
 def timesheetapproval_list(request):
     qs = TimesheetApproval.objects.filter(tenant=request.tenant).select_related(
-        'timesheet', 'approver',
+        'timesheet', 'timesheet__owner', 'approver',
     )
     q = request.GET.get('q', '').strip()
     if q:
@@ -218,7 +218,10 @@ def timesheetapproval_list(request):
 
 @login_required
 def timesheetapproval_detail(request, pk):
-    obj = get_object_or_404(TimesheetApproval, pk=pk, tenant=request.tenant)
+    obj = get_object_or_404(
+        TimesheetApproval.objects.select_related('timesheet', 'timesheet__owner', 'approver'),
+        pk=pk, tenant=request.tenant,
+    )
     return render(request, 'timesheets/timesheetapproval_detail.html', {
         'timesheetapproval': obj, 'page_title': str(obj),
     })
