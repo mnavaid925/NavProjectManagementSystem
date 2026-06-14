@@ -1,0 +1,66 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{% if utilizationsnapshot.owner %}{{ utilizationsnapshot.owner.get_full_name|default:utilizationsnapshot.owner.username }}{% else %}Unassigned{% endif %} — {{ utilizationsnapshot.period }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{% if utilizationsnapshot.owner %}{{ utilizationsnapshot.owner.get_full_name|default:utilizationsnapshot.owner.username }}{% else %}Unassigned{% endif %} — {{ utilizationsnapshot.period }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'timesheets:timesheet_list' %}">Time &amp; Attendance Tracking</a></li>
+        <li class="active" aria-current="page">{{ utilizationsnapshot.period }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    <span class="badge badge-blue">{{ utilizationsnapshot.utilization_pct }}%</span>
+    <a class="btn btn-secondary" href="{% url 'timesheets:utilizationsnapshot_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'timesheets:utilizationsnapshot_edit' utilizationsnapshot.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'timesheets:utilizationsnapshot_delete' utilizationsnapshot.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete this snapshot?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Snapshot Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Owner</dt><dd style="margin:0;font-weight:500;">{% if utilizationsnapshot.owner %}{{ utilizationsnapshot.owner.get_full_name|default:utilizationsnapshot.owner.username }}{% else %}—{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Project</dt><dd style="margin:0;font-weight:500;">{{ utilizationsnapshot.project.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Period</dt><dd style="margin:0;font-weight:500;">{{ utilizationsnapshot.period|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Capacity Hours</dt><dd style="margin:0;font-weight:500;">{{ utilizationsnapshot.capacity_hours }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Billable Hours</dt><dd style="margin:0;font-weight:500;">{{ utilizationsnapshot.billable_hours }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Non-Billable Hours</dt><dd style="margin:0;font-weight:500;">{{ utilizationsnapshot.non_billable_hours }}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Utilization %</dt><dd style="margin:0;font-weight:500;">
+            <div class="progress" style="max-width:240px"><div class="progress-bar" style="width:{{ utilizationsnapshot.utilization_pct }}%"></div></div>
+            <span class="text-muted" style="font-size:.75rem">{{ utilizationsnapshot.utilization_pct }}%</span>
+          </dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ utilizationsnapshot.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ utilizationsnapshot.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'timesheets:utilizationsnapshot_edit' utilizationsnapshot.pk %}"><i data-lucide="edit-2"></i> Edit Snapshot</a>
+        <form method="post" action="{% url 'timesheets:utilizationsnapshot_delete' utilizationsnapshot.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete this snapshot?')"><i data-lucide="trash-2"></i> Delete Snapshot</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'timesheets:utilizationsnapshot_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
