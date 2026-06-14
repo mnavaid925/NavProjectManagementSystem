@@ -53,6 +53,10 @@ INSTALLED_APPS = [
     'apps.tenants',
     'apps.projects',
     'apps.dashboard',
+    # Module 1-3
+    'apps.initiation',
+    'apps.planning',
+    'apps.resources',
 ]
 
 MIDDLEWARE = [
