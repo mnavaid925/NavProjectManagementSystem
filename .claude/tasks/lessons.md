@@ -134,3 +134,18 @@ quality bar INCLUDES a closing multi-agent adversarial review as the LAST phase,
 Separate the wheat from the chaff: fix defects specific to the new module; for findings that are faithful copies of
 the app-wide reference pattern (non-atomic auto-numbering, global-unique numbers, missing `db_index`, filter-label
 `for=`), flag an app-wide pass instead of forking one module out of step with the other ~12.
+
+## L19 — The on_stop hook ran pytest against MySQL (shared test_nav_pms), not the SQLite test settings
+This was the ROOT CAUSE of the recurring "Table 'test_nav_pms.X' doesn't exist" Stop-hook failures (the [L17]
+drop-the-DB step was only a band-aid). `.claude/hooks/on_stop.py` does
+`os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")` for its step-1 `manage.py check`, then spawned
+`pytest` as a subprocess that INHERITED that env var. pytest-django honours the env var over `pytest.ini`, so the
+hook ran the suite under `config.settings` (MySQL `nav_pms` → `test_nav_pms`) instead of the project's
+`pytest.ini` default `config.settings_test` (SQLite `:memory:`). Effects: slow, MariaDB-10.4-fragile, and — when a
+second session ran its suite at the same time — collisions on the shared `test_nav_pms` (half-migrated → missing
+tables). My OWN `venv\Scripts\python.exe -m pytest` runs used `pytest.ini` (SQLite) and always passed, which masked
+it. **Root-cause fix:** pass an explicit `env` to the pytest subprocess with
+`DJANGO_SETTINGS_MODULE=config.settings_test`. Verified end-to-end: `'{}' | python .claude/hooks/on_stop.py` →
+exit 0 ("manage.py check OK - tests OK") in ~70s. **Rule:** when a hook/CI runs Django tests, confirm WHICH settings
+module actually resolves (env var beats `pytest.ini`); test runs must use the isolated SQLite test settings, never
+the shared dev DB.
