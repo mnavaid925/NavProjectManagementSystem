@@ -260,6 +260,41 @@
     }
   }
 
+  /* Move the active highlight to the link matching the current URL. Needed after a
+     boosted content swap, since the sidebar DOM is preserved (not re-rendered) and
+     its server-rendered active classes would otherwise be stale. */
+  function syncActiveNav(focusActive) {
+    var path = window.location.pathname;
+    var matched = null;
+    document.querySelectorAll('.nav-sublink').forEach(function (a) {
+      var on = a.getAttribute('href') === path;
+      a.classList.toggle('active', on);
+      if (on) {
+        matched = a;
+        a.setAttribute('data-active', 'true');
+        var g = a.closest('[data-nav-group]');
+        if (g) {
+          g.classList.add('open');
+          var sm = g.querySelector('[data-nav-submenu]'); if (sm) { sm.classList.add('open'); }
+          var t = g.querySelector('[data-nav-group-toggle]'); if (t) { t.setAttribute('aria-expanded', 'true'); }
+        }
+      } else {
+        a.removeAttribute('data-active');
+      }
+    });
+    document.querySelectorAll('.nav-link').forEach(function (a) {
+      var href = a.getAttribute('href');
+      var on = href === path || (href && href !== '/' && path.indexOf(href) === 0);
+      a.classList.toggle('active', on);
+      if (on && !matched) { matched = a; }
+    });
+    // Keep keyboard focus on the menu item the user navigated to (the page no
+    // longer reloads, so the sidebar — and its focus — should stay put).
+    if (focusActive && matched && typeof matched.focus === 'function') {
+      try { matched.focus({ preventScroll: true }); } catch (e) { matched.focus(); }
+    }
+  }
+
   /* Dismissible flash alerts */
   function wireAlerts() {
     document.querySelectorAll('[data-alert-close]').forEach(function (btn) {
@@ -305,9 +340,28 @@
   // Safety net: never let the preloader trap the user.
   setTimeout(hidePreloader, 4000);
 
-  // Re-init icons after HTMX swaps.
-  document.addEventListener('htmx:afterSwap', function () {
+  // After a boosted sidebar nav swaps #page-content: re-init icons, refresh the
+  // active highlight (sidebar DOM is preserved), re-wire content widgets, and on
+  // mobile close the sidebar overlay.
+  function afterContentSwap() {
     if (window.lucide) { lucide.createIcons(); }
+    wireAlerts();
+    if (isMobile()) { document.body.classList.remove('sidebar-open'); }
+  }
+  document.addEventListener('htmx:afterSwap', afterContentSwap);
+  // pushedIntoHistory fires AFTER the URL is updated, so location.pathname is
+  // current here — move the active highlight and refocus the clicked menu item.
+  document.addEventListener('htmx:pushedIntoHistory', function () { syncActiveNav(true); });
+  document.addEventListener('htmx:historyRestore', function () { syncActiveNav(false); });
+
+  // If a boosted nav hits an auth redirect (session expired), do a real navigation
+  // so the user lands on the login page rather than an empty content swap.
+  document.addEventListener('htmx:beforeSwap', function (evt) {
+    var xhr = evt.detail && evt.detail.xhr;
+    if (xhr && xhr.responseURL && /\/login\/?(\?|$)/.test(xhr.responseURL)) {
+      evt.detail.shouldSwap = false;
+      window.location.href = xhr.responseURL;
+    }
   });
 
   // Expose a tiny API for debugging / page scripts.
