@@ -159,6 +159,10 @@ NavProjectManagementSystem/
 │   ├── initiation/           # request/businesscase/charter/stakeholder/kickoff list+detail+form
 │   ├── planning/             # workpackage/task/dependency/milestone/baseline list+detail+form
 │   ├── resources/            # skill/resource/allocation/assignment/forecast/timeentry list+detail+form
+│   ├── budgeting/            # budget/controlaccount/expense/forecast/change list+detail+form
+│   ├── risks/                # risk/analysis/response/issue/review list+detail+form
+│   ├── quality/              # standard/audit/inspection/improvement/signoff list+detail+form
+│   ├── scope/                # requirement/trace/statement/changerequest/verification list+detail+form
 │   └── core/                 # module_placeholder (roadmap page), audit_log
 ├── static/
 │   ├── css/  theme.css       # Blue/white design system (cards, badges, tables, forms, dark mode, RTL)
@@ -246,6 +250,10 @@ All values are read from `.env` via `python-dotenv`. Defaults assume XAMPP (MySQ
 | `python manage.py seed_initiation` | **Idempotent** Module 1 seeder (requests, business cases, charters, stakeholders, kickoff tasks) for both tenants. Run after `seed_demo`. |
 | `python manage.py seed_planning` | **Idempotent** Module 2 seeder (work packages, schedule tasks, dependencies, milestones, baselines). |
 | `python manage.py seed_resources` | **Idempotent** Module 3 seeder (skills, resources, allocations, team assignments, demand forecasts, time entries). |
+| `python manage.py seed_budgeting` | **Idempotent** Module 4 seeder (budgets, control accounts, expenses, cost forecasts, budget changes). |
+| `python manage.py seed_risks` | **Idempotent** Module 5 seeder (risks, analyses, responses, issues, risk reviews). |
+| `python manage.py seed_quality` | **Idempotent** Module 6 seeder (quality standards, audits, inspections, improvement actions, deliverable sign-offs). |
+| `python manage.py seed_scope` | **Idempotent** Module 7 seeder (requirements, traces, scope statements, change requests, scope verifications). |
 | `python manage.py createsuperuser` | Optional cross-tenant Django admin (`tenant=None`). |
 | `python manage.py runserver` | Start the dev server on `127.0.0.1:8000`. |
 
@@ -337,7 +345,7 @@ A lightweight `projects` app provides real, tenant-scoped CRUD that populates th
 
 ## Module Roadmap (0–20)
 
-`ProjectManagementSystem.md` defines 21 modules. Modules 0–3 are **complete**; Modules 4–20 are sidebar
+`ProjectManagementSystem.md` defines 21 modules. Modules 0–7 are **complete**; Modules 8–20 are sidebar
 **placeholders** today and are scaffolded on demand by the `/next-module` skill (one Django app per module, built
 from the `apps/tenants` reference pattern).
 
@@ -347,10 +355,10 @@ from the `apps/tenants` reference pattern).
 | 1 | Project Initiation & Charter | ✅ Complete (`apps/initiation`) |
 | 2 | Project Planning & Scheduling | ✅ Complete (`apps/planning`) |
 | 3 | Resource Management | ✅ Complete (`apps/resources`) |
-| 4 | Cost & Budget Management | 🗺️ Roadmap → `apps/budgeting` |
-| 5 | Risk & Issue Management | 🗺️ Roadmap → `apps/risks` |
-| 6 | Quality Management | 🗺️ Roadmap → `apps/quality` |
-| 7 | Scope & Requirements Management | 🗺️ Roadmap → `apps/scope` |
+| 4 | Cost & Budget Management | ✅ Complete (`apps/budgeting`) |
+| 5 | Risk & Issue Management | ✅ Complete (`apps/risks`) |
+| 6 | Quality Management | ✅ Complete (`apps/quality`) |
+| 7 | Scope & Requirements Management | ✅ Complete (`apps/scope`) |
 | 8 | Task & Work Management | 🗺️ Roadmap → `apps/work` |
 | 9 | Collaboration & Communication | 🗺️ Roadmap → `apps/collaboration` |
 | 10 | Document & Knowledge Management | 🗺️ Roadmap → `apps/documents` |
@@ -365,8 +373,8 @@ from the `apps/tenants` reference pattern).
 | 19 | Master Data & Configuration | 🗺️ Roadmap → `apps/masterdata` |
 | 20 | System Administration & Security | 🗺️ Roadmap → `apps/administration` |
 
-Build the next one with: **`/next-module`** (auto-detects the lowest unbuilt module) or **`/next-module 5`** /
-**`/next-module "Risk & Issue Management"`**.
+Build the next one with: **`/next-module`** (auto-detects the lowest unbuilt module) or **`/next-module 8`** /
+**`/next-module "Task & Work Management"`**.
 
 ---
 
@@ -382,7 +390,11 @@ Build the next one with: **`/next-module`** (auto-detects the lowest unbuilt mod
 | Module 1 | `/initiation/` | `/initiation/requests/`, `/initiation/business-cases/`, `/initiation/charters/`, `/initiation/stakeholders/`, `/initiation/kickoff/` |
 | Module 2 | `/planning/` | `/planning/work-packages/`, `/planning/tasks/`, `/planning/dependencies/`, `/planning/milestones/`, `/planning/baselines/` |
 | Module 3 | `/resources/` | `/resources/resources/`, `/resources/skills/`, `/resources/allocations/`, `/resources/assignments/`, `/resources/forecasts/`, `/resources/time-entries/` |
-| Roadmap placeholders | `/m/<module>/<sub>/` | e.g. `/m/risk-issue-management/risk-register/` |
+| Module 4 | `/budgeting/` | `/budgeting/budgets/`, `/budgeting/control-accounts/`, `/budgeting/expenses/`, `/budgeting/forecasts/`, `/budgeting/changes/` |
+| Module 5 | `/risks/` | `/risks/register/`, `/risks/analysis/`, `/risks/responses/`, `/risks/issues/`, `/risks/reviews/` |
+| Module 6 | `/quality/` | `/quality/standards/`, `/quality/audits/`, `/quality/inspections/`, `/quality/improvements/`, `/quality/signoffs/` |
+| Module 7 | `/scope/` | `/scope/requirements/`, `/scope/traces/`, `/scope/statements/`, `/scope/change-requests/`, `/scope/verifications/` |
+| Roadmap placeholders | `/m/<module>/<sub>/` | e.g. `/m/task-work-management/task-board/` |
 | Audit log | `/audit-log/` | tenant-scoped activity trail |
 | Django admin | `/admin/` | superuser only |
 
@@ -446,7 +458,7 @@ Customizer are pure CSS/JS and require no plugins.
 
 ## Roadmap
 
-Modules 0–3 are complete and the foundation is production-shaped. Modules 4–20 (`ProjectManagementSystem.md`) reuse
+Modules 0–7 are complete and the foundation is production-shaped. Modules 8–20 (`ProjectManagementSystem.md`) reuse
 the same multi-tenant + CRUD + dashboard patterns and are built incrementally via `/next-module`. Planned
 hardening: compiled Tailwind pipeline, an automated test suite (pytest + pytest-django), real email/SMTP, and an
 optional real payment gateway behind the existing simulated billing.
