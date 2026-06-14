@@ -4,6 +4,8 @@ from decimal import Decimal
 
 import pytest
 
+from django.utils import timezone
+
 from apps.tenants.models import (
     BrandingSettings,
     Invoice,
@@ -110,7 +112,10 @@ class TestSubscription:
         assert days >= 0
 
     def test_days_left_trialing(self, db, acme_tenant, basic_plan):
-        today = datetime.date.today()
+        # Use Django's timezone basis (UTC) to match Subscription.days_left(), which
+        # computes timezone.now().date(); datetime.date.today() (local) drifts by a
+        # day during the UTC offset window and made this assertion flaky.
+        today = timezone.now().date()
         sub = Subscription.objects.create(
             tenant=acme_tenant,
             plan=basic_plan,
