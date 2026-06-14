@@ -1,0 +1,70 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ controlaccount.code }} {{ controlaccount.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ controlaccount.code }} {{ controlaccount.name }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'budgeting:controlaccount_list' %}">Cost &amp; Budget Management</a></li>
+        <li class="active" aria-current="page">{{ controlaccount.name }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if controlaccount.status == 'closed' %}<span class="badge badge-green">{{ controlaccount.get_status_display }}</span>
+    {% elif controlaccount.status == 'in_progress' %}<span class="badge badge-blue">{{ controlaccount.get_status_display }}</span>
+    {% elif controlaccount.status == 'open' %}<span class="badge badge-slate">{{ controlaccount.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ controlaccount.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'budgeting:controlaccount_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'budgeting:controlaccount_edit' controlaccount.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'budgeting:controlaccount_delete' controlaccount.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete control account {{ controlaccount.name|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Control Account Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Code</dt><dd style="margin:0;font-weight:500;">{{ controlaccount.code|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Name</dt><dd style="margin:0;font-weight:500;">{{ controlaccount.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Project</dt><dd style="margin:0;font-weight:500;">{{ controlaccount.project.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Budget</dt><dd style="margin:0;font-weight:500;">{{ controlaccount.budget|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Manager</dt><dd style="margin:0;font-weight:500;">{% if controlaccount.manager %}{{ controlaccount.manager.get_full_name|default:controlaccount.manager.username }}{% else %}—{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">{{ controlaccount.get_status_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">BAC (Budget at Completion)</dt><dd style="margin:0;font-weight:500;">{{ controlaccount.bac|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Earned Value (EV)</dt><dd style="margin:0;font-weight:500;">{{ controlaccount.earned_value|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Actual Cost (AC)</dt><dd style="margin:0;font-weight:500;">{{ controlaccount.actual_cost|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">CPI</dt><dd style="margin:0;font-weight:500;">{% if controlaccount.cpi < 1 %}<span class="text-danger">{{ controlaccount.cpi }}</span>{% else %}{{ controlaccount.cpi }}{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Cost Variance</dt><dd style="margin:0;font-weight:500;">{{ controlaccount.cost_variance }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ controlaccount.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ controlaccount.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'budgeting:controlaccount_edit' controlaccount.pk %}"><i data-lucide="edit-2"></i> Edit Control Account</a>
+        <form method="post" action="{% url 'budgeting:controlaccount_delete' controlaccount.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete control account {{ controlaccount.name|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Control Account</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'budgeting:controlaccount_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
