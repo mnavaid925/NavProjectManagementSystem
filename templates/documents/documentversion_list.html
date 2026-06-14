@@ -1,0 +1,129 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ page_title|default:'Document Versions' }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Document Versions</h1>
+    <ul class="breadcrumb">
+      <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+      <li><a href="{% url 'documents:document_list' %}">Document &amp; Knowledge Management</a></li>
+      <li><span class="active" aria-current="page">Document Versions</span></li>
+    </ul>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'documents:documentversion_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> New DocumentVersion</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">All Document Versions <span class="text-muted">({{ total_count }})</span></h2>
+  </div>
+  <div class="card-body">
+    {% comment %} Filters {% endcomment %}
+    <form method="get" class="flex flex-wrap items-end gap-3 mb-4">
+      <div class="form-group mb-0 flex-1" style="min-width:200px">
+        <label class="form-label">Search</label>
+        <input type="text" name="q" value="{{ request.GET.q|default:'' }}" class="form-input" placeholder="Search version, summary or document...">
+      </div>
+      <div class="form-group mb-0" style="min-width:160px">
+        <label class="form-label">Status</label>
+        <select name="status" class="form-select">
+          <option value="">All statuses</option>
+          {% for val, label in status_choices %}
+          <option value="{{ val }}" {% if request.GET.status == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group mb-0" style="min-width:160px">
+        <label class="form-label">Checked Out</label>
+        <select name="checked_out" class="form-select">
+          <option value="">All</option>
+          <option value="yes" {% if request.GET.checked_out == 'yes' %}selected{% endif %}>Checked Out</option>
+          <option value="no" {% if request.GET.checked_out == 'no' %}selected{% endif %}>Available</option>
+        </select>
+      </div>
+      <div class="form-group mb-0">
+        <button type="submit" class="btn btn-secondary"><i data-lucide="filter"></i> Filter</button>
+        {% if request.GET.q or request.GET.status or request.GET.checked_out %}
+        <a href="{% url 'documents:documentversion_list' %}" class="btn btn-outline btn-sm"><i data-lucide="x"></i> Clear</a>
+        {% endif %}
+      </div>
+    </form>
+
+    {% comment %} Table {% endcomment %}
+    {% if document_versions %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Document</th>
+            <th>Version</th>
+            <th>Status</th>
+            <th>Checked Out?</th>
+            <th>Author</th>
+            <th>Created</th>
+            <th style="text-align:right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for documentversion in document_versions %}
+          <tr>
+            <td><a href="{% url 'documents:documentversion_detail' documentversion.pk %}" class="font-semibold text-brand">{{ documentversion.document }}</a></td>
+            <td>{{ documentversion.version_no }}</td>
+            <td>
+              {% if documentversion.status == 'published' %}<span class="badge badge-green">{{ documentversion.get_status_display }}</span>
+              {% elif documentversion.status == 'superseded' %}<span class="badge badge-slate">{{ documentversion.get_status_display }}</span>
+              {% elif documentversion.status == 'draft' %}<span class="badge badge-amber">{{ documentversion.get_status_display }}</span>
+              {% else %}<span class="badge badge-slate">{{ documentversion.get_status_display }}</span>{% endif %}
+            </td>
+            <td>
+              {% if documentversion.is_checked_out %}<span class="badge badge-amber">Checked Out</span>
+              {% else %}<span class="badge badge-slate">Available</span>{% endif %}
+            </td>
+            <td>{% if documentversion.author %}{{ documentversion.author.get_full_name|default:documentversion.author.username }}{% else %}—{% endif %}</td>
+            <td>{{ documentversion.created_at|date:"M d, Y" }}</td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'documents:documentversion_detail' documentversion.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'documents:documentversion_edit' documentversion.pk %}" class="btn-icon" title="Edit"><i data-lucide="edit-2"></i></a>
+                <form method="post" action="{% url 'documents:documentversion_delete' documentversion.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon btn-danger" title="Delete" onclick="return confirm('Delete this version?')"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <ul class="pagination">
+      <li class="{% if not page_obj.has_previous %}disabled{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&amp;{% endif %}{% if request.GET.checked_out %}checked_out={{ request.GET.checked_out }}&amp;{% endif %}page={% if page_obj.has_previous %}{{ page_obj.previous_page_number }}{% else %}1{% endif %}">Prev</a>
+      </li>
+      {% for n in page_obj.paginator.page_range %}
+      <li class="{% if n == page_obj.number %}active{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&amp;{% endif %}{% if request.GET.checked_out %}checked_out={{ request.GET.checked_out }}&amp;{% endif %}page={{ n }}">{{ n }}</a>
+      </li>
+      {% endfor %}
+      <li class="{% if not page_obj.has_next %}disabled{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&amp;{% endif %}{% if request.GET.checked_out %}checked_out={{ request.GET.checked_out }}&amp;{% endif %}page={% if page_obj.has_next %}{{ page_obj.next_page_number }}{% else %}{{ page_obj.paginator.num_pages }}{% endif %}">Next</a>
+      </li>
+    </ul>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon"><i data-lucide="git-commit"></i></div>
+      <h3>No document versions found</h3>
+      <p>{% if request.GET.q or request.GET.status or request.GET.checked_out %}No versions match your filters.{% else %}Create your first document version to get started.{% endif %}</p>
+      <a href="{% url 'documents:documentversion_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> New DocumentVersion</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
