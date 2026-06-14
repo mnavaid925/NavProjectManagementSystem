@@ -14,6 +14,12 @@ urlpatterns = [
     path('tenants/', include('apps.tenants.urls')),
     # Workspace demo (projects, tasks, meetings, tickets, invoices).
     path('projects/', include('apps.projects.urls')),
+    # Module 1 - Project Initiation & Charter.
+    path('initiation/', include('apps.initiation.urls')),
+    # Module 2 - Project Planning & Scheduling.
+    path('planning/', include('apps.planning.urls')),
+    # Module 3 - Resource Management.
+    path('resources/', include('apps.resources.urls')),
     # Core: module placeholders + audit log.
     path('', include('apps.core.urls')),
 ]
