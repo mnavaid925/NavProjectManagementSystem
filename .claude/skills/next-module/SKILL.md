@@ -61,10 +61,25 @@ Reference files to read before building: `apps/tenants/models.py`, `apps/tenants
 
 ## Step 1 — Decide which module to build
 
-1. If the user passed a number/name, use it.
-2. Otherwise **auto-detect the next module**: the lowest `N` in `1..20` whose app slug (table below) does NOT
-   yet exist under `apps/`. (Module 0 = `apps/tenants` is already built, so the first run targets **Module 1**.)
-   Confirm by checking the directory and by reading `apps/core/navigation.py` `LIVE_LINKS`.
+1. **If the user passed an argument, resolve it to exactly one module** (the argument may be a number, a name,
+   a keyword, or an app slug — all are accepted, case-insensitive, punctuation/`&`/`and` ignored):
+   - **Number** — `1`–`20` (also `01`, `#3`, `module 5`) → that module.
+   - **App slug** — a value from the table below (e.g. `risks`, `planning`, `finance`) → that module.
+   - **Full or partial module name** — match against the `MODULE_CATALOG` names in `apps/core/navigation.py`
+     (e.g. `Risk & Issue Management`, `risk issue`, `risk`, `scheduling`, `agile`, `time tracking`). Do a
+     case-insensitive substring/keyword match on the module name **and** its app slug.
+   - **Sub-module name** — if the text matches a sub-module (e.g. `Kanban`, `WBS`, `timesheets`), build that
+     sub-module's parent module.
+   - If the text matches **more than one** module (ambiguous) → ask the user to pick via `AskUserQuestion`
+     (list the candidate modules). If it matches **none** → tell the user and show the module table.
+   - If the resolved module's app already exists under `apps/`, say so and ask whether to extend it or pick another.
+
+   Examples: `/next-module 5`, `/next-module risks`, `/next-module "Risk & Issue Management"`,
+   `/next-module risk`, `"build the Agile module"`, `"create Resource Management"` all resolve to one module.
+
+2. **If no argument**, **auto-detect the next module**: the lowest `N` in `1..20` whose app slug (table below)
+   does NOT yet exist under `apps/`. (Module 0 = `apps/tenants` is already built, so the first run targets
+   **Module 1**.) Confirm by checking the directory and by reading `apps/core/navigation.py` `LIVE_LINKS`.
 3. State which module you're building and proceed (enter plan mode per CLAUDE.md, present the short model/page
    spec for the 5 sub-modules, then build — lean toward building, don't over-deliberate).
 
