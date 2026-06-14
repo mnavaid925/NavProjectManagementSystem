@@ -5,7 +5,10 @@ NOTE: nav sections are plain dicts. The Dashboard/Workspace sections use an
 'items' key, which collides with the built-in dict.items() method in Django's
 template resolver — so we read it via the |get_item filter, never section.items.
 {% endcomment %}
-<aside class="app-sidebar" id="app-sidebar">
+{% comment %} hx-boost: sidebar nav swaps only #page-content (no full reload, sidebar
+DOM + focus/scroll/expanded state preserved). Progressive — falls back to normal links. {% endcomment %}
+<aside class="app-sidebar" id="app-sidebar"
+       hx-boost="true" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML show:window:top">
 
   {# Brand header #}
   <a href="{% url 'dashboard:index' %}" class="sidebar-brand">
