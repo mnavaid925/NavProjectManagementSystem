@@ -1,0 +1,120 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}Projects{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Projects</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li class="active" aria-current="page">Projects</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    <a class="btn btn-primary" href="{% url 'projects:project_create' %}"><i data-lucide="plus"></i> New Project</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <form method="get" class="form-row" style="grid-template-columns:1fr auto auto auto;align-items:end;gap:.75rem;">
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label" for="q">Search</label>
+        <input type="text" id="q" name="q" class="form-input" placeholder="Name, code or client&hellip;" value="{{ request.GET.q }}">
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label" for="status">Status</label>
+        <select id="status" name="status" class="form-select">
+          <option value="">All Statuses</option>
+          {% for value, label in status_choices %}
+            <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label" for="priority">Priority</label>
+        <select id="priority" name="priority" class="form-select">
+          <option value="">All Priorities</option>
+          {% for value, label in priority_choices %}
+            <option value="{{ value }}" {% if request.GET.priority == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:0;display:flex;gap:.5rem;">
+        <button type="submit" class="btn btn-secondary"><i data-lucide="filter"></i> Filter</button>
+        <a class="btn btn-outline" href="{% url 'projects:project_list' %}"><i data-lucide="x"></i></a>
+      </div>
+    </form>
+  </div>
+
+  {% if projects %}
+  <div class="table-wrap" style="border:0;border-top:1px solid var(--border);border-radius:0;">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Project</th>
+          <th>Client</th>
+          <th>Priority</th>
+          <th>Status</th>
+          <th style="min-width:160px;">Progress</th>
+          <th>Budget</th>
+          <th style="text-align:right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for project in projects %}
+        <tr>
+          <td>
+            <a href="{% url 'projects:project_detail' project.pk %}" style="font-weight:600;color:var(--text);">{{ project.name }}</a>
+            {% if project.code %}<div class="text-muted" style="font-size:.75rem;">{{ project.code }}</div>{% endif %}
+          </td>
+          <td>{{ project.client_name|default:"—" }}</td>
+          <td>
+            {% if project.priority == 'urgent' %}<span class="badge badge-red">{{ project.get_priority_display }}</span>
+            {% elif project.priority == 'high' %}<span class="badge badge-amber">{{ project.get_priority_display }}</span>
+            {% elif project.priority == 'medium' %}<span class="badge badge-blue">{{ project.get_priority_display }}</span>
+            {% else %}<span class="badge badge-slate">{{ project.get_priority_display }}</span>{% endif %}
+          </td>
+          <td>
+            {% if project.status == 'completed' %}<span class="badge badge-green">{{ project.get_status_display }}</span>
+            {% elif project.status == 'in_progress' %}<span class="badge badge-blue">{{ project.get_status_display }}</span>
+            {% elif project.status == 'on_hold' %}<span class="badge badge-amber">{{ project.get_status_display }}</span>
+            {% elif project.status == 'cancelled' %}<span class="badge badge-red">{{ project.get_status_display }}</span>
+            {% else %}<span class="badge badge-slate">{{ project.get_status_display }}</span>{% endif %}
+          </td>
+          <td>
+            <div style="display:flex;align-items:center;gap:.5rem;">
+              <div class="progress" style="flex:1;"><div class="progress-bar" style="width:{{ project.progress }}%;"></div></div>
+              <span class="text-muted" style="font-size:.75rem;min-width:32px;text-align:right;">{{ project.progress }}%</span>
+            </div>
+          </td>
+          <td>{{ project.budget }}</td>
+          <td>
+            <div class="table-actions">
+              <a class="btn-icon" href="{% url 'projects:project_detail' project.pk %}" title="View"><i data-lucide="eye"></i></a>
+              <a class="btn-icon" href="{% url 'projects:project_edit' project.pk %}" title="Edit"><i data-lucide="edit-2"></i></a>
+              <form method="post" action="{% url 'projects:project_delete' project.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn-icon btn-danger" title="Delete" onclick="return confirm('Delete this project?')"><i data-lucide="trash-2"></i></button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% include 'projects/_pagination.html' %}
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon"><i data-lucide="folder-kanban"></i></div>
+    <h3>No projects found</h3>
+    <p>{% if request.GET.q or request.GET.status or request.GET.priority %}No projects match your filters. Try adjusting them.{% else %}Get started by creating your first project.{% endif %}</p>
+    <a class="btn btn-primary" href="{% url 'projects:project_create' %}"><i data-lucide="plus"></i> New Project</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
