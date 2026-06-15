@@ -1,0 +1,75 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ accessreview.number }} — {{ accessreview.title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ accessreview.number }} — {{ accessreview.title }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'administration:accessreview_list' %}">Access Reviews</a></li>
+        <li class="active" aria-current="page">{{ accessreview.number }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if accessreview.status == 'scheduled' %}<span class="badge badge-blue">{{ accessreview.get_status_display }}</span>
+    {% elif accessreview.status == 'in_progress' %}<span class="badge badge-amber">{{ accessreview.get_status_display }}</span>
+    {% elif accessreview.status == 'completed' %}<span class="badge badge-green">{{ accessreview.get_status_display }}</span>
+    {% elif accessreview.status == 'overdue' %}<span class="badge badge-red">{{ accessreview.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ accessreview.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'administration:accessreview_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'administration:accessreview_edit' accessreview.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'administration:accessreview_delete' accessreview.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete access review {{ accessreview.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Access Review Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Number</dt><dd style="margin:0;font-weight:500;">{{ accessreview.number|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Title</dt><dd style="margin:0;font-weight:500;">{{ accessreview.title|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Reviewer</dt><dd style="margin:0;font-weight:500;">{% if accessreview.reviewer %}{{ accessreview.reviewer.get_full_name|default:accessreview.reviewer.username }}{% else %}—{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Scope</dt><dd style="margin:0;font-weight:500;">{{ accessreview.scope|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Users Reviewed</dt><dd style="margin:0;font-weight:500;">{{ accessreview.users_reviewed }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">
+            {% if accessreview.status == 'scheduled' %}<span class="badge badge-blue">{{ accessreview.get_status_display }}</span>
+            {% elif accessreview.status == 'in_progress' %}<span class="badge badge-amber">{{ accessreview.get_status_display }}</span>
+            {% elif accessreview.status == 'completed' %}<span class="badge badge-green">{{ accessreview.get_status_display }}</span>
+            {% elif accessreview.status == 'overdue' %}<span class="badge badge-red">{{ accessreview.get_status_display }}</span>
+            {% else %}<span class="badge badge-slate">{{ accessreview.get_status_display }}</span>{% endif %}
+          </dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Due Date</dt><dd style="margin:0;font-weight:500;">{{ accessreview.due_date|date:"M d, Y"|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Completed Date</dt><dd style="margin:0;font-weight:500;">{{ accessreview.completed_date|date:"M d, Y"|default:"—" }}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Findings</dt><dd style="margin:0;font-weight:500;">{{ accessreview.findings|linebreaksbr|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ accessreview.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ accessreview.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'administration:accessreview_edit' accessreview.pk %}"><i data-lucide="edit-2"></i> Edit Access Review</a>
+        <form method="post" action="{% url 'administration:accessreview_delete' accessreview.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete access review {{ accessreview.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Access Review</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'administration:accessreview_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
