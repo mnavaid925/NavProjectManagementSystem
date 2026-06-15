@@ -1,0 +1,75 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ projecttemplate.number }} — {{ projecttemplate.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ projecttemplate.number }} — {{ projecttemplate.name }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'masterdata:projecttemplate_list' %}">Project Templates</a></li>
+        <li class="active" aria-current="page">{{ projecttemplate.number }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if projecttemplate.status == 'active' %}<span class="badge badge-green">{{ projecttemplate.get_status_display }}</span>
+    {% elif projecttemplate.status == 'draft' %}<span class="badge badge-amber">{{ projecttemplate.get_status_display }}</span>
+    {% elif projecttemplate.status == 'archived' %}<span class="badge badge-slate">{{ projecttemplate.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ projecttemplate.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'masterdata:projecttemplate_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'masterdata:projecttemplate_edit' projecttemplate.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'masterdata:projecttemplate_delete' projecttemplate.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete project template {{ projecttemplate.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Project Template Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Number</dt><dd style="margin:0;font-weight:500;">{{ projecttemplate.number|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Name</dt><dd style="margin:0;font-weight:500;">{{ projecttemplate.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Methodology</dt><dd style="margin:0;font-weight:500;">
+            {% if projecttemplate.methodology == 'waterfall' %}<span class="badge badge-blue">{{ projecttemplate.get_methodology_display }}</span>
+            {% elif projecttemplate.methodology == 'agile' %}<span class="badge badge-green">{{ projecttemplate.get_methodology_display }}</span>
+            {% elif projecttemplate.methodology == 'scrum' %}<span class="badge badge-violet">{{ projecttemplate.get_methodology_display }}</span>
+            {% elif projecttemplate.methodology == 'kanban' %}<span class="badge badge-amber">{{ projecttemplate.get_methodology_display }}</span>
+            {% elif projecttemplate.methodology == 'hybrid' %}<span class="badge badge-blue">{{ projecttemplate.get_methodology_display }}</span>
+            {% elif projecttemplate.methodology == 'prince2' %}<span class="badge badge-violet">{{ projecttemplate.get_methodology_display }}</span>
+            {% else %}<span class="badge badge-slate">{{ projecttemplate.get_methodology_display }}</span>{% endif %}
+          </dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Category</dt><dd style="margin:0;font-weight:500;">{{ projecttemplate.category|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Default Duration (days)</dt><dd style="margin:0;font-weight:500;">{{ projecttemplate.default_duration_days }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Phase Count</dt><dd style="margin:0;font-weight:500;">{{ projecttemplate.phase_count }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">{{ projecttemplate.get_status_display }}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Description</dt><dd style="margin:0;font-weight:500;">{{ projecttemplate.description|linebreaksbr|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ projecttemplate.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ projecttemplate.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'masterdata:projecttemplate_edit' projecttemplate.pk %}"><i data-lucide="edit-2"></i> Edit Project Template</a>
+        <form method="post" action="{% url 'masterdata:projecttemplate_delete' projecttemplate.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete project template {{ projecttemplate.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Project Template</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'masterdata:projecttemplate_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
