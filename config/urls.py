@@ -44,6 +44,16 @@ urlpatterns = [
     path('clients/', include('apps.clients.urls')),
     # Module 15 - Financial & Billing Management.
     path('finance/', include('apps.finance.urls')),
+    # Module 16 - Reporting & Business Intelligence.
+    path('reporting/', include('apps.reporting.urls')),
+    # Module 17 - Workflow & Automation.
+    path('automation/', include('apps.automation.urls')),
+    # Module 18 - Integration & API Hub.
+    path('integrations/', include('apps.integrations.urls')),
+    # Module 19 - Master Data & Configuration.
+    path('masterdata/', include('apps.masterdata.urls')),
+    # Module 20 - System Administration & Security.
+    path('administration/', include('apps.administration.urls')),
     # Core: module placeholders + audit log.
     path('', include('apps.core.urls')),
 ]
