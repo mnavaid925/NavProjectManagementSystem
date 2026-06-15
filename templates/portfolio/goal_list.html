@@ -85,7 +85,7 @@
             <td>
               {% if goal.category == 'growth' %}<span class="badge badge-green">{{ goal.get_category_display }}</span>
               {% elif goal.category == 'efficiency' %}<span class="badge badge-blue">{{ goal.get_category_display }}</span>
-              {% elif goal.category == 'innovation' %}<span class="badge badge-violet">{{ goal.get_category_display }}</span>
+              {% elif goal.category == 'innovation' %}<span class="badge badge-purple">{{ goal.get_category_display }}</span>
               {% elif goal.category == 'compliance' %}<span class="badge badge-amber">{{ goal.get_category_display }}</span>
               {% elif goal.category == 'customer' %}<span class="badge badge-blue">{{ goal.get_category_display }}</span>
               {% else %}<span class="badge badge-slate">{{ goal.get_category_display }}</span>{% endif %}
