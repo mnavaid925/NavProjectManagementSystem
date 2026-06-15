@@ -72,6 +72,12 @@ INSTALLED_APPS = [
     'apps.agile',
     'apps.clients',
     'apps.finance',
+    # Module 16-20
+    'apps.reporting',
+    'apps.automation',
+    'apps.integrations',
+    'apps.masterdata',
+    'apps.administration',
 ]
 
 MIDDLEWARE = [
