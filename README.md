@@ -327,6 +327,11 @@ All values are read from `.env` via `python-dotenv`. Defaults assume XAMPP (MySQ
 | `python manage.py seed_agile` | **Idempotent** Module 13 seeder (epics, sprints, backlog items, releases, retrospectives). |
 | `python manage.py seed_clients` | **Idempotent** Module 14 seeder (client access, feedback, SOW contracts, vendors, client invoices). |
 | `python manage.py seed_finance` | **Idempotent** Module 15 seeder (cost centers, invoices, payments, budget-vs-actuals, currency rates). |
+| `python manage.py seed_reporting` | **Idempotent** Module 16 seeder (report definitions, report runs, dashboard widgets, executive packs, data exports). |
+| `python manage.py seed_automation` | **Idempotent** Module 17 seeder (workflow definitions, approval rules, notification rules, recurring rules, automation hooks). |
+| `python manage.py seed_integrations` | **Idempotent** Module 18 seeder (connectors, sync jobs, sync logs, webhooks, API keys). |
+| `python manage.py seed_masterdata` | **Idempotent** Module 19 seeder (project templates, custom fields, org units, teams, localization settings). |
+| `python manage.py seed_administration` | **Idempotent** Module 20 seeder (security policies, compliance items, backup jobs, system health metrics, access reviews). |
 | `python manage.py createsuperuser` | Optional cross-tenant Django admin (`tenant=None`). |
 | `python manage.py runserver` | Start the dev server on `127.0.0.1:8000`. |
 
@@ -440,14 +445,13 @@ from the `apps/tenants` reference pattern).
 | 13 | Agile & Scrum Management | ✅ Complete (`apps/agile`) |
 | 14 | Client & External Collaboration | ✅ Complete (`apps/clients`) |
 | 15 | Financial & Billing Management | ✅ Complete (`apps/finance`) |
-| 16 | Reporting & Business Intelligence | 🗺️ Roadmap → `apps/reporting` |
-| 17 | Workflow & Automation | 🗺️ Roadmap → `apps/automation` |
-| 18 | Integration & API Hub | 🗺️ Roadmap → `apps/integrations` |
-| 19 | Master Data & Configuration | 🗺️ Roadmap → `apps/masterdata` |
-| 20 | System Administration & Security | 🗺️ Roadmap → `apps/administration` |
+| 16 | Reporting & Business Intelligence | ✅ Complete (`apps/reporting`) |
+| 17 | Workflow & Automation | ✅ Complete (`apps/automation`) |
+| 18 | Integration & API Hub | ✅ Complete (`apps/integrations`) |
+| 19 | Master Data & Configuration | ✅ Complete (`apps/masterdata`) |
+| 20 | System Administration & Security | ✅ Complete (`apps/administration`) |
 
-Build the next one with: **`/next-module`** (auto-detects the lowest unbuilt module) or **`/next-module 16`** /
-**`/next-module "Reporting & Business Intelligence"`**.
+🎉 **All 21 modules (0–20) are now built** — every sub-module resolves to a live, tenant-scoped CRUD page.
 
 ---
 
@@ -475,7 +479,12 @@ Build the next one with: **`/next-module`** (auto-detects the lowest unbuilt mod
 | Module 13 | `/agile/` | `/agile/epics/`, `/agile/sprints/`, `/agile/backlog-items/`, `/agile/releases/`, `/agile/retrospectives/` |
 | Module 14 | `/clients/` | `/clients/access/`, `/clients/feedback/`, `/clients/contracts/`, `/clients/vendors/`, `/clients/invoices/` |
 | Module 15 | `/finance/` | `/finance/cost-centers/`, `/finance/invoices/`, `/finance/payments/`, `/finance/budget-actuals/`, `/finance/currency-rates/` |
-| Roadmap placeholders | `/m/<module>/<sub>/` | e.g. `/m/reporting-business-intelligence/standard-project-reports/` |
+| Module 16 | `/reporting/` | `/reporting/report-definitions/`, `/reporting/report-runs/`, `/reporting/widgets/`, `/reporting/executive-packs/`, `/reporting/data-exports/` |
+| Module 17 | `/automation/` | `/automation/workflows/`, `/automation/approval-rules/`, `/automation/notification-rules/`, `/automation/recurring-rules/`, `/automation/hooks/` |
+| Module 18 | `/integrations/` | `/integrations/connectors/`, `/integrations/sync-jobs/`, `/integrations/sync-logs/`, `/integrations/webhooks/`, `/integrations/api-keys/` |
+| Module 19 | `/masterdata/` | `/masterdata/project-templates/`, `/masterdata/custom-fields/`, `/masterdata/org-units/`, `/masterdata/teams/`, `/masterdata/localization/` |
+| Module 20 | `/administration/` | `/administration/security-policies/`, `/administration/compliance/`, `/administration/backup-jobs/`, `/administration/health-metrics/`, `/administration/access-reviews/` |
+| Module placeholder | `/m/<module>/<sub>/` | generic fallback (now unused — all 0–20 sub-modules are live) |
 | Audit log | `/audit-log/` | tenant-scoped activity trail |
 | Django admin | `/admin/` | superuser only |
 
