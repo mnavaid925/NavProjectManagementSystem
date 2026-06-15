@@ -1,0 +1,72 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ synclog.number }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ synclog.number }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'integrations:synclog_list' %}">Sync Logs</a></li>
+        <li class="active" aria-current="page">{{ synclog.number }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if synclog.status == 'success' %}<span class="badge badge-green">{{ synclog.get_status_display }}</span>
+    {% elif synclog.status == 'partial' %}<span class="badge badge-amber">{{ synclog.get_status_display }}</span>
+    {% elif synclog.status == 'failed' %}<span class="badge badge-red">{{ synclog.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ synclog.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'integrations:synclog_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'integrations:synclog_edit' synclog.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'integrations:synclog_delete' synclog.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete sync log {{ synclog.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Sync Log Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Number</dt><dd style="margin:0;font-weight:500;">{{ synclog.number|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Connector</dt><dd style="margin:0;font-weight:500;">{% if synclog.connector %}{{ synclog.connector }}{% else %}—{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Sync Job</dt><dd style="margin:0;font-weight:500;">{% if synclog.sync_job %}{{ synclog.sync_job }}{% else %}—{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Level</dt><dd style="margin:0;font-weight:500;">
+            {% if synclog.level == 'info' %}<span class="badge badge-blue">{{ synclog.get_level_display }}</span>
+            {% elif synclog.level == 'warning' %}<span class="badge badge-amber">{{ synclog.get_level_display }}</span>
+            {% elif synclog.level == 'error' %}<span class="badge badge-red">{{ synclog.get_level_display }}</span>
+            {% else %}<span class="badge badge-slate">{{ synclog.get_level_display }}</span>{% endif %}
+          </dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">{{ synclog.get_status_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Records Processed</dt><dd style="margin:0;font-weight:500;">{{ synclog.records_processed }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Logged At</dt><dd style="margin:0;font-weight:500;">{{ synclog.logged_at|date:"M d, Y" }}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Message</dt><dd style="margin:0;font-weight:500;">{{ synclog.message|linebreaksbr|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ synclog.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ synclog.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'integrations:synclog_edit' synclog.pk %}"><i data-lucide="edit-2"></i> Edit Sync Log</a>
+        <form method="post" action="{% url 'integrations:synclog_delete' synclog.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete sync log {{ synclog.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Sync Log</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'integrations:synclog_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
