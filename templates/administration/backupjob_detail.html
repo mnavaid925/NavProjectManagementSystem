@@ -1,0 +1,81 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ backupjob.number }} — {{ backupjob.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ backupjob.number }} — {{ backupjob.name }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'administration:backupjob_list' %}">Backup Jobs</a></li>
+        <li class="active" aria-current="page">{{ backupjob.number }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if backupjob.status == 'completed' %}<span class="badge badge-green">{{ backupjob.get_status_display }}</span>
+    {% elif backupjob.status == 'running' %}<span class="badge badge-blue">{{ backupjob.get_status_display }}</span>
+    {% elif backupjob.status == 'scheduled' %}<span class="badge badge-amber">{{ backupjob.get_status_display }}</span>
+    {% elif backupjob.status == 'failed' %}<span class="badge badge-red">{{ backupjob.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ backupjob.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'administration:backupjob_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'administration:backupjob_edit' backupjob.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'administration:backupjob_delete' backupjob.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete backup job {{ backupjob.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Backup Job Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Number</dt><dd style="margin:0;font-weight:500;">{{ backupjob.number|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Name</dt><dd style="margin:0;font-weight:500;">{{ backupjob.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Type</dt><dd style="margin:0;font-weight:500;">
+            {% if backupjob.backup_type == 'full' %}<span class="badge badge-blue">{{ backupjob.get_backup_type_display }}</span>
+            {% elif backupjob.backup_type == 'incremental' %}<span class="badge badge-violet">{{ backupjob.get_backup_type_display }}</span>
+            {% elif backupjob.backup_type == 'differential' %}<span class="badge badge-amber">{{ backupjob.get_backup_type_display }}</span>
+            {% elif backupjob.backup_type == 'snapshot' %}<span class="badge badge-green">{{ backupjob.get_backup_type_display }}</span>
+            {% else %}<span class="badge badge-slate">{{ backupjob.get_backup_type_display }}</span>{% endif %}
+          </dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Schedule</dt><dd style="margin:0;font-weight:500;">{{ backupjob.get_schedule_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">
+            {% if backupjob.status == 'completed' %}<span class="badge badge-green">{{ backupjob.get_status_display }}</span>
+            {% elif backupjob.status == 'running' %}<span class="badge badge-blue">{{ backupjob.get_status_display }}</span>
+            {% elif backupjob.status == 'scheduled' %}<span class="badge badge-amber">{{ backupjob.get_status_display }}</span>
+            {% elif backupjob.status == 'failed' %}<span class="badge badge-red">{{ backupjob.get_status_display }}</span>
+            {% else %}<span class="badge badge-slate">{{ backupjob.get_status_display }}</span>{% endif %}
+          </dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Destination</dt><dd style="margin:0;font-weight:500;">{{ backupjob.destination|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Size (MB)</dt><dd style="margin:0;font-weight:500;">{{ backupjob.size_mb }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Retention (days)</dt><dd style="margin:0;font-weight:500;">{{ backupjob.retention_days }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Last Run</dt><dd style="margin:0;font-weight:500;">{% if backupjob.last_run_at %}{{ backupjob.last_run_at|date:"M d, Y" }}{% else %}—{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ backupjob.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ backupjob.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'administration:backupjob_edit' backupjob.pk %}"><i data-lucide="edit-2"></i> Edit Backup Job</a>
+        <form method="post" action="{% url 'administration:backupjob_delete' backupjob.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete backup job {{ backupjob.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Backup Job</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'administration:backupjob_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
