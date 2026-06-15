@@ -101,7 +101,7 @@
               {% if item.status == 'done' %}<span class="badge badge-green">{{ item.get_status_display }}</span>
               {% elif item.status == 'in_review' %}<span class="badge badge-blue">{{ item.get_status_display }}</span>
               {% elif item.status == 'in_progress' %}<span class="badge badge-amber">{{ item.get_status_display }}</span>
-              {% elif item.status == 'todo' %}<span class="badge badge-blue">{{ item.get_status_display }}</span>
+              {% elif item.status == 'todo' %}<span class="badge badge-purple">{{ item.get_status_display }}</span>
               {% elif item.status == 'backlog' %}<span class="badge badge-slate">{{ item.get_status_display }}</span>
               {% else %}<span class="badge badge-slate">{{ item.get_status_display }}</span>{% endif %}
             </td>
