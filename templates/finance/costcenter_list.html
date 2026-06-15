@@ -79,7 +79,7 @@
               {% if cc.cost_center_type == 'department' %}<span class="badge badge-blue">{{ cc.get_cost_center_type_display }}</span>
               {% elif cc.cost_center_type == 'project' %}<span class="badge badge-green">{{ cc.get_cost_center_type_display }}</span>
               {% elif cc.cost_center_type == 'overhead' %}<span class="badge badge-amber">{{ cc.get_cost_center_type_display }}</span>
-              {% elif cc.cost_center_type == 'capital' %}<span class="badge badge-violet">{{ cc.get_cost_center_type_display }}</span>
+              {% elif cc.cost_center_type == 'capital' %}<span class="badge badge-purple">{{ cc.get_cost_center_type_display }}</span>
               {% else %}<span class="badge badge-slate">{{ cc.get_cost_center_type_display }}</span>{% endif %}
             </td>
             <td style="text-align:right">{{ cc.budget }}</td>
