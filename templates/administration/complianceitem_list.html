@@ -1,0 +1,138 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ page_title|default:'Compliance Items' }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Compliance Items</h1>
+    <ul class="breadcrumb">
+      <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+      <li><a href="{% url 'administration:complianceitem_list' %}">System Administration &amp; Security</a></li>
+      <li><span class="active" aria-current="page">Compliance Items</span></li>
+    </ul>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'administration:complianceitem_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> New Compliance Item</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">All Compliance Items <span class="text-muted">({{ total_count }})</span></h2>
+  </div>
+  <div class="card-body">
+    {% comment %} Filters {% endcomment %}
+    <form method="get" class="flex flex-wrap items-end gap-3 mb-4">
+      <div class="form-group mb-0 flex-1" style="min-width:200px">
+        <label class="form-label">Search</label>
+        <input type="text" name="q" value="{{ request.GET.q|default:'' }}" class="form-input" placeholder="Search number, title or control...">
+      </div>
+      <div class="form-group mb-0" style="min-width:160px">
+        <label class="form-label">Status</label>
+        <select name="status" class="form-select">
+          <option value="">All statuses</option>
+          {% for val, label in status_choices %}
+          <option value="{{ val }}" {% if request.GET.status == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group mb-0" style="min-width:160px">
+        <label class="form-label">Framework</label>
+        <select name="framework" class="form-select">
+          <option value="">All frameworks</option>
+          {% for val, label in framework_choices %}
+          <option value="{{ val }}" {% if request.GET.framework == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group mb-0">
+        <button type="submit" class="btn btn-secondary"><i data-lucide="filter"></i> Filter</button>
+        {% if request.GET.q or request.GET.status or request.GET.framework %}
+        <a href="{% url 'administration:complianceitem_list' %}" class="btn btn-outline btn-sm"><i data-lucide="x"></i> Clear</a>
+        {% endif %}
+      </div>
+    </form>
+
+    {% comment %} Table {% endcomment %}
+    {% if compliance_items %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Control ID</th>
+            <th>Framework</th>
+            <th>Owner</th>
+            <th>Due Date</th>
+            <th>Status</th>
+            <th style="text-align:right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ci in compliance_items %}
+          <tr>
+            <td>
+              <a href="{% url 'administration:complianceitem_detail' ci.pk %}" class="font-semibold text-brand">{{ ci.title }}</a>
+              <div class="text-muted" style="font-size:.75rem;">{{ ci.number }}</div>
+            </td>
+            <td>{{ ci.control_id|default:"—" }}</td>
+            <td>
+              {% if ci.framework == 'soc2' %}<span class="badge badge-blue">{{ ci.get_framework_display }}</span>
+              {% elif ci.framework == 'iso27001' %}<span class="badge badge-violet">{{ ci.get_framework_display }}</span>
+              {% elif ci.framework == 'gdpr' %}<span class="badge badge-green">{{ ci.get_framework_display }}</span>
+              {% elif ci.framework == 'hipaa' %}<span class="badge badge-amber">{{ ci.get_framework_display }}</span>
+              {% elif ci.framework == 'pci_dss' %}<span class="badge badge-slate">{{ ci.get_framework_display }}</span>
+              {% else %}<span class="badge badge-slate">{{ ci.get_framework_display }}</span>{% endif %}
+            </td>
+            <td>{% if ci.owner %}{{ ci.owner.get_full_name|default:ci.owner.username }}{% else %}—{% endif %}</td>
+            <td>{% if ci.due_date %}{{ ci.due_date|date:"M d, Y" }}{% else %}—{% endif %}</td>
+            <td>
+              {% if ci.status == 'compliant' %}<span class="badge badge-green">{{ ci.get_status_display }}</span>
+              {% elif ci.status == 'in_progress' %}<span class="badge badge-blue">{{ ci.get_status_display }}</span>
+              {% elif ci.status == 'not_started' %}<span class="badge badge-amber">{{ ci.get_status_display }}</span>
+              {% elif ci.status == 'non_compliant' %}<span class="badge badge-red">{{ ci.get_status_display }}</span>
+              {% else %}<span class="badge badge-slate">{{ ci.get_status_display }}</span>{% endif %}
+            </td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'administration:complianceitem_detail' ci.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'administration:complianceitem_edit' ci.pk %}" class="btn-icon" title="Edit"><i data-lucide="edit-2"></i></a>
+                <form method="post" action="{% url 'administration:complianceitem_delete' ci.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon btn-danger" title="Delete" onclick="return confirm('Delete compliance item {{ ci.number|escapejs }}?')"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <ul class="pagination">
+      <li class="{% if not page_obj.has_previous %}disabled{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&amp;{% endif %}{% if request.GET.framework %}framework={{ request.GET.framework }}&amp;{% endif %}page={% if page_obj.has_previous %}{{ page_obj.previous_page_number }}{% else %}1{% endif %}">Prev</a>
+      </li>
+      {% for n in page_obj.paginator.page_range %}
+      <li class="{% if n == page_obj.number %}active{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&amp;{% endif %}{% if request.GET.framework %}framework={{ request.GET.framework }}&amp;{% endif %}page={{ n }}">{{ n }}</a>
+      </li>
+      {% endfor %}
+      <li class="{% if not page_obj.has_next %}disabled{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&amp;{% endif %}{% if request.GET.framework %}framework={{ request.GET.framework }}&amp;{% endif %}page={% if page_obj.has_next %}{{ page_obj.next_page_number }}{% else %}{{ page_obj.paginator.num_pages }}{% endif %}">Next</a>
+      </li>
+    </ul>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon"><i data-lucide="clipboard-check"></i></div>
+      <h3>No compliance items found</h3>
+      <p>{% if request.GET.q or request.GET.status or request.GET.framework %}No compliance items match your filters.{% else %}Create your first compliance item to get started.{% endif %}</p>
+      <a href="{% url 'administration:complianceitem_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> New Compliance Item</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
