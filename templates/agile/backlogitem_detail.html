@@ -17,7 +17,7 @@
     {% if backlogitem.status == 'done' %}<span class="badge badge-green">{{ backlogitem.get_status_display }}</span>
     {% elif backlogitem.status == 'in_review' %}<span class="badge badge-blue">{{ backlogitem.get_status_display }}</span>
     {% elif backlogitem.status == 'in_progress' %}<span class="badge badge-amber">{{ backlogitem.get_status_display }}</span>
-    {% elif backlogitem.status == 'todo' %}<span class="badge badge-blue">{{ backlogitem.get_status_display }}</span>
+    {% elif backlogitem.status == 'todo' %}<span class="badge badge-purple">{{ backlogitem.get_status_display }}</span>
     {% elif backlogitem.status == 'backlog' %}<span class="badge badge-slate">{{ backlogitem.get_status_display }}</span>
     {% else %}<span class="badge badge-slate">{{ backlogitem.get_status_display }}</span>{% endif %}
     <a class="btn btn-secondary" href="{% url 'agile:backlogitem_list' %}"><i data-lucide="arrow-left"></i> Back</a>
