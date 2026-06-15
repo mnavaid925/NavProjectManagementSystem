@@ -1,0 +1,119 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ page_title|default:'Approval Rules' }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Approval Rules</h1>
+    <ul class="breadcrumb">
+      <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+      <li><a href="{% url 'automation:approvalrule_list' %}">Workflow &amp; Automation</a></li>
+      <li><span class="active" aria-current="page">Approval Rules</span></li>
+    </ul>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'automation:approvalrule_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> New Approval Rule</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">All Approval Rules <span class="text-muted">({{ total_count }})</span></h2>
+  </div>
+  <div class="card-body">
+    {% comment %} Filters {% endcomment %}
+    <form method="get" class="flex flex-wrap items-end gap-3 mb-4">
+      <div class="form-group mb-0 flex-1" style="min-width:200px">
+        <label class="form-label">Search</label>
+        <input type="text" name="q" value="{{ request.GET.q|default:'' }}" class="form-input" placeholder="Search number, name or entity type...">
+      </div>
+      <div class="form-group mb-0" style="min-width:160px">
+        <label class="form-label">Status</label>
+        <select name="status" class="form-select">
+          <option value="">All statuses</option>
+          {% for val, label in status_choices %}
+          <option value="{{ val }}" {% if request.GET.status == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group mb-0">
+        <button type="submit" class="btn btn-secondary"><i data-lucide="filter"></i> Filter</button>
+        {% if request.GET.q or request.GET.status %}
+        <a href="{% url 'automation:approvalrule_list' %}" class="btn btn-outline btn-sm"><i data-lucide="x"></i> Clear</a>
+        {% endif %}
+      </div>
+    </form>
+
+    {% comment %} Table {% endcomment %}
+    {% if approval_rules %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Number</th>
+            <th>Name</th>
+            <th>Entity Type</th>
+            <th style="text-align:right">Threshold</th>
+            <th>Approver</th>
+            <th style="text-align:right">Escalation (h)</th>
+            <th>Status</th>
+            <th style="text-align:right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ar in approval_rules %}
+          <tr>
+            <td><a href="{% url 'automation:approvalrule_detail' ar.pk %}" class="font-semibold text-brand">{{ ar.number }}</a></td>
+            <td><a href="{% url 'automation:approvalrule_detail' ar.pk %}" class="text-brand">{{ ar.name }}</a></td>
+            <td>{% if ar.entity_type %}<span class="badge badge-blue">{{ ar.entity_type }}</span>{% else %}—{% endif %}</td>
+            <td style="text-align:right">{{ ar.threshold_amount }}</td>
+            <td>{% if ar.approver %}{{ ar.approver.get_full_name|default:ar.approver.username }}{% else %}—{% endif %}</td>
+            <td style="text-align:right">{{ ar.escalation_hours }}</td>
+            <td>
+              {% if ar.status == 'active' %}<span class="badge badge-green">{{ ar.get_status_display }}</span>
+              {% elif ar.status == 'inactive' %}<span class="badge badge-slate">{{ ar.get_status_display }}</span>
+              {% else %}<span class="badge badge-slate">{{ ar.get_status_display }}</span>{% endif %}
+            </td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'automation:approvalrule_detail' ar.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'automation:approvalrule_edit' ar.pk %}" class="btn-icon" title="Edit"><i data-lucide="edit-2"></i></a>
+                <form method="post" action="{% url 'automation:approvalrule_delete' ar.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon btn-danger" title="Delete" onclick="return confirm('Delete approval rule {{ ar.number|escapejs }}?')"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <ul class="pagination">
+      <li class="{% if not page_obj.has_previous %}disabled{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&amp;{% endif %}page={% if page_obj.has_previous %}{{ page_obj.previous_page_number }}{% else %}1{% endif %}">Prev</a>
+      </li>
+      {% for n in page_obj.paginator.page_range %}
+      <li class="{% if n == page_obj.number %}active{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&amp;{% endif %}page={{ n }}">{{ n }}</a>
+      </li>
+      {% endfor %}
+      <li class="{% if not page_obj.has_next %}disabled{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&amp;{% endif %}page={% if page_obj.has_next %}{{ page_obj.next_page_number }}{% else %}{{ page_obj.paginator.num_pages }}{% endif %}">Next</a>
+      </li>
+    </ul>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon"><i data-lucide="check-circle"></i></div>
+      <h3>No approval rules found</h3>
+      <p>{% if request.GET.q or request.GET.status %}No approval rules match your filters.{% else %}Create your first approval rule to get started.{% endif %}</p>
+      <a href="{% url 'automation:approvalrule_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> New Approval Rule</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
