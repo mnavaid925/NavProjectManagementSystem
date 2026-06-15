@@ -1,0 +1,76 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ orgunit.number }} — {{ orgunit.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ orgunit.number }} — {{ orgunit.name }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'masterdata:orgunit_list' %}">Master Data &amp; Configuration</a></li>
+        <li class="active" aria-current="page">{{ orgunit.number }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if orgunit.status == 'active' %}<span class="badge badge-green">{{ orgunit.get_status_display }}</span>
+    {% elif orgunit.status == 'inactive' %}<span class="badge badge-slate">{{ orgunit.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ orgunit.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'masterdata:orgunit_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'masterdata:orgunit_edit' orgunit.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'masterdata:orgunit_delete' orgunit.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete org unit {{ orgunit.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Org Unit Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Number</dt><dd style="margin:0;font-weight:500;">{{ orgunit.number|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Name</dt><dd style="margin:0;font-weight:500;">{{ orgunit.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Code</dt><dd style="margin:0;font-weight:500;">{{ orgunit.code|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Unit Type</dt><dd style="margin:0;font-weight:500;">
+            {% if orgunit.unit_type == 'company' %}<span class="badge badge-violet">{{ orgunit.get_unit_type_display }}</span>
+            {% elif orgunit.unit_type == 'division' %}<span class="badge badge-blue">{{ orgunit.get_unit_type_display }}</span>
+            {% elif orgunit.unit_type == 'department' %}<span class="badge badge-green">{{ orgunit.get_unit_type_display }}</span>
+            {% elif orgunit.unit_type == 'business_unit' %}<span class="badge badge-amber">{{ orgunit.get_unit_type_display }}</span>
+            {% elif orgunit.unit_type == 'location' %}<span class="badge badge-slate">{{ orgunit.get_unit_type_display }}</span>
+            {% else %}<span class="badge badge-slate">{{ orgunit.get_unit_type_display }}</span>{% endif %}
+          </dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Parent</dt><dd style="margin:0;font-weight:500;">{% if orgunit.parent %}{{ orgunit.parent }}{% else %}—{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Manager</dt><dd style="margin:0;font-weight:500;">{% if orgunit.manager %}{{ orgunit.manager.get_full_name|default:orgunit.manager.username }}{% else %}—{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">
+            {% if orgunit.status == 'active' %}<span class="badge badge-green">{{ orgunit.get_status_display }}</span>
+            {% elif orgunit.status == 'inactive' %}<span class="badge badge-slate">{{ orgunit.get_status_display }}</span>
+            {% else %}<span class="badge badge-slate">{{ orgunit.get_status_display }}</span>{% endif %}
+          </dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ orgunit.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ orgunit.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'masterdata:orgunit_edit' orgunit.pk %}"><i data-lucide="edit-2"></i> Edit Org Unit</a>
+        <form method="post" action="{% url 'masterdata:orgunit_delete' orgunit.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete org unit {{ orgunit.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Org Unit</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'masterdata:orgunit_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
