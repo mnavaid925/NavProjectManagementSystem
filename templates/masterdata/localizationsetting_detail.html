@@ -1,0 +1,67 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ localizationsetting.number }} — {{ localizationsetting.locale_code }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ localizationsetting.number }} — {{ localizationsetting.locale_code }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'masterdata:localizationsetting_list' %}">Localization Settings</a></li>
+        <li class="active" aria-current="page">{{ localizationsetting.number }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if localizationsetting.status == 'active' %}<span class="badge badge-green">{{ localizationsetting.get_status_display }}</span>
+    {% elif localizationsetting.status == 'inactive' %}<span class="badge badge-slate">{{ localizationsetting.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ localizationsetting.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'masterdata:localizationsetting_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'masterdata:localizationsetting_edit' localizationsetting.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'masterdata:localizationsetting_delete' localizationsetting.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete localization setting {{ localizationsetting.locale_code|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Localization Setting Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Number</dt><dd style="margin:0;font-weight:500;">{{ localizationsetting.number|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Locale Code</dt><dd style="margin:0;font-weight:500;">{{ localizationsetting.locale_code|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Language</dt><dd style="margin:0;font-weight:500;">{{ localizationsetting.language|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Timezone</dt><dd style="margin:0;font-weight:500;">{{ localizationsetting.timezone|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Date Format</dt><dd style="margin:0;font-weight:500;">{{ localizationsetting.date_format|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Number Format</dt><dd style="margin:0;font-weight:500;">{{ localizationsetting.number_format|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Currency</dt><dd style="margin:0;font-weight:500;">{{ localizationsetting.currency|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Default</dt><dd style="margin:0;font-weight:500;">{% if localizationsetting.is_default %}Yes{% else %}No{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">{{ localizationsetting.get_status_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ localizationsetting.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ localizationsetting.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'masterdata:localizationsetting_edit' localizationsetting.pk %}"><i data-lucide="edit-2"></i> Edit Localization Setting</a>
+        <form method="post" action="{% url 'masterdata:localizationsetting_delete' localizationsetting.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete localization setting {{ localizationsetting.locale_code|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Localization Setting</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'masterdata:localizationsetting_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
