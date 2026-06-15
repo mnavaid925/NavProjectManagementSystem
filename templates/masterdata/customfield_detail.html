@@ -1,0 +1,84 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ customfield.number }} — {{ customfield.label }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ customfield.number }} — {{ customfield.label }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'masterdata:customfield_list' %}">Custom Fields</a></li>
+        <li class="active" aria-current="page">{{ customfield.number }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if customfield.status == 'active' %}<span class="badge badge-green">{{ customfield.get_status_display }}</span>
+    {% elif customfield.status == 'inactive' %}<span class="badge badge-slate">{{ customfield.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ customfield.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'masterdata:customfield_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'masterdata:customfield_edit' customfield.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'masterdata:customfield_delete' customfield.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete custom field {{ customfield.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Custom Field Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Number</dt><dd style="margin:0;font-weight:500;">{{ customfield.number|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Label</dt><dd style="margin:0;font-weight:500;">{{ customfield.label|default:"—" }}</dd></div>
+          <div>
+            <dt class="text-muted" style="font-size:.75rem;">Field Type</dt>
+            <dd style="margin:0;font-weight:500;">
+              {% if customfield.field_type == 'text' %}<span class="badge badge-blue">{{ customfield.get_field_type_display }}</span>
+              {% elif customfield.field_type == 'number' %}<span class="badge badge-violet">{{ customfield.get_field_type_display }}</span>
+              {% elif customfield.field_type == 'date' %}<span class="badge badge-green">{{ customfield.get_field_type_display }}</span>
+              {% elif customfield.field_type == 'dropdown' %}<span class="badge badge-amber">{{ customfield.get_field_type_display }}</span>
+              {% elif customfield.field_type == 'checkbox' %}<span class="badge badge-slate">{{ customfield.get_field_type_display }}</span>
+              {% elif customfield.field_type == 'textarea' %}<span class="badge badge-blue">{{ customfield.get_field_type_display }}</span>
+              {% else %}<span class="badge badge-slate">{{ customfield.get_field_type_display }}</span>{% endif %}
+            </dd>
+          </div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Entity Type</dt><dd style="margin:0;font-weight:500;">{{ customfield.entity_type|default:"—" }}</dd></div>
+          <div>
+            <dt class="text-muted" style="font-size:.75rem;">Status</dt>
+            <dd style="margin:0;font-weight:500;">
+              {% if customfield.status == 'active' %}<span class="badge badge-green">{{ customfield.get_status_display }}</span>
+              {% elif customfield.status == 'inactive' %}<span class="badge badge-slate">{{ customfield.get_status_display }}</span>
+              {% else %}<span class="badge badge-slate">{{ customfield.get_status_display }}</span>{% endif %}
+            </dd>
+          </div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Required</dt><dd style="margin:0;font-weight:500;">{% if customfield.is_required %}Yes{% else %}No{% endif %}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Options</dt><dd style="margin:0;font-weight:500;">{{ customfield.options|default:"—" }}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Help Text</dt><dd style="margin:0;font-weight:500;">{{ customfield.help_text|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ customfield.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ customfield.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'masterdata:customfield_edit' customfield.pk %}"><i data-lucide="edit-2"></i> Edit Custom Field</a>
+        <form method="post" action="{% url 'masterdata:customfield_delete' customfield.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete custom field {{ customfield.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Custom Field</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'masterdata:customfield_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
