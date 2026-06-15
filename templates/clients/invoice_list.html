@@ -86,7 +86,7 @@
             <td>
               {% if invoice.billing_type == 'fixed_fee' %}<span class="badge badge-blue">{{ invoice.get_billing_type_display }}</span>
               {% elif invoice.billing_type == 'time_materials' %}<span class="badge badge-amber">{{ invoice.get_billing_type_display }}</span>
-              {% elif invoice.billing_type == 'milestone' %}<span class="badge badge-violet">{{ invoice.get_billing_type_display }}</span>
+              {% elif invoice.billing_type == 'milestone' %}<span class="badge badge-purple">{{ invoice.get_billing_type_display }}</span>
               {% else %}<span class="badge badge-slate">{{ invoice.get_billing_type_display }}</span>{% endif %}
             </td>
             <td>
