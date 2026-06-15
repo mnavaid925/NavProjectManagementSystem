@@ -79,7 +79,7 @@
               {% if obj.category == 'labor' %}<span class="badge badge-blue">{{ obj.get_category_display }}</span>
               {% elif obj.category == 'materials' %}<span class="badge badge-green">{{ obj.get_category_display }}</span>
               {% elif obj.category == 'overhead' %}<span class="badge badge-amber">{{ obj.get_category_display }}</span>
-              {% elif obj.category == 'travel' %}<span class="badge badge-violet">{{ obj.get_category_display }}</span>
+              {% elif obj.category == 'travel' %}<span class="badge badge-purple">{{ obj.get_category_display }}</span>
               {% elif obj.category == 'other' %}<span class="badge badge-slate">{{ obj.get_category_display }}</span>
               {% else %}<span class="badge badge-slate">{{ obj.get_category_display }}</span>{% endif %}
             </td>
@@ -87,7 +87,7 @@
             <td style="text-align:right">{{ obj.actual_amount }}</td>
             <td>
               {% if obj.status == 'open' %}<span class="badge badge-blue">{{ obj.get_status_display }}</span>
-              {% elif obj.status == 'closed' %}<span class="badge badge-green">{{ obj.get_status_display }}</span>
+              {% elif obj.status == 'closed' %}<span class="badge badge-slate">{{ obj.get_status_display }}</span>
               {% else %}<span class="badge badge-slate">{{ obj.get_status_display }}</span>{% endif %}
             </td>
             <td>
