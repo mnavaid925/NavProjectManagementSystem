@@ -15,7 +15,7 @@
   </div>
   <div class="page-actions">
     {% if budgetactual.status == 'open' %}<span class="badge badge-blue">{{ budgetactual.get_status_display }}</span>
-    {% elif budgetactual.status == 'closed' %}<span class="badge badge-green">{{ budgetactual.get_status_display }}</span>
+    {% elif budgetactual.status == 'closed' %}<span class="badge badge-slate">{{ budgetactual.get_status_display }}</span>
     {% else %}<span class="badge badge-slate">{{ budgetactual.get_status_display }}</span>{% endif %}
     <a class="btn btn-secondary" href="{% url 'finance:budgetactual_list' %}"><i data-lucide="arrow-left"></i> Back</a>
     <a class="btn btn-outline" href="{% url 'finance:budgetactual_edit' budgetactual.pk %}"><i data-lucide="edit-2"></i> Edit</a>
