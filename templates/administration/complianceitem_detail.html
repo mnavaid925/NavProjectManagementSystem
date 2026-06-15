@@ -1,0 +1,86 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ complianceitem.number }} — {{ complianceitem.title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ complianceitem.number }} — {{ complianceitem.title }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'administration:complianceitem_list' %}">System Administration &amp; Security</a></li>
+        <li class="active" aria-current="page">{{ complianceitem.number }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if complianceitem.status == 'compliant' %}<span class="badge badge-green">{{ complianceitem.get_status_display }}</span>
+    {% elif complianceitem.status == 'in_progress' %}<span class="badge badge-blue">{{ complianceitem.get_status_display }}</span>
+    {% elif complianceitem.status == 'not_started' %}<span class="badge badge-amber">{{ complianceitem.get_status_display }}</span>
+    {% elif complianceitem.status == 'non_compliant' %}<span class="badge badge-red">{{ complianceitem.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ complianceitem.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'administration:complianceitem_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'administration:complianceitem_edit' complianceitem.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'administration:complianceitem_delete' complianceitem.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete compliance item {{ complianceitem.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Compliance Item Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Number</dt><dd style="margin:0;font-weight:500;">{{ complianceitem.number|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Control ID</dt><dd style="margin:0;font-weight:500;">{{ complianceitem.control_id|default:"—" }}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Title</dt><dd style="margin:0;font-weight:500;">{{ complianceitem.title|default:"—" }}</dd></div>
+          <div>
+            <dt class="text-muted" style="font-size:.75rem;">Framework</dt>
+            <dd style="margin:0;font-weight:500;">
+              {% if complianceitem.framework == 'soc2' %}<span class="badge badge-blue">{{ complianceitem.get_framework_display }}</span>
+              {% elif complianceitem.framework == 'iso27001' %}<span class="badge badge-violet">{{ complianceitem.get_framework_display }}</span>
+              {% elif complianceitem.framework == 'gdpr' %}<span class="badge badge-green">{{ complianceitem.get_framework_display }}</span>
+              {% elif complianceitem.framework == 'hipaa' %}<span class="badge badge-amber">{{ complianceitem.get_framework_display }}</span>
+              {% elif complianceitem.framework == 'pci_dss' %}<span class="badge badge-slate">{{ complianceitem.get_framework_display }}</span>
+              {% else %}<span class="badge badge-slate">{{ complianceitem.get_framework_display }}</span>{% endif %}
+            </dd>
+          </div>
+          <div>
+            <dt class="text-muted" style="font-size:.75rem;">Status</dt>
+            <dd style="margin:0;font-weight:500;">
+              {% if complianceitem.status == 'compliant' %}<span class="badge badge-green">{{ complianceitem.get_status_display }}</span>
+              {% elif complianceitem.status == 'in_progress' %}<span class="badge badge-blue">{{ complianceitem.get_status_display }}</span>
+              {% elif complianceitem.status == 'not_started' %}<span class="badge badge-amber">{{ complianceitem.get_status_display }}</span>
+              {% elif complianceitem.status == 'non_compliant' %}<span class="badge badge-red">{{ complianceitem.get_status_display }}</span>
+              {% else %}<span class="badge badge-slate">{{ complianceitem.get_status_display }}</span>{% endif %}
+            </dd>
+          </div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Owner</dt><dd style="margin:0;font-weight:500;">{% if complianceitem.owner %}{{ complianceitem.owner.get_full_name|default:complianceitem.owner.username }}{% else %}—{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Due Date</dt><dd style="margin:0;font-weight:500;">{% if complianceitem.due_date %}{{ complianceitem.due_date|date:"M d, Y" }}{% else %}—{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ complianceitem.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ complianceitem.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'administration:complianceitem_edit' complianceitem.pk %}"><i data-lucide="edit-2"></i> Edit Compliance Item</a>
+        <form method="post" action="{% url 'administration:complianceitem_delete' complianceitem.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete compliance item {{ complianceitem.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Compliance Item</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'administration:complianceitem_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
