@@ -108,9 +108,36 @@ LIVE_LINKS = {
     (15, 'Payment Tracking & Reconciliation'): 'finance:payment_list',
     (15, 'Budget vs. Actual Analysis'): 'finance:budgetactual_list',
     (15, 'Multi-Currency & Tax Handling'): 'finance:currencyrate_list',
+    # Module 16 - Reporting & Business Intelligence
+    (16, 'Standard Project Reports'): 'reporting:reportdefinition_list',
+    (16, 'Custom Report Builder'): 'reporting:reportrun_list',
+    (16, 'Real-Time Dashboards & Widgets'): 'reporting:dashboardwidget_list',
+    (16, 'Executive & Steering Committee Packs'): 'reporting:executivepack_list',
+    (16, 'Data Export & API Connectivity'): 'reporting:dataexport_list',
+    # Module 17 - Workflow & Automation
+    (17, 'Visual Workflow Designer'): 'automation:workflowdefinition_list',
+    (17, 'Approval Automation'): 'automation:approvalrule_list',
+    (17, 'Notification & Reminder Rules'): 'automation:notificationrule_list',
+    (17, 'Recurring Task Automation'): 'automation:recurringrule_list',
+    (17, 'Integration Automation (iPaaS)'): 'automation:automationhook_list',
+    # Module 18 - Integration & API Hub
+    (18, 'ERP & Financial System Sync'): 'integrations:connector_list',
+    (18, 'CRM Integration'): 'integrations:syncjob_list',
+    (18, 'HR & Talent Systems'): 'integrations:synclog_list',
+    (18, 'Development & DevOps Tools'): 'integrations:webhook_list',
+    (18, 'File Storage & Collaboration'): 'integrations:apikey_list',
+    # Module 19 - Master Data & Configuration (Role & Permission stays live below)
+    (19, 'Project Templates & Methodologies'): 'masterdata:projecttemplate_list',
+    (19, 'Custom Fields & Forms'): 'masterdata:customfield_list',
+    (19, 'Organization Hierarchy & Teams'): 'masterdata:orgunit_list',
     (19, 'Role & Permission Management'): 'accounts:role_list',
+    (19, 'Localization & Multi-Language'): 'masterdata:localizationsetting_list',
+    # Module 20 - System Administration & Security (User Mgmt + Audit stay live below)
     (20, 'User Management & Provisioning'): 'accounts:user_list',
+    (20, 'Security & Compliance'): 'administration:securitypolicy_list',
     (20, 'Audit Trail & Logging'): 'core:audit_log',
+    (20, 'Backup & Disaster Recovery'): 'administration:backupjob_list',
+    (20, 'System Health & Performance'): 'administration:systemhealthmetric_list',
 }
 
 
