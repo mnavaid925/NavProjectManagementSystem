@@ -85,9 +85,9 @@
             <td>{{ contract.client_name }}</td>
             <td>
               {% if contract.contract_type == 'fixed_fee' %}<span class="badge badge-blue">{{ contract.get_contract_type_display }}</span>
-              {% elif contract.contract_type == 'time_materials' %}<span class="badge badge-violet">{{ contract.get_contract_type_display }}</span>
+              {% elif contract.contract_type == 'time_materials' %}<span class="badge badge-purple">{{ contract.get_contract_type_display }}</span>
               {% elif contract.contract_type == 'retainer' %}<span class="badge badge-amber">{{ contract.get_contract_type_display }}</span>
-              {% elif contract.contract_type == 'milestone' %}<span class="badge badge-teal">{{ contract.get_contract_type_display }}</span>
+              {% elif contract.contract_type == 'milestone' %}<span class="badge badge-green">{{ contract.get_contract_type_display }}</span>
               {% else %}<span class="badge badge-slate">{{ contract.get_contract_type_display }}</span>{% endif %}
             </td>
             <td>{{ contract.currency }} {{ contract.value }}</td>
