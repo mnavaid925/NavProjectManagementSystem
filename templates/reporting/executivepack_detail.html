@@ -1,0 +1,78 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ executivepack.number }} — {{ executivepack.title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ executivepack.number }} — {{ executivepack.title }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'reporting:executivepack_list' %}">Executive Packs</a></li>
+        <li class="active" aria-current="page">{{ executivepack.number }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if executivepack.status == 'published' %}<span class="badge badge-green">{{ executivepack.get_status_display }}</span>
+    {% elif executivepack.status == 'draft' %}<span class="badge badge-amber">{{ executivepack.get_status_display }}</span>
+    {% elif executivepack.status == 'archived' %}<span class="badge badge-slate">{{ executivepack.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ executivepack.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'reporting:executivepack_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'reporting:executivepack_edit' executivepack.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'reporting:executivepack_delete' executivepack.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete executive pack {{ executivepack.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Executive Pack Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Number</dt><dd style="margin:0;font-weight:500;">{{ executivepack.number|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Title</dt><dd style="margin:0;font-weight:500;">{{ executivepack.title|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Project</dt><dd style="margin:0;font-weight:500;">{% if executivepack.project %}{{ executivepack.project }}{% else %}—{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Period</dt><dd style="margin:0;font-weight:500;">{{ executivepack.period|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">RAG Status</dt><dd style="margin:0;font-weight:500;">
+            {% if executivepack.rag_status == 'green' %}<span class="badge badge-green">{{ executivepack.get_rag_status_display }}</span>
+            {% elif executivepack.rag_status == 'amber' %}<span class="badge badge-amber">{{ executivepack.get_rag_status_display }}</span>
+            {% elif executivepack.rag_status == 'red' %}<span class="badge badge-red">{{ executivepack.get_rag_status_display }}</span>
+            {% else %}<span class="badge badge-slate">{{ executivepack.get_rag_status_display }}</span>{% endif %}
+          </dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">
+            {% if executivepack.status == 'published' %}<span class="badge badge-green">{{ executivepack.get_status_display }}</span>
+            {% elif executivepack.status == 'draft' %}<span class="badge badge-amber">{{ executivepack.get_status_display }}</span>
+            {% elif executivepack.status == 'archived' %}<span class="badge badge-slate">{{ executivepack.get_status_display }}</span>
+            {% else %}<span class="badge badge-slate">{{ executivepack.get_status_display }}</span>{% endif %}
+          </dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Prepared By</dt><dd style="margin:0;font-weight:500;">{% if executivepack.prepared_by %}{{ executivepack.prepared_by.get_full_name|default:executivepack.prepared_by.username }}{% else %}—{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Published Date</dt><dd style="margin:0;font-weight:500;">{{ executivepack.published_date|date:"M d, Y"|default:"—" }}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Summary</dt><dd style="margin:0;font-weight:500;">{{ executivepack.summary|linebreaksbr|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ executivepack.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ executivepack.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'reporting:executivepack_edit' executivepack.pk %}"><i data-lucide="edit-2"></i> Edit Executive Pack</a>
+        <form method="post" action="{% url 'reporting:executivepack_delete' executivepack.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete executive pack {{ executivepack.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Executive Pack</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'reporting:executivepack_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
