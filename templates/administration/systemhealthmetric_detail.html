@@ -1,0 +1,67 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ systemhealthmetric.number }} — {{ systemhealthmetric.metric_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ systemhealthmetric.number }} — {{ systemhealthmetric.metric_name }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'administration:systemhealthmetric_list' %}">System Health Metrics</a></li>
+        <li class="active" aria-current="page">{{ systemhealthmetric.number }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if systemhealthmetric.status == 'healthy' %}<span class="badge badge-green">{{ systemhealthmetric.get_status_display }}</span>
+    {% elif systemhealthmetric.status == 'warning' %}<span class="badge badge-amber">{{ systemhealthmetric.get_status_display }}</span>
+    {% elif systemhealthmetric.status == 'critical' %}<span class="badge badge-red">{{ systemhealthmetric.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ systemhealthmetric.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'administration:systemhealthmetric_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'administration:systemhealthmetric_edit' systemhealthmetric.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'administration:systemhealthmetric_delete' systemhealthmetric.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete system health metric {{ systemhealthmetric.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">System Health Metric Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Number</dt><dd style="margin:0;font-weight:500;">{{ systemhealthmetric.number|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Metric Name</dt><dd style="margin:0;font-weight:500;">{{ systemhealthmetric.metric_name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Category</dt><dd style="margin:0;font-weight:500;">{{ systemhealthmetric.get_category_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">{{ systemhealthmetric.get_status_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Value</dt><dd style="margin:0;font-weight:500;">{{ systemhealthmetric.value }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Unit</dt><dd style="margin:0;font-weight:500;">{{ systemhealthmetric.unit|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Threshold</dt><dd style="margin:0;font-weight:500;">{{ systemhealthmetric.threshold }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Recorded At</dt><dd style="margin:0;font-weight:500;">{{ systemhealthmetric.recorded_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ systemhealthmetric.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ systemhealthmetric.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'administration:systemhealthmetric_edit' systemhealthmetric.pk %}"><i data-lucide="edit-2"></i> Edit System Health Metric</a>
+        <form method="post" action="{% url 'administration:systemhealthmetric_delete' systemhealthmetric.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete system health metric {{ systemhealthmetric.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete System Health Metric</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'administration:systemhealthmetric_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
