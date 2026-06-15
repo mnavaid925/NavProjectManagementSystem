@@ -1,0 +1,80 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ apikey.number }} — {{ apikey.name }}{% endblock %}
+
+{% comment %}
+WARNING: never persist the raw API key - store only a one-way hash plus a short
+displayable prefix. Exclude hashed_key from the ModelForm and never render it or
+any raw key in templates. On this page we render only key_prefix followed by a
+masked placeholder of bullet characters; hashed_key is NEVER displayed.
+{% endcomment %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ apikey.number }} — {{ apikey.name }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'integrations:apikey_list' %}">API Keys</a></li>
+        <li class="active" aria-current="page">{{ apikey.number }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if apikey.status == 'active' %}<span class="badge badge-green">{{ apikey.get_status_display }}</span>
+    {% elif apikey.status == 'revoked' %}<span class="badge badge-red">{{ apikey.get_status_display }}</span>
+    {% elif apikey.status == 'expired' %}<span class="badge badge-slate">{{ apikey.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ apikey.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'integrations:apikey_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'integrations:apikey_edit' apikey.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'integrations:apikey_delete' apikey.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete API key {{ apikey.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">API Key Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Number</dt><dd style="margin:0;font-weight:500;">{{ apikey.number|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Name</dt><dd style="margin:0;font-weight:500;">{{ apikey.name|default:"—" }}</dd></div>
+          {% comment %} Show only the prefix + a masked placeholder; hashed_key is never rendered. {% endcomment %}
+          <div><dt class="text-muted" style="font-size:.75rem;">Key</dt><dd style="margin:0;font-weight:500;"><code>{{ apikey.key_prefix|default:"—" }}{% if apikey.key_prefix %}••••••••••••{% endif %}</code></dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Scopes</dt><dd style="margin:0;font-weight:500;">{{ apikey.scopes|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Owner</dt><dd style="margin:0;font-weight:500;">{% if apikey.owner %}{{ apikey.owner.get_full_name|default:apikey.owner.username }}{% else %}—{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">
+            {% if apikey.status == 'active' %}<span class="badge badge-green">{{ apikey.get_status_display }}</span>
+            {% elif apikey.status == 'revoked' %}<span class="badge badge-red">{{ apikey.get_status_display }}</span>
+            {% elif apikey.status == 'expired' %}<span class="badge badge-slate">{{ apikey.get_status_display }}</span>
+            {% else %}<span class="badge badge-slate">{{ apikey.get_status_display }}</span>{% endif %}
+          </dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Expires</dt><dd style="margin:0;font-weight:500;">{% if apikey.expires_at %}{{ apikey.expires_at|date:"M d, Y" }}{% else %}—{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Last Used</dt><dd style="margin:0;font-weight:500;">{% if apikey.last_used_at %}{{ apikey.last_used_at|date:"M d, Y" }}{% else %}—{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ apikey.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ apikey.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'integrations:apikey_edit' apikey.pk %}"><i data-lucide="edit-2"></i> Edit API Key</a>
+        <form method="post" action="{% url 'integrations:apikey_delete' apikey.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete API key {{ apikey.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete API Key</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'integrations:apikey_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
