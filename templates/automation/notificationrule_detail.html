@@ -1,0 +1,71 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ notificationrule.number }} — {{ notificationrule.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ notificationrule.number }} — {{ notificationrule.name }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'automation:notificationrule_list' %}">Notification Rules</a></li>
+        <li class="active" aria-current="page">{{ notificationrule.number }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if notificationrule.status == 'active' %}<span class="badge badge-green">{{ notificationrule.get_status_display }}</span>
+    {% elif notificationrule.status == 'inactive' %}<span class="badge badge-slate">{{ notificationrule.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ notificationrule.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'automation:notificationrule_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'automation:notificationrule_edit' notificationrule.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'automation:notificationrule_delete' notificationrule.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete notification rule {{ notificationrule.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Notification Rule Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Number</dt><dd style="margin:0;font-weight:500;">{{ notificationrule.number|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Name</dt><dd style="margin:0;font-weight:500;">{{ notificationrule.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Trigger Event</dt><dd style="margin:0;font-weight:500;">{{ notificationrule.get_trigger_event_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Channel</dt><dd style="margin:0;font-weight:500;">
+            {% if notificationrule.channel == 'email' %}<span class="badge badge-blue">{{ notificationrule.get_channel_display }}</span>
+            {% elif notificationrule.channel == 'in_app' %}<span class="badge badge-violet">{{ notificationrule.get_channel_display }}</span>
+            {% elif notificationrule.channel == 'sms' %}<span class="badge badge-amber">{{ notificationrule.get_channel_display }}</span>
+            {% elif notificationrule.channel == 'webhook' %}<span class="badge badge-green">{{ notificationrule.get_channel_display }}</span>
+            {% else %}<span class="badge badge-slate">{{ notificationrule.get_channel_display }}</span>{% endif %}
+          </dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Lead Time (hours)</dt><dd style="margin:0;font-weight:500;">{{ notificationrule.lead_time_hours }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Recipient Role</dt><dd style="margin:0;font-weight:500;">{{ notificationrule.recipient_role|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">{{ notificationrule.get_status_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ notificationrule.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ notificationrule.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'automation:notificationrule_edit' notificationrule.pk %}"><i data-lucide="edit-2"></i> Edit Notification Rule</a>
+        <form method="post" action="{% url 'automation:notificationrule_delete' notificationrule.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete notification rule {{ notificationrule.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Notification Rule</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'automation:notificationrule_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
