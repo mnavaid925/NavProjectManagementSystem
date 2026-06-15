@@ -1,0 +1,138 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ page_title|default:'Workflows' }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Workflows</h1>
+    <ul class="breadcrumb">
+      <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+      <li><a href="{% url 'automation:workflowdefinition_list' %}">Workflow &amp; Automation</a></li>
+      <li><span class="active" aria-current="page">Workflows</span></li>
+    </ul>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'automation:workflowdefinition_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> New Workflow</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">All Workflows <span class="text-muted">({{ total_count }})</span></h2>
+  </div>
+  <div class="card-body">
+    {% comment %} Filters {% endcomment %}
+    <form method="get" class="flex flex-wrap items-end gap-3 mb-4">
+      <div class="form-group mb-0 flex-1" style="min-width:200px">
+        <label class="form-label">Search</label>
+        <input type="text" name="q" value="{{ request.GET.q|default:'' }}" class="form-input" placeholder="Search number, name or entity...">
+      </div>
+      <div class="form-group mb-0" style="min-width:160px">
+        <label class="form-label">Status</label>
+        <select name="status" class="form-select">
+          <option value="">All statuses</option>
+          {% for val, label in status_choices %}
+          <option value="{{ val }}" {% if request.GET.status == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group mb-0" style="min-width:160px">
+        <label class="form-label">Trigger</label>
+        <select name="trigger_event" class="form-select">
+          <option value="">All triggers</option>
+          {% for val, label in trigger_event_choices %}
+          <option value="{{ val }}" {% if request.GET.trigger_event == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group mb-0">
+        <button type="submit" class="btn btn-secondary"><i data-lucide="filter"></i> Filter</button>
+        {% if request.GET.q or request.GET.status or request.GET.trigger_event %}
+        <a href="{% url 'automation:workflowdefinition_list' %}" class="btn btn-outline btn-sm"><i data-lucide="x"></i> Clear</a>
+        {% endif %}
+      </div>
+    </form>
+
+    {% comment %} Table {% endcomment %}
+    {% if workflow_definitions %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Workflow</th>
+            <th>Trigger</th>
+            <th>Entity Type</th>
+            <th>Project</th>
+            <th style="text-align:right">Steps</th>
+            <th>Status</th>
+            <th style="text-align:right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for wf in workflow_definitions %}
+          <tr>
+            <td>
+              <a href="{% url 'automation:workflowdefinition_detail' wf.pk %}" class="font-semibold text-brand">{{ wf.name }}</a>
+              <div class="text-muted" style="font-size:.75rem;">{{ wf.number }}</div>
+            </td>
+            <td>
+              {% if wf.trigger_event == 'on_create' %}<span class="badge badge-green">{{ wf.get_trigger_event_display }}</span>
+              {% elif wf.trigger_event == 'on_update' %}<span class="badge badge-blue">{{ wf.get_trigger_event_display }}</span>
+              {% elif wf.trigger_event == 'on_status_change' %}<span class="badge badge-violet">{{ wf.get_trigger_event_display }}</span>
+              {% elif wf.trigger_event == 'scheduled' %}<span class="badge badge-amber">{{ wf.get_trigger_event_display }}</span>
+              {% elif wf.trigger_event == 'manual' %}<span class="badge badge-slate">{{ wf.get_trigger_event_display }}</span>
+              {% else %}<span class="badge badge-slate">{{ wf.get_trigger_event_display }}</span>{% endif %}
+            </td>
+            <td>{{ wf.entity_type|default:"—" }}</td>
+            <td>{% if wf.project %}{{ wf.project }}{% else %}—{% endif %}</td>
+            <td style="text-align:right">{{ wf.step_count }}</td>
+            <td>
+              {% if wf.status == 'active' %}<span class="badge badge-green">{{ wf.get_status_display }}</span>
+              {% elif wf.status == 'draft' %}<span class="badge badge-amber">{{ wf.get_status_display }}</span>
+              {% elif wf.status == 'paused' %}<span class="badge badge-amber">{{ wf.get_status_display }}</span>
+              {% elif wf.status == 'archived' %}<span class="badge badge-slate">{{ wf.get_status_display }}</span>
+              {% else %}<span class="badge badge-slate">{{ wf.get_status_display }}</span>{% endif %}
+            </td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'automation:workflowdefinition_detail' wf.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'automation:workflowdefinition_edit' wf.pk %}" class="btn-icon" title="Edit"><i data-lucide="edit-2"></i></a>
+                <form method="post" action="{% url 'automation:workflowdefinition_delete' wf.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon btn-danger" title="Delete" onclick="return confirm('Delete workflow {{ wf.number|escapejs }}?')"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <ul class="pagination">
+      <li class="{% if not page_obj.has_previous %}disabled{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&amp;{% endif %}{% if request.GET.trigger_event %}trigger_event={{ request.GET.trigger_event }}&amp;{% endif %}page={% if page_obj.has_previous %}{{ page_obj.previous_page_number }}{% else %}1{% endif %}">Prev</a>
+      </li>
+      {% for n in page_obj.paginator.page_range %}
+      <li class="{% if n == page_obj.number %}active{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&amp;{% endif %}{% if request.GET.trigger_event %}trigger_event={{ request.GET.trigger_event }}&amp;{% endif %}page={{ n }}">{{ n }}</a>
+      </li>
+      {% endfor %}
+      <li class="{% if not page_obj.has_next %}disabled{% endif %}">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&amp;{% endif %}{% if request.GET.trigger_event %}trigger_event={{ request.GET.trigger_event }}&amp;{% endif %}page={% if page_obj.has_next %}{{ page_obj.next_page_number }}{% else %}{{ page_obj.paginator.num_pages }}{% endif %}">Next</a>
+      </li>
+    </ul>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon"><i data-lucide="git-merge"></i></div>
+      <h3>No workflows found</h3>
+      <p>{% if request.GET.q or request.GET.status or request.GET.trigger_event %}No workflows match your filters.{% else %}Create your first workflow to get started.{% endif %}</p>
+      <a href="{% url 'automation:workflowdefinition_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> New Workflow</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
