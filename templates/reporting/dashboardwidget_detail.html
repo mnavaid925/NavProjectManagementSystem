@@ -1,0 +1,79 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ dashboardwidget.number }} — {{ dashboardwidget.title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ dashboardwidget.number }} — {{ dashboardwidget.title }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'reporting:dashboardwidget_list' %}">Dashboard Widgets</a></li>
+        <li class="active" aria-current="page">{{ dashboardwidget.number }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if dashboardwidget.status == 'active' %}<span class="badge badge-green">{{ dashboardwidget.get_status_display }}</span>
+    {% elif dashboardwidget.status == 'hidden' %}<span class="badge badge-slate">{{ dashboardwidget.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ dashboardwidget.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'reporting:dashboardwidget_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'reporting:dashboardwidget_edit' dashboardwidget.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'reporting:dashboardwidget_delete' dashboardwidget.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete dashboard widget {{ dashboardwidget.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Dashboard Widget Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Number</dt><dd style="margin:0;font-weight:500;">{{ dashboardwidget.number|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Title</dt><dd style="margin:0;font-weight:500;">{{ dashboardwidget.title|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Widget Type</dt><dd style="margin:0;font-weight:500;">
+            {% if dashboardwidget.widget_type == 'kpi_card' %}<span class="badge badge-blue">{{ dashboardwidget.get_widget_type_display }}</span>
+            {% elif dashboardwidget.widget_type == 'line_chart' %}<span class="badge badge-violet">{{ dashboardwidget.get_widget_type_display }}</span>
+            {% elif dashboardwidget.widget_type == 'bar_chart' %}<span class="badge badge-violet">{{ dashboardwidget.get_widget_type_display }}</span>
+            {% elif dashboardwidget.widget_type == 'pie_chart' %}<span class="badge badge-amber">{{ dashboardwidget.get_widget_type_display }}</span>
+            {% elif dashboardwidget.widget_type == 'table' %}<span class="badge badge-slate">{{ dashboardwidget.get_widget_type_display }}</span>
+            {% elif dashboardwidget.widget_type == 'gauge' %}<span class="badge badge-green">{{ dashboardwidget.get_widget_type_display }}</span>
+            {% else %}<span class="badge badge-slate">{{ dashboardwidget.get_widget_type_display }}</span>{% endif %}
+          </dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Data Source</dt><dd style="margin:0;font-weight:500;">{{ dashboardwidget.get_data_source_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Metric</dt><dd style="margin:0;font-weight:500;">{{ dashboardwidget.metric|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">
+            {% if dashboardwidget.status == 'active' %}<span class="badge badge-green">{{ dashboardwidget.get_status_display }}</span>
+            {% elif dashboardwidget.status == 'hidden' %}<span class="badge badge-slate">{{ dashboardwidget.get_status_display }}</span>
+            {% else %}<span class="badge badge-slate">{{ dashboardwidget.get_status_display }}</span>{% endif %}
+          </dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Position</dt><dd style="margin:0;font-weight:500;">{{ dashboardwidget.position }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Refresh Interval (s)</dt><dd style="margin:0;font-weight:500;">{{ dashboardwidget.refresh_interval }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Owner</dt><dd style="margin:0;font-weight:500;">{% if dashboardwidget.owner %}{{ dashboardwidget.owner.get_full_name|default:dashboardwidget.owner.username }}{% else %}—{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ dashboardwidget.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ dashboardwidget.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'reporting:dashboardwidget_edit' dashboardwidget.pk %}"><i data-lucide="edit-2"></i> Edit Dashboard Widget</a>
+        <form method="post" action="{% url 'reporting:dashboardwidget_delete' dashboardwidget.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete dashboard widget {{ dashboardwidget.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Dashboard Widget</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'reporting:dashboardwidget_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
