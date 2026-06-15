@@ -1,0 +1,83 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ dataexport.number }} — {{ dataexport.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ dataexport.number }} — {{ dataexport.name }}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ul class="breadcrumb" style="margin:0;padding:0;">
+        <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li><a href="{% url 'reporting:dataexport_list' %}">Reporting &amp; Business Intelligence</a></li>
+        <li class="active" aria-current="page">{{ dataexport.number }}</li>
+      </ul>
+    </nav>
+  </div>
+  <div class="page-actions">
+    {% if dataexport.status == 'completed' %}<span class="badge badge-green">{{ dataexport.get_status_display }}</span>
+    {% elif dataexport.status == 'running' %}<span class="badge badge-blue">{{ dataexport.get_status_display }}</span>
+    {% elif dataexport.status == 'pending' %}<span class="badge badge-amber">{{ dataexport.get_status_display }}</span>
+    {% elif dataexport.status == 'failed' %}<span class="badge badge-red">{{ dataexport.get_status_display }}</span>
+    {% else %}<span class="badge badge-slate">{{ dataexport.get_status_display }}</span>{% endif %}
+    <a class="btn btn-secondary" href="{% url 'reporting:dataexport_list' %}"><i data-lucide="arrow-left"></i> Back</a>
+    <a class="btn btn-outline" href="{% url 'reporting:dataexport_edit' dataexport.pk %}"><i data-lucide="edit-2"></i> Edit</a>
+    <form method="post" action="{% url 'reporting:dataexport_delete' dataexport.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Delete data export {{ dataexport.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="form-row" style="grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Data Export Details</h2>
+      </div>
+      <div class="card-body">
+        <dl class="form-row" style="grid-template-columns:repeat(2,1fr);gap:.85rem 1.25rem;margin:0;">
+          <div><dt class="text-muted" style="font-size:.75rem;">Number</dt><dd style="margin:0;font-weight:500;">{{ dataexport.number|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Name</dt><dd style="margin:0;font-weight:500;">{{ dataexport.name|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Export Type</dt><dd style="margin:0;font-weight:500;">
+            {% if dataexport.export_type == 'csv' %}<span class="badge badge-blue">{{ dataexport.get_export_type_display }}</span>
+            {% elif dataexport.export_type == 'excel' %}<span class="badge badge-green">{{ dataexport.get_export_type_display }}</span>
+            {% elif dataexport.export_type == 'pdf' %}<span class="badge badge-red">{{ dataexport.get_export_type_display }}</span>
+            {% elif dataexport.export_type == 'json' %}<span class="badge badge-amber">{{ dataexport.get_export_type_display }}</span>
+            {% elif dataexport.export_type == 'odata' %}<span class="badge badge-violet">{{ dataexport.get_export_type_display }}</span>
+            {% elif dataexport.export_type == 'rest_api' %}<span class="badge badge-purple">{{ dataexport.get_export_type_display }}</span>
+            {% else %}<span class="badge badge-slate">{{ dataexport.get_export_type_display }}</span>{% endif %}
+          </dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Data Source</dt><dd style="margin:0;font-weight:500;">{{ dataexport.get_data_source_display }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Status</dt><dd style="margin:0;font-weight:500;">
+            {% if dataexport.status == 'completed' %}<span class="badge badge-green">{{ dataexport.get_status_display }}</span>
+            {% elif dataexport.status == 'running' %}<span class="badge badge-blue">{{ dataexport.get_status_display }}</span>
+            {% elif dataexport.status == 'pending' %}<span class="badge badge-amber">{{ dataexport.get_status_display }}</span>
+            {% elif dataexport.status == 'failed' %}<span class="badge badge-red">{{ dataexport.get_status_display }}</span>
+            {% else %}<span class="badge badge-slate">{{ dataexport.get_status_display }}</span>{% endif %}
+          </dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Record Count</dt><dd style="margin:0;font-weight:500;">{{ dataexport.record_count }}</dd></div>
+          <div style="grid-column:1/-1;"><dt class="text-muted" style="font-size:.75rem;">Destination</dt><dd style="margin:0;font-weight:500;">{{ dataexport.destination|default:"—" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Requested By</dt><dd style="margin:0;font-weight:500;">{% if dataexport.requested_by %}{{ dataexport.requested_by.get_full_name|default:dataexport.requested_by.username }}{% else %}—{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Completed At</dt><dd style="margin:0;font-weight:500;">{% if dataexport.completed_at %}{{ dataexport.completed_at|date:"M d, Y" }}{% else %}—{% endif %}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Created</dt><dd style="margin:0;font-weight:500;">{{ dataexport.created_at|date:"M d, Y" }}</dd></div>
+          <div><dt class="text-muted" style="font-size:.75rem;">Updated</dt><dd style="margin:0;font-weight:500;">{{ dataexport.updated_at|date:"M d, Y" }}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Actions</h2></div>
+      <div class="card-body" style="display:grid;gap:.55rem;">
+        <a class="btn btn-outline" href="{% url 'reporting:dataexport_edit' dataexport.pk %}"><i data-lucide="edit-2"></i> Edit Data Export</a>
+        <form method="post" action="{% url 'reporting:dataexport_delete' dataexport.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Delete data export {{ dataexport.number|escapejs }}?')"><i data-lucide="trash-2"></i> Delete Data Export</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'reporting:dataexport_list' %}"><i data-lucide="arrow-left"></i> Back to List</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
