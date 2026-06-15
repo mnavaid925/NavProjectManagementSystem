@@ -149,3 +149,34 @@ it. **Root-cause fix:** pass an explicit `env` to the pytest subprocess with
 exit 0 ("manage.py check OK - tests OK") in ~70s. **Rule:** when a hook/CI runs Django tests, confirm WHICH settings
 module actually resolves (env var beats `pytest.ini`); test runs must use the isolated SQLite test settings, never
 the shared dev DB.
+
+## L20 — A "masked-in-template" secret is still leaked via the edit form — EXCLUDE it from the ModelForm
+Building Modules 16–20, the spec told the AutomationHook/ApiKey agents to "mask the secret in templates" AND
+exclude it from the form, but the Webhook agent was only told to "mask in templates" — so `WebhookForm.fields`
+kept `'secret'`. A `CharField` with no widget override renders as `<input type="text" value="{{ stored_secret }}">`
+on the EDIT page, so the plaintext secret ships to the browser for any user who can open the edit form — even
+though the detail page masked it with bullets. Three independent reviewers caught it; AutomationHookForm/ApiKeyForm
+(same module family) already did it right by EXCLUDING the field. **Rule:** for any secret/credential/hash field,
+the fix is to leave it OUT of `Meta.fields` (rotate via a dedicated write-only flow), not merely to mask it in the
+detail template. Masking the read view does nothing for the bound edit form. When writing module specs, state
+"exclude from the ModelForm" explicitly for every sensitive field, not "mask it".
+
+## L21 — Verify per-module file counts after a build Workflow BEFORE wiring/migrating (workflows can be cut off mid-phase)
+The 30-agent build workflow for Modules 16–20 was terminated mid-frontend-phase (parent turn interrupted), leaving
+`automation` at 3/15 templates and `administration` at 14/15 while backend was 11/11 for all apps and the other three
+modules were complete. A naive "workflow done → migrate + smoke test" would have hit `TemplateDoesNotExist` 500s.
+**Rule:** after a code-gen Workflow, assert the expected file count per unit (e.g. `find templates/<slug> -name '*.html' | wc -l`
+== 15) before relying on the output; regenerate only the missing pieces with a focused follow-up workflow. Backend
+(single-writer, DB) and template (per-file) work are independent, so wiring + migrate + seed can proceed on the
+complete backend while the missing templates are regenerated in parallel. Blocking on the workflow task
+(`TaskOutput block=true`) also keeps a short follow-up run alive through turn boundaries.
+
+## L22 — System-set timestamps (`*_at`) don't belong on manual edit forms (mirror finance: zero DateTimeFields on forms)
+The template agents put nullable `DateTimeField` columns (`last_run_at`, `last_sync_at`, `started_at`, `recorded_at`,
+`completed_at`, `last_triggered_at`) onto ModelForms with a `DateInput(type=date)` widget. That date-only widget
+silently truncates the time component on every edit-save (and `datetime-local` would need matching widget+field
+`input_formats` to round-trip correctly — fiddly). The finance reference puts ZERO editable DateTimeFields on its
+forms — its only DateTimeFields are `auto_now`/`auto_now_add` audit columns, never in `Meta.fields`; its date widgets
+sit only on real `DateField`s (issue_date/due_date/etc.). **Rule:** treat observed/system timestamps as read-only —
+keep them on the model + detail page but OUT of the form. Reserve `DateInput(type=date)` for genuine user-set
+`DateField`s. This is the root-cause fix, not swapping in a `datetime-local` widget.
